@@ -792,17 +792,8 @@ function tc_handle_peer_site_delete(): void {
     }
 
     // Remove the peer site's reachability state so Site Health no longer reports it.
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
     // Health data loss is acceptable if the lock cannot be acquired; do not abort the delete.
-    $health_lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_peer_health_lock' ) ) {
-            set_transient( 'tc_peer_health_lock', 1, 10 );
-            $health_lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
+    $health_lock_acquired = tc_acquire_mysql_lock( 'tc_peer_health_lock' );
     if ( $health_lock_acquired ) {
         try {
             $health = (array) get_option( 'tc_peer_site_health', array() );
@@ -811,7 +802,7 @@ function tc_handle_peer_site_delete(): void {
                 update_option( 'tc_peer_site_health', $health, false );
             }
         } finally {
-            delete_transient( 'tc_peer_health_lock' );
+            tc_release_mysql_lock( 'tc_peer_health_lock' );
         }
     } else {
         error_log( 'TermConnect: could not acquire tc_peer_health_lock to remove health entry for peer site "' . $slug . '".' );

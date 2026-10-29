@@ -152,17 +152,7 @@ function tc_sv_ajax_save(): void {
         }
     }
 
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         wp_send_json_error( array( 'message' => __( 'Another update is in progress. Please try again.', 'termconnect' ) ) );
         return;
     }
@@ -228,7 +218,7 @@ function tc_sv_ajax_save(): void {
 
         update_option( 'tc_shared_vocabularies', tc_sv_sort_sources( $sources ) );
     } finally {
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
     wp_send_json_success( array( 'id' => $source['id'] ) );
 }
@@ -247,17 +237,7 @@ function tc_sv_ajax_delete(): void {
     // Capture the source config before removing it (needed for cleanup).
     $deleted_source = null;
 
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         wp_send_json_error( array( 'message' => __( 'Another update is in progress. Please try again.', 'termconnect' ) ) );
         return;
     }
@@ -269,7 +249,7 @@ function tc_sv_ajax_delete(): void {
         $sources = array_values( array_filter( $sources, static fn( $s ) => $s['id'] !== $id ) );
         update_option( 'tc_shared_vocabularies', $sources );
     } finally {
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
 
     // For remote_group sources: remove synced terms from the local group before clearing identities.
@@ -365,17 +345,7 @@ function tc_sv_ajax_reorder(): void {
         wp_send_json_success(); // Nothing to do.
     }
 
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         wp_send_json_error( array( 'message' => __( 'Another update is in progress. Please try again.', 'termconnect' ) ) );
         return;
     }
@@ -403,7 +373,7 @@ function tc_sv_ajax_reorder(): void {
 
         update_option( 'tc_shared_vocabularies', tc_sv_sort_sources( array_merge( array_values( $other ), $reordered ) ) );
     } finally {
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
     wp_send_json_success();
 }
@@ -425,17 +395,7 @@ function tc_sv_ajax_merge_proposal(): void {
 
     $proposal_id = sanitize_key( wp_unslash( $_POST['proposal_id'] ?? '' ) );
 
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         wp_send_json_error( array( 'message' => __( 'Another update is in progress. Please try again.', 'termconnect' ) ) );
         return;
     }
@@ -444,7 +404,7 @@ function tc_sv_ajax_merge_proposal(): void {
         $proposals = get_option( 'tc_merge_proposals', array() );
 
         if ( ! isset( $proposals[ $proposal_id ] ) ) {
-            delete_transient( 'tc_sv_write_lock' );
+            tc_release_mysql_lock( 'tc_sv_write_lock' );
             wp_send_json_error( array( 'message' => __( 'Proposal not found.', 'termconnect' ) ) );
         }
 
@@ -452,7 +412,7 @@ function tc_sv_ajax_merge_proposal(): void {
         $result   = tc_sv_resolve_merge_proposal( $proposal );
 
         if ( is_wp_error( $result ) ) {
-            delete_transient( 'tc_sv_write_lock' );
+            tc_release_mysql_lock( 'tc_sv_write_lock' );
             wp_send_json_error( array( 'message' => $result->get_error_message() ) );
         }
 
@@ -462,7 +422,7 @@ function tc_sv_ajax_merge_proposal(): void {
         // Covers the normal completion and any exception from htax_merge_terms().
         // The wp_send_json_error() exits above release the lock manually because
         // die() bypasses finally.
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
 
     wp_send_json_success( array(
@@ -674,17 +634,7 @@ function tc_sv_ajax_dismiss_merge(): void {
 
     $proposal_id = sanitize_key( wp_unslash( $_POST['proposal_id'] ?? '' ) );
 
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         wp_send_json_error( array( 'message' => __( 'Another update is in progress. Please try again.', 'termconnect' ) ) );
         return;
     }
@@ -699,7 +649,7 @@ function tc_sv_ajax_dismiss_merge(): void {
         unset( $proposals[ $proposal_id ] );
         update_option( 'tc_merge_proposals', $proposals, false );
     } finally {
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
     wp_send_json_success();
 }

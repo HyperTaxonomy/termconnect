@@ -157,17 +157,7 @@ function tc_ajax_di_set_source(): void {
     }
 
     // Identity saved — now create the vocabulary source entry.
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         wp_send_json_error( array( 'message' => __( 'Another update is in progress. Please try again.', 'termconnect' ) ) );
         return;
     }
@@ -216,7 +206,7 @@ function tc_ajax_di_set_source(): void {
         }
         update_option( 'tc_shared_vocabularies', tc_sv_sort_sources( $sources ) );
     } finally {
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
 
     wp_send_json_success( array( 'message' => __( 'Identity delegated successfully.', 'termconnect' ) ) );

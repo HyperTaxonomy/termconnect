@@ -756,6 +756,48 @@ function tc_sv_propagate_descendants( int $term_id, array $source ): void {
 // ==============================================================================
 
 /**
+ * Acquire a cross-process/cross-request mutex using a MySQL advisory lock
+ * (GET_LOCK). Unlike a get-then-set transient check, this is atomic: MySQL
+ * itself serializes concurrent GET_LOCK() calls for the same name, so two
+ * overlapping requests (e.g. a cron sync racing a manual AJAX sync) cannot
+ * both believe they hold the lock. The lock is also automatically released
+ * if the holding connection dies, so a crashed request can never leave it
+ * stuck (unlike a transient, which only expires after its TTL).
+ *
+ * Requires MySQL 5.7.5+ / MariaDB 10.0+ for multiple simultaneous named locks
+ * per connection; earlier versions silently release any lock already held by
+ * the same connection when a second is acquired. None of this plugin's lock
+ * sections nest, so that constraint does not apply here.
+ *
+ * The default timeout intentionally mirrors the fail-fast behavior of the
+ * transient-retry pattern this replaces (3 attempts at 0.2s apart, ~0.6s):
+ * these critical sections are all short, so a caller that can't get the
+ * lock quickly is almost always a dead/expired lock-holder's crashed
+ * request, not one still legitimately working — better to fail fast (and,
+ * in AJAX contexts, let the user retry) than block the current request for
+ * a long wait in a cron tick or page load.
+ *
+ * @param string $name    Lock name — must match exactly between every caller
+ *                         sharing the same critical section.
+ * @param int    $timeout Seconds to wait for the lock before giving up.
+ * @return bool True if the lock was acquired.
+ */
+function tc_acquire_mysql_lock( string $name, int $timeout = 2 ): bool {
+    global $wpdb;
+    return '1' === $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $name, $timeout ) );
+}
+
+/**
+ * Release a lock previously acquired with tc_acquire_mysql_lock().
+ *
+ * @param string $name Lock name passed to tc_acquire_mysql_lock().
+ */
+function tc_release_mysql_lock( string $name ): void {
+    global $wpdb;
+    $wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $name ) );
+}
+
+/**
  * Update remote_term_id on a shared vocabulary roots entry matched by slug.
  *
  * Called after a successful slug-based fetch returns a different ID — slug
@@ -766,17 +808,7 @@ function tc_sv_propagate_descendants( int $term_id, array $source ): void {
  * @param int    $new_term_id  Newly discovered remote term ID.
  */
 function tc_sv_update_root_term_id( string $sv_source_id, string $remote_slug, int $new_term_id ): void {
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         return;
     }
     try {
@@ -801,7 +833,7 @@ function tc_sv_update_root_term_id( string $sv_source_id, string $remote_slug, i
             update_option( 'tc_shared_vocabularies', $sources );
         }
     } finally {
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
 }
 
@@ -816,17 +848,7 @@ function tc_sv_update_root_term_id( string $sv_source_id, string $remote_slug, i
  * @param string $new_slug     New slug to store.
  */
 function tc_sv_update_root_slug( string $sv_source_id, string $old_slug, string $new_slug ): void {
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
         return;
     }
     try {
@@ -850,7 +872,7 @@ function tc_sv_update_root_slug( string $sv_source_id, string $old_slug, string 
             update_option( 'tc_shared_vocabularies', $sources );
         }
     } finally {
-        delete_transient( 'tc_sv_write_lock' );
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
     }
 }
 
@@ -927,17 +949,7 @@ function tc_fetch_remote_term_by_id( string $peer_site_slug, string $taxonomy, i
  * @param array $remote  Remote identity response with type='redirect'.
  */
 function tc_identity_redirect_queue_add( int $term_id, array $remote ): void {
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_redirect_queue_lock' ) ) {
-            set_transient( 'tc_redirect_queue_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    if ( ! tc_acquire_mysql_lock( 'tc_redirect_queue_lock' ) ) {
         return;
     }
     try {
@@ -951,7 +963,7 @@ function tc_identity_redirect_queue_add( int $term_id, array $remote ): void {
         );
         update_option( 'tc_identity_redirect_queue', $queue, false );
     } finally {
-        delete_transient( 'tc_redirect_queue_lock' );
+        tc_release_mysql_lock( 'tc_redirect_queue_lock' );
     }
 }
 
@@ -980,17 +992,8 @@ function tc_identity_redirect_queue_remove( int $term_id ): void {
         return;
     }
 
-    // Same transient mutex as tc_identity_redirect_queue_add().
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_redirect_queue_lock' ) ) {
-            set_transient( 'tc_redirect_queue_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
-    if ( ! $lock_acquired ) {
+    // Same lock as tc_identity_redirect_queue_add().
+    if ( ! tc_acquire_mysql_lock( 'tc_redirect_queue_lock' ) ) {
         return;
     }
     try {
@@ -998,7 +1001,7 @@ function tc_identity_redirect_queue_remove( int $term_id ): void {
         unset( $queue[ (string) $term_id ] );
         update_option( 'tc_identity_redirect_queue', $queue, false );
     } finally {
-        delete_transient( 'tc_redirect_queue_lock' );
+        tc_release_mysql_lock( 'tc_redirect_queue_lock' );
     }
 }
 

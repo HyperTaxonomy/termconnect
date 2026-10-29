@@ -320,16 +320,7 @@ function tc_sv_sync_source( array $source ): array {
     }
 
     // 12. Update last_sync timestamp and result summary.
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
+    $lock_acquired = tc_acquire_mysql_lock( 'tc_sv_write_lock' );
     if ( $lock_acquired ) {
         try {
             $sources = get_option( 'tc_shared_vocabularies', array() );
@@ -343,7 +334,7 @@ function tc_sv_sync_source( array $source ): array {
             unset( $s );
             update_option( 'tc_shared_vocabularies', $sources );
         } finally {
-            delete_transient( 'tc_sv_write_lock' );
+            tc_release_mysql_lock( 'tc_sv_write_lock' );
         }
     } else {
         error_log( 'TermConnect: could not acquire write lock to save sync result for source ' . ( $source['id'] ?? '' ) );
@@ -687,15 +678,7 @@ function tc_sv_sync_remote_group_source( array $source, array $result ): array {
     }
 
     // 7. Update last_sync timestamp and cache local_group_id + remote metadata.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 );
-    }
+    $lock_acquired = tc_acquire_mysql_lock( 'tc_sv_write_lock' );
     if ( $lock_acquired ) {
         try {
             $sources = get_option( 'tc_shared_vocabularies', array() );
@@ -712,7 +695,7 @@ function tc_sv_sync_remote_group_source( array $source, array $result ): array {
             unset( $s );
             update_option( 'tc_shared_vocabularies', $sources );
         } finally {
-            delete_transient( 'tc_sv_write_lock' );
+            tc_release_mysql_lock( 'tc_sv_write_lock' );
         }
     } else {
         error_log( 'TermConnect: could not acquire write lock to save sync result for source ' . $source_id );
@@ -855,16 +838,7 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
     }
 
     // Update last_sync timestamp and result summary.
-    // Use a transient mutex to prevent concurrent requests from overwriting each other's changes.
-    $lock_acquired = false;
-    for ( $i = 0; $i < 3; $i++ ) {
-        if ( false === get_transient( 'tc_sv_write_lock' ) ) {
-            set_transient( 'tc_sv_write_lock', 1, 10 );
-            $lock_acquired = true;
-            break;
-        }
-        usleep( 200000 ); // 0.2s
-    }
+    $lock_acquired = tc_acquire_mysql_lock( 'tc_sv_write_lock' );
     if ( $lock_acquired ) {
         try {
             $sources = get_option( 'tc_shared_vocabularies', array() );
@@ -878,7 +852,7 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
             unset( $s );
             update_option( 'tc_shared_vocabularies', $sources );
         } finally {
-            delete_transient( 'tc_sv_write_lock' );
+            tc_release_mysql_lock( 'tc_sv_write_lock' );
         }
     } else {
         error_log( 'TermConnect: could not acquire write lock to save sync result for source ' . ( $source['id'] ?? '' ) );
