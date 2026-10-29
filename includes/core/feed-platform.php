@@ -34,6 +34,19 @@ define( 'TC_FEED_CATS_TTL', 90 * DAY_IN_SECONDS );
  * Validate that a URI prefix uses an allowed scheme and does not point to a loopback,
  * link-local, or RFC-1918 private address. Returns true when valid, false when blocked.
  *
+ * Delegates to WordPress's own wp_http_validate_url(), which resolves the host via
+ * DNS and checks the *resolved* IP against loopback/link-local/private ranges — not
+ * just a textual prefix match on the hostname as written. A hostname that is
+ * syntactically public but currently resolves to a private/loopback address (DNS
+ * rebinding, or a DNS change made after this URL was approved) is caught on every
+ * call, including the recurring cron poll in tc_feed_fetch_and_accumulate(), not
+ * just at the moment an admin first saves the URL. This matches the strength of
+ * tc_external_validate_origin() (used for live peer-post fetches), which performs
+ * the same real-IP-resolution check via the same WordPress function — so both of
+ * this plugin's SSRF guards are equally strong. The http_request_host_is_external
+ * filter registered in includes/core/external-posts.php still applies here too,
+ * preserving the existing local-dev allowance for registered WordPress peer hosts.
+ *
  * Defined here (not in admin) so it is available during WP cron feed fetches.
  *
  * @since 1.0.0
@@ -47,37 +60,12 @@ function tc_validate_uri_prefix( string $uri_prefix ): bool {
 		return false;
 	}
 
-	$host = strtolower( parse_url( $uri_prefix, PHP_URL_HOST ) ?? '' );
+	$host = strtolower( $parsed['host'] ?? '' );
 	if ( '' === $host ) {
 		return false;
 	}
 
-	// Loopback and link-local.
-	$blocked_prefixes = array( 'localhost', '127.', '169.254.', '::1', 'fe80' );
-	foreach ( $blocked_prefixes as $pattern ) {
-		if ( strpos( $host, $pattern ) === 0 || $host === $pattern ) {
-			return false;
-		}
-	}
-
-	// RFC-1918 private ranges: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16.
-	if ( strpos( $host, '10.' ) === 0 ) {
-		return false;
-	}
-	if ( strpos( $host, '192.168.' ) === 0 ) {
-		return false;
-	}
-	if ( $host === '0.0.0.0' || strpos( $host, '0.0.0.0' ) === 0 ) {
-		return false;
-	}
-	if ( strpos( $host, '172.' ) === 0 ) {
-		$parts = explode( '.', $host );
-		if ( isset( $parts[1] ) && (int) $parts[1] >= 16 && (int) $parts[1] <= 31 ) {
-			return false;
-		}
-	}
-
-	return true;
+	return false !== wp_http_validate_url( $uri_prefix );
 }
 
 // =============================================================================
