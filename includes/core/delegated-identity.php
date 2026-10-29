@@ -35,6 +35,13 @@ define( 'TC_META_ORIGINAL_NAME',        '_tc_original_name' );
 define( 'TC_META_REL_SYNC_ISSUES',      '_tc_rel_sync_issues' );
 define( 'TC_IDENTITY_CACHE_TTL',        DAY_IN_SECONDS );
 
+/**
+ * Wall-clock seconds a single cron tick may spend making synchronous remote
+ * requests (e.g. tc_cron_refresh_identity_caches()) before bailing out and
+ * leaving the remainder for the next scheduled run.
+ */
+define( 'TC_CRON_TIME_BUDGET', 20 );
+
 // ==============================================================================
 // IDENTITY SOURCE CRUD
 // ==============================================================================
@@ -1157,10 +1164,22 @@ add_action( 'tc_refresh_identity_caches', 'tc_cron_refresh_identity_caches' );
 
 /**
  * Cron callback: refresh all stale delegated identity caches.
+ *
+ * Bails out after TC_CRON_TIME_BUDGET wall-clock seconds rather than
+ * refreshing every stale term in one tick: on a site with hundreds of
+ * delegated terms, each refresh is a synchronous wp_remote_get(), and an
+ * unbounded loop risks hitting max_execution_time mid-run. Terms not reached
+ * this tick stay stale (last_fetched unchanged) and are simply picked up on
+ * the next scheduled run (twicedaily, per termconnect.php) — nothing here is
+ * a queue that loses items by being skipped.
  */
 function tc_cron_refresh_identity_caches(): void {
+    $deadline = time() + TC_CRON_TIME_BUDGET;
     $term_ids = tc_get_delegated_term_ids();
     foreach ( $term_ids as $term_id ) {
+        if ( time() >= $deadline ) {
+            break;
+        }
         $source = tc_get_identity_source( (int) $term_id );
         if ( null === $source ) {
             continue;

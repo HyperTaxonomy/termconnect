@@ -226,10 +226,20 @@ function tc_sv_sync_source( array $source ): array {
     //    Before marking as orphaned, attempt an individual slug fetch — the term
     //    may have been missed due to a race during pagination or moved to another
     //    taxonomy. Only apply the configured orphan action when confirmed gone.
+    //    Bails out after TC_CRON_TIME_BUDGET wall-clock seconds rather than probing
+    //    every orphan candidate in one run: each probe is a synchronous HTTP request,
+    //    and a source with many stale delegations could otherwise hit
+    //    max_execution_time mid-run. Delegations not reached this run are simply
+    //    re-evaluated on the next sync — nothing here is a queue that loses entries
+    //    by being skipped.
     $orphaned_ids  = array();
     $orphan_action = $source['orphan_action'] ?? 'flag';
     $sv_source_id  = $source['id'] ?? '';
+    $orphan_probe_deadline = time() + TC_CRON_TIME_BUDGET;
     foreach ( $delegations as $remote_id => $local_term_id ) {
+        if ( time() >= $orphan_probe_deadline ) {
+            break;
+        }
         if ( isset( $remote_by_id[ $remote_id ] ) ) {
             continue;
         }
