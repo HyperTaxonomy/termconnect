@@ -154,6 +154,12 @@ function tc_plugin_deactivate(): void {
     if ( $timestamp ) {
         wp_unschedule_event( $timestamp, 'tc_sync_shared_vocabularies' );
     }
+    // Per-feed-link-type tc_feed_poll events (one per slug, scheduled by
+    // tc_feed_schedule()) are not covered by the two unschedules above —
+    // without this, they linger in the cron option across a
+    // deactivate/reactivate cycle. Matches the same call already in
+    // uninstall.php.
+    wp_unschedule_hook( 'tc_feed_poll' );
 }
 
 add_action( 'plugins_loaded', static function () {
