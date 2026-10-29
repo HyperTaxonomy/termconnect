@@ -1,0 +1,17 @@
+title: TermConnect
+description: Connect WordPress taxonomy terms to external knowledge bases, peer sites, and feeds.
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+baseurl: "/termconnect"
+url: "https://hypertaxonomy.org"
+search_enabled: true
+heading_anchors: true
+color_scheme: light
+aux_links:
+  "GitHub": ["https://github.com/HyperTaxonomy/termconnect"]
+  "HyperTaxonomy suite": ["https://hypertaxonomy.org"]
+aux_links_new_tab: true
+# Local QA docs (gitignored); also excluded from the docs site build.
+exclude:
+  - TEST-PLAN.md

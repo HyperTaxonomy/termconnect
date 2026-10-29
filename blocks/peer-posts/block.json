@@ -1,0 +1,127 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "termconnect/peer-posts",
+    "version": "1.0.0",
+    "title": "Peer Posts",
+    "category": "termconnect",
+    "icon": "admin-links",
+    "description": "Displays related posts from configured peer WordPress sites, scored by shared term relevance.",
+    "keywords": [
+        "peer",
+        "posts",
+        "related",
+        "external",
+        "federated",
+        "termconnect"
+    ],
+    "supports": {
+        "html": false,
+        "align": false
+    },
+    "usesContext": [
+        "postId",
+        "postType"
+    ],
+    "textdomain": "termconnect",
+    "attributes": {
+        "link_types": {
+            "type": "string",
+            "default": ""
+        },
+        "taxonomy": {
+            "type": "string",
+            "default": ""
+        },
+        "match": {
+            "type": "string",
+            "default": "any"
+        },
+        "scope": {
+            "type": "string",
+            "default": "peers"
+        },
+        "orderby": {
+            "type": "string",
+            "default": "score"
+        },
+        "per_page": {
+            "type": "string",
+            "default": "5"
+        },
+        "max_results": {
+            "type": "string",
+            "default": "20"
+        },
+        "foaf_depth": {
+            "type": "string",
+            "default": "0"
+        },
+        "require_ht": {
+            "type": "string",
+            "default": "false"
+        },
+        "include_synonyms": {
+            "type": "string",
+            "default": "true"
+        },
+        "include_related": {
+            "type": "string",
+            "default": "false"
+        },
+        "peer_expand": {
+            "type": "string",
+            "default": "false"
+        },
+        "show_thumbnail": {
+            "type": "string",
+            "default": "false"
+        },
+        "show_excerpt": {
+            "type": "string",
+            "default": "true"
+        },
+        "image_size": {
+            "type": "string",
+            "default": "medium"
+        },
+        "columns": {
+            "type": "string",
+            "default": "1"
+        },
+        "format": {
+            "type": "string",
+            "default": "div"
+        },
+        "template": {
+            "type": "string",
+            "default": "default"
+        },
+        "meta": {
+            "type": "string",
+            "default": "{date} \u00b7 {label}"
+        },
+        "prepend": {
+            "type": "string",
+            "default": ""
+        },
+        "append": {
+            "type": "string",
+            "default": ""
+        },
+        "cache_ttl": {
+            "type": "string",
+            "default": ""
+        },
+        "no_results_message": {
+            "type": "string",
+            "default": ""
+        },
+        "class": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "example": {},
+    "editorScript": "file:./build/index.js"
+}

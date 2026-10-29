@@ -1,0 +1,94 @@
+# WordPress
+*.log
+.htaccess
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# AI Coding Assistants
+.claude/
+.cursor/
+.windsurf/
+.aider/
+.codeium/
+*.aider.chat.history.md
+.copilot-workspace/
+CLAUDE.md
+# .github/ is committed (workflows, issue templates); only Copilot/AI config is ignored:
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+
+# Node.js (if using build tools)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Composer
+vendor/
+composer.lock
+
+# Build artifacts
+*.zip
+release/
+dist/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.*.swp
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Developer tooling config — commit only the portable packaging script
+phpcs.xml
+utils/*
+!utils/package.sh
+
+# Development and testing
+.phpunit.result.cache
+tests/_output/
+tests/_support/_generated/
+coverage/
+docs/TEST-PLAN.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# WordPress Plugin Specific
+wp-content/
+uploads/
+*.sql
+*.sql.gz
+*.sql.zip
+*.tar.gz
+
+# Plugin Development
+.sass-cache/
+*.map
+*.min.js.map
+*.min.css.map

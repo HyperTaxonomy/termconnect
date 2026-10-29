@@ -1,0 +1,186 @@
+/* TermConnect — Term Edit: External Links component
+ *
+ * Provides self-contained styles for the External Links panel on term edit
+ * screens. When HyperTaxonomy is active its CSS also applies (same class names);
+ * these rules ensure the component is usable when HT is inactive.
+ */
+
+/* ---- Width constraint: match native term-edit field width ---- */
+.tc-external-links-field td {
+    max-width: 95%;
+    box-sizing: border-box;
+}
+
+
+/* ---- Pill container fallback (when HT is inactive).
+   .htax-links-container is defined in HT's htax-term-edit.css.
+   .tc-links-container mirrors those styles for standalone use.
+   width:95% matches native WordPress term-edit field widths. ---- */
+.tc-links-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    padding: 4px;
+    min-height: 38px; /* floor matches HT: 1 row (24px incl. margin) + 8px padding + 2px border + 4px buffer */
+    max-height: 166px; /* matches HT htax-tag-container: 5 rows */
+    overflow-y: auto;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    width: 95%;
+    max-width: 600px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* ---- External link pills — TC-owned, identical style to HT's base pill ---- */
+.tc-link-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 5px;
+    background: #f0f0f1;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 13px;
+    margin: 1px;
+    position: relative;
+    cursor: default;
+    white-space: nowrap;
+    height: 22px;
+    line-height: 1.4;
+}
+
+/* Local (editable) pills — subtle blue tint */
+.tc-link-pill-local {
+    background: #edf2fa;
+    border-color: #a5b4cf;
+}
+
+/* Delegated (read-only) pills — subtle green tint, dashed border */
+.tc-link-pill-delegated {
+    background: #edf7ed;
+    border-color: #a5c7a5;
+    border-style: dashed;
+}
+
+/* Suppressed local pill: overridden by a delegated link on the same site */
+.tc-link-pill-suppressed {
+    opacity: .5;
+}
+
+.tc-link-pill-remove {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 4px;
+    padding: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+}
+
+.tc-link-pill-remove:hover {
+    color: #d63638;
+}
+
+/* ---- Add button — TC-owned, identical style to HT's htax-group-add-btn ---- */
+.tc-links-add-btn {
+    background: #fff;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    color: #50575e;
+    cursor: pointer;
+    padding: 0;
+    width: 22px;
+    height: 22px;
+    min-height: 0 !important; /* prevent WP admin button min-height from inflating cross-size */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin: 1px;
+    transition: border-color 0.1s, color 0.1s;
+}
+
+.tc-links-add-btn:hover {
+    border-color: #2271b1;
+    color: #2271b1;
+    background: #f0f6fc;
+}
+
+.tc-links-add-btn .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+}
+
+/* ---- External links dropdown — TC-owned, identical style to HT's htax-group-dropdown ---- */
+.tc-links-dropdown {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    min-width: 240px;
+    max-width: 360px;
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+/* ---- Dropdown rows ---- */
+.tc-links-dd-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.tc-links-dd-row label:hover {
+    background: #f6f7f7;
+}
+
+.tc-links-dd-preview {
+    font-size: 11px;
+    color: #666;
+    padding: 0 10px 4px 34px;
+}
+
+/* ---- Delegated Identity ---- */
+.tc-di-status-ok     { color: #2a9d2a; font-size: 12px; }
+.tc-di-status-warning { color: #d63638; font-size: 12px; }
+
+/* Pending pill: no additional styling — looks identical to committed pills */
+
+/* Delegation suggestions list — matches the .tc-links-dd-row row style */
+.tc-di-suggestions {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    border-top: 1px solid #f0f0f1;
+}
+
+.tc-di-suggestions li {
+    padding: 5px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tc-di-suggestions li:hover,
+.tc-di-suggestions li:focus {
+    background: #f6f7f7;
+}

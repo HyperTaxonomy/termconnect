@@ -1,0 +1,175 @@
+/**
+ * Styles for [tc_peer_browse] — the interactive topic browser.
+ *
+ * Only the facet controls (pills, suggestions, match/source/sort, pager) live
+ * here, scoped under .tc-peer-browse. The result grid, cards, and uniform
+ * thumbnails come from the shared tc-post-list.css base (a dependency).
+ */
+
+.tc-peer-browse {
+	margin: 1.5em 0;
+}
+
+/* --- Controls bar --------------------------------------------------------- */
+
+.tc-pb-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 1em;
+	margin-bottom: 1.25em;
+}
+
+.tc-pb-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35em;
+}
+
+.tc-pb-pills-field {
+	position: relative;
+	flex: 1 1 16em;
+	min-width: 12em;
+}
+
+.tc-pb-label {
+	font-size: 0.8em;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	opacity: 0.7;
+}
+
+/* Pillbox + input */
+.tc-pb-pillbox {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4em;
+	padding: 0.35em 0.45em;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	min-height: 2.2em;
+}
+
+.tc-pb-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3em;
+	padding: 0.15em 0.55em;
+	border-radius: 999px;
+	background: rgba( 127, 127, 127, 0.18 );
+	font-size: 0.9em;
+	line-height: 1.6;
+	white-space: nowrap;
+}
+
+.tc-pb-remove {
+	border: 0;
+	background: none;
+	cursor: pointer;
+	padding: 0;
+	margin: 0;
+	font-size: 1.1em;
+	line-height: 1;
+	opacity: 0.65;
+	color: inherit;
+}
+
+.tc-pb-remove:hover,
+.tc-pb-remove:focus {
+	opacity: 1;
+}
+
+.tc-pb-input {
+	flex: 1 1 6em;
+	min-width: 6em;
+	border: 0;
+	outline: none;
+	background: transparent;
+	padding: 0.2em;
+	font: inherit;
+	color: inherit;
+}
+
+/* Suggestions dropdown */
+.tc-pb-suggest {
+	position: absolute;
+	z-index: 20;
+	top: 100%;
+	left: 0;
+	right: 0;
+	margin: 0.25em 0 0;
+	padding: 0;
+	list-style: none;
+	max-height: 16em;
+	overflow-y: auto;
+	border: 1px solid rgba( 127, 127, 127, 0.4 );
+	border-radius: 4px;
+	background: #fff;
+	box-shadow: 0 4px 14px rgba( 0, 0, 0, 0.12 );
+}
+
+.tc-pb-suggest-item {
+	padding: 0.45em 0.7em;
+	cursor: pointer;
+}
+
+.tc-pb-suggest-item.is-active,
+.tc-pb-suggest-item:hover {
+	background: rgba( 127, 127, 127, 0.15 );
+}
+
+/* Match radio group */
+.tc-pb-match-field {
+	gap: 0.2em;
+}
+
+.tc-pb-radio {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3em;
+	font-size: 0.95em;
+	margin-right: 0.6em;
+}
+
+.tc-pb-scope,
+.tc-pb-sort {
+	font: inherit;
+	padding: 0.3em 0.4em;
+}
+
+/* --- Results -------------------------------------------------------------- */
+
+.tc-peer-browse.tc-pb-loading .tc-pb-results {
+	opacity: 0.55;
+	transition: opacity 0.15s ease;
+}
+
+.tc-pb-empty,
+.tc-pb-no-results {
+	opacity: 0.7;
+	font-style: italic;
+}
+
+/* --- Pager ---------------------------------------------------------------- */
+
+.tc-pb-pager {
+	margin-top: 1.25em;
+	text-align: center;
+}
+
+.tc-pb-more {
+	font: inherit;
+	cursor: pointer;
+	padding: 0.5em 1.4em;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	background: transparent;
+	color: inherit;
+}
+
+.tc-pb-more:hover,
+.tc-pb-more:focus {
+	background: rgba( 127, 127, 127, 0.12 );
+}

@@ -1,0 +1,119 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "termconnect/peer-browse",
+    "version": "1.0.0",
+    "title": "Peer Browse",
+    "category": "termconnect",
+    "icon": "search",
+    "description": "An interactive topic browser: visitors pick terms and see matching posts from this site and configured peer sites and feeds.",
+    "keywords": [
+        "peer",
+        "browse",
+        "topics",
+        "facet",
+        "federated",
+        "termconnect"
+    ],
+    "supports": {
+        "html": false,
+        "align": false
+    },
+    "textdomain": "termconnect",
+    "attributes": {
+        "taxonomy": {
+            "type": "string",
+            "default": "post_tag"
+        },
+        "terms": {
+            "type": "string",
+            "default": ""
+        },
+        "match": {
+            "type": "string",
+            "default": "any"
+        },
+        "scope": {
+            "type": "string",
+            "default": "all"
+        },
+        "orderby": {
+            "type": "string",
+            "default": "modified"
+        },
+        "peers": {
+            "type": "string",
+            "default": ""
+        },
+        "peer_expand": {
+            "type": "string",
+            "default": "false"
+        },
+        "platforms": {
+            "type": "string",
+            "default": ""
+        },
+        "foaf_depth": {
+            "type": "string",
+            "default": "0"
+        },
+        "per_page": {
+            "type": "string",
+            "default": "10"
+        },
+        "max_results": {
+            "type": "string",
+            "default": "100"
+        },
+        "columns": {
+            "type": "string",
+            "default": "1"
+        },
+        "show_thumbnail": {
+            "type": "string",
+            "default": "true"
+        },
+        "show_excerpt": {
+            "type": "string",
+            "default": "true"
+        },
+        "image_size": {
+            "type": "string",
+            "default": "medium"
+        },
+        "meta": {
+            "type": "string",
+            "default": "{date} · {label}"
+        },
+        "prepend": {
+            "type": "string",
+            "default": ""
+        },
+        "append": {
+            "type": "string",
+            "default": ""
+        },
+        "no_results_message": {
+            "type": "string",
+            "default": ""
+        },
+        "class": {
+            "type": "string",
+            "default": ""
+        },
+        "show_match": {
+            "type": "string",
+            "default": "true"
+        },
+        "show_scope": {
+            "type": "string",
+            "default": "false"
+        },
+        "show_sort": {
+            "type": "string",
+            "default": "false"
+        }
+    },
+    "example": {},
+    "editorScript": "file:./build/index.js"
+}

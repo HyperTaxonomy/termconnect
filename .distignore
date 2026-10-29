@@ -1,0 +1,38 @@
+# Files and directories excluded from the distributed plugin (wp.org SVN).
+# Used by the 10up/action-wordpress-plugin-deploy GitHub Action.
+# Keeps: build/ (compiled block assets), languages/ (bundled .pot/.po/.mo/.json).
+
+# Version control / CI
+/.git
+/.github
+/.gitignore
+/.distignore
+
+# wp.org SVN assets (icon/banner/screenshots) — published to assets/, not trunk/
+/.wordpress-org
+
+# Dependencies and build tooling
+/node_modules
+/vendor
+webpack.config.js
+package.json
+package-lock.json
+
+# Block source (compiled into each block's build/ directory)
+/src
+/blocks/shared
+/blocks/*/src
+
+# Project tooling and dev-only files
+/utils
+/dist
+/release
+/tests
+phpcs.xml
+CLAUDE.md
+
+# Editor / OS cruft
+/.vscode
+/.idea
+*.map
+*.log
