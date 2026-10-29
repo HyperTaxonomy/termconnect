@@ -457,6 +457,93 @@ function tc_external_get_term_data( string $origin, string $taxonomy, int $term_
     return $data;
 }
 
+/**
+ * Batched counterpart to tc_external_get_term_data() for FOAF discovery: fetches
+ * htax_includes/tc_links for many terms in the same taxonomy on one peer with one
+ * HTTP request per up-to-100 term IDs, instead of one request per term.
+ *
+ * Uses the REST collection endpoint's `include` param (WP core since 4.7) rather
+ * than the single-term endpoint. Shares the exact same per-term transient cache
+ * keys as tc_external_get_term_data(), so: (a) any term already cached from a
+ * prior single or batched fetch is served from cache and never requested again,
+ * and (b) a term fetched here is cached under the same key a later single-term
+ * tc_external_get_term_data() call for it would also read.
+ *
+ * @since 1.0.0
+ * @param string $origin   Peer site origin.
+ * @param string $taxonomy Taxonomy slug (same for every ID in $term_ids).
+ * @param int[]  $term_ids Remote term IDs to fetch.
+ * @return array<int, array{htax_includes: array, tc_links: array}> term_id => data,
+ *         one entry for every requested ID (empty defaults for any not resolved).
+ */
+function tc_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array {
+    $empty  = array( 'htax_includes' => array(), 'tc_links' => array() );
+    $result = array();
+
+    $missing = array();
+    foreach ( array_unique( array_map( 'intval', $term_ids ) ) as $term_id ) {
+        $cache_key = 'tc_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
+        $cached    = get_transient( $cache_key );
+        if ( false !== $cached ) {
+            $result[ $term_id ] = (array) $cached;
+        } else {
+            $missing[] = $term_id;
+        }
+    }
+
+    if ( empty( $missing ) ) {
+        return $result;
+    }
+
+    $settings = get_option( 'tc_settings', array() );
+    $ttl      = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
+    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+
+    // REST collections cap per_page at 100 by default; chunk accordingly.
+    foreach ( array_chunk( $missing, 100 ) as $chunk ) {
+        $url = $origin . '/wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
+            'include'  => $chunk,
+            '_fields'  => 'id,htax_includes,tc_links',
+            'per_page' => count( $chunk ),
+        ) );
+
+        $response = wp_remote_get( $url, array(
+            'timeout'    => 5,
+            'user-agent' => 'TermConnect/' . TC_VERSION,
+            'headers'    => array( 'X-TermConnect' => TC_VERSION ),
+            'sslverify'  => true,
+        ) );
+
+        $by_id = array();
+        if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+            $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+            if ( is_array( $body ) ) {
+                foreach ( $body as $item ) {
+                    if ( ! is_array( $item ) || empty( $item['id'] ) ) {
+                        continue;
+                    }
+                    $by_id[ (int) $item['id'] ] = array(
+                        'htax_includes' => is_array( $item['htax_includes'] ?? null ) ? $item['htax_includes'] : array(),
+                        'tc_links'      => is_array( $item['tc_links'] ?? null )      ? $item['tc_links']      : array(),
+                    );
+                }
+            }
+        }
+        // $by_id stays empty on any request-level failure — every ID in this
+        // chunk falls through to the negative-cache branch below, same as a
+        // failed single-term tc_external_get_term_data() call.
+
+        foreach ( $chunk as $term_id ) {
+            $cache_key = 'tc_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
+            $data      = $by_id[ $term_id ] ?? $empty;
+            set_transient( $cache_key, $data, isset( $by_id[ $term_id ] ) ? $ttl : 300 );
+            $result[ $term_id ] = $data;
+        }
+    }
+
+    return $result;
+}
+
 // ==============================================================================
 // POST FETCHING — INTERNAL HELPERS
 // ==============================================================================
@@ -1493,6 +1580,23 @@ function tc_external_get_foaf_candidates(
     $candidates = array();
     $seen       = array(); // "peer_origin|slug" dedup keys
 
+    // Mechanism A data, fetched up front: one request per up-to-100 terms per
+    // taxonomy (via tc_external_get_term_data_batch()) rather than one request
+    // per term — $term_taxonomy_map can hold many terms for a single FOAF
+    // discovery call, and the single-term REST endpoint used previously meant
+    // one HTTP round-trip per term every time.
+    $tc_enabled = tc_external_is_tc_enabled( $origin );
+    $term_data_by_id = array();
+    if ( $tc_enabled ) {
+        $ids_by_taxonomy = array();
+        foreach ( $term_taxonomy_map as $term_id => $taxonomy ) {
+            $ids_by_taxonomy[ (string) $taxonomy ][] = (int) $term_id;
+        }
+        foreach ( $ids_by_taxonomy as $taxonomy => $ids ) {
+            $term_data_by_id += tc_external_get_term_data_batch( $origin, $taxonomy, $ids );
+        }
+    }
+
     foreach ( $term_taxonomy_map as $term_id => $taxonomy ) {
         $term_id = (int) $term_id;
 
@@ -1517,10 +1621,10 @@ function tc_external_get_foaf_candidates(
         }
 
         // Mechanism A: targeted term data fetch (TC-enabled sites only).
-        if ( ! tc_external_is_tc_enabled( $origin ) ) {
+        if ( ! $tc_enabled ) {
             continue;
         }
-        $term_data = tc_external_get_term_data( $origin, (string) $taxonomy, $term_id );
+        $term_data = $term_data_by_id[ $term_id ] ?? array( 'htax_includes' => array(), 'tc_links' => array() );
         foreach ( $term_data['tc_links'] as $link ) {
             if ( ! is_array( $link ) || ( $link['platform'] ?? '' ) !== 'wordpress' ) {
                 continue;
