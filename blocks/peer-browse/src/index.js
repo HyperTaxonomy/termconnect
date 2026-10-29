@@ -113,8 +113,8 @@ function Edit( { attributes, setAttributes } ) {
 					<ToggleControl
 						label={ __( 'Let peers expand via their own relationships', 'termconnect' ) }
 						help={ __( 'Each peer also matches via its own relationship graph, surfacing more content. Off by default.', 'termconnect' ) }
-						checked={ 'true' === peer_expand }
-						onChange={ ( on ) => setAttributes( { peer_expand: on ? 'true' : '' } ) }
+						checked={ toBool( peer_expand ) }
+						onChange={ ( b ) => setAttributes( { peer_expand: fromBool( b ) } ) }
 					/>
 					<TextControl
 						label={ __( 'Platforms', 'termconnect' ) }
