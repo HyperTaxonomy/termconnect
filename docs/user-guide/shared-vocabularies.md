@@ -97,8 +97,8 @@ When a delegated term's remote counterpart is not found in the sync fetch, TermC
 | Setting | Action |
 |---|---|
 | **Flag for review** (default) | `_tc_identity_source` status set to `not_found`; term kept; Site Health notice raised |
-| **Delete if no local posts or relationships** | Term deleted only when it has no tagged posts and no HyperTaxonomy relationship rows; otherwise flagged |
-| **Delete unconditionally** | Term deleted regardless of usage |
+| **Delete if no local posts or relationships** | Term deleted only when it has no tagged posts, no HyperTaxonomy relationship rows, and no direct child term that is itself a delegated mirror; otherwise flagged |
+| **Delete unconditionally** | Term deleted regardless of usage, including when it has delegated children (which are reparented to the grandparent, as normal for `wp_delete_term()`) |
 
 Configure per source in **Terms → Shared Vocabularies → Edit source → Missing terms**.
 

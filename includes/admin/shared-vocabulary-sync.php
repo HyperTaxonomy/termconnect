@@ -871,6 +871,12 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
  * The caller is responsible for setting status='not_found' on the identity source
  * before calling this function. Returns true if the term was deleted.
  *
+ * 'delete_clean' additionally refuses to delete (same as the usage checks) when the
+ * term has a direct child that is itself a delegated mirror, since deleting would
+ * reparent that child to the grandparent and detach it from its expected position.
+ * 'delete' is intentionally unconditional (per its documented contract) and does not
+ * check for this.
+ *
  * @param int    $local_term_id Local term ID.
  * @param string $taxonomy      Term taxonomy slug.
  * @param string $action        'flag' | 'delete_clean' | 'delete'.
@@ -907,6 +913,29 @@ function tc_sv_apply_orphan_action( int $local_term_id, string $taxonomy, string
             ) );
             if ( $rel_count > 0 ) {
                 return false;
+            }
+        }
+
+        // Deleting a hierarchical term reparents its direct children to the
+        // grandparent (wp_delete_term()'s own behavior). If a child is itself
+        // a delegated mirror, that silently detaches it from its expected
+        // position: the next sync recomputes its local_parent_id from the
+        // delegation map, finds no entry for the now-deleted parent, falls
+        // back to 0, and raises a spurious "misplaced" flag instead of the
+        // structural change this actually is. Leave the orphan for manual
+        // review (same as the usage checks above) rather than delete
+        // underneath an active child delegation.
+        $children = get_terms( array(
+            'taxonomy'   => $taxonomy,
+            'parent'     => $local_term_id,
+            'hide_empty' => false,
+            'fields'     => 'ids',
+        ) );
+        if ( ! is_wp_error( $children ) ) {
+            foreach ( $children as $child_id ) {
+                if ( tc_get_identity_source( (int) $child_id ) ) {
+                    return false;
+                }
             }
         }
     }
