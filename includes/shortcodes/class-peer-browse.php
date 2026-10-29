@@ -32,16 +32,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 class TC_Shortcode_PeerBrowse {
 
     /**
-     * Valid sort options: orderby value => label. Date/modified/title interleave
-     * across all sources; "relevance" groups by source (peer) first and ranks each
-     * source's own results by relevance, since cross-site relevance isn't comparable.
+     * Valid orderby values. Date/modified/title interleave across all sources;
+     * "relevance" groups by source (peer) first and ranks each source's own
+     * results by relevance, since cross-site relevance isn't comparable.
      */
-    private const SORT_OPTIONS = array(
-        'modified'                => 'Recently updated',
-        'date'                    => 'Newest',
-        'title'                   => 'Title',
-        'peer:asc,relevance:desc' => 'Relevance (grouped by site)',
-    );
+    private const SORT_OPTIONS = array( 'modified', 'date', 'title', 'peer:asc,relevance:desc' );
+
+    /**
+     * Translated label for a sort option.
+     *
+     * Each case passes a literal string to __() rather than a variable, so
+     * `wp i18n make-pot` can actually extract it — the previous design stored
+     * labels in SORT_OPTIONS and called __( $label, 'termconnect' ) with a
+     * variable argument, which WordPress's string-extraction tooling cannot
+     * see, so the labels could never be translated despite the __() wrapper.
+     *
+     * @param string $value One of the SORT_OPTIONS values.
+     * @return string Translated label.
+     */
+    private static function sort_label( string $value ): string {
+        switch ( $value ) {
+            case 'modified':
+                return __( 'Recently updated', 'termconnect' );
+            case 'date':
+                return __( 'Newest', 'termconnect' );
+            case 'title':
+                return __( 'Title', 'termconnect' );
+            case 'peer:asc,relevance:desc':
+                return __( 'Relevance (grouped by site)', 'termconnect' );
+            default:
+                return $value;
+        }
+    }
 
     public function __construct() {
         add_shortcode( 'tc_peer_browse', array( $this, 'shortcode_handler' ) );
@@ -146,7 +168,7 @@ class TC_Shortcode_PeerBrowse {
 
         $match   = in_array( $atts['match'], array( 'any', 'all' ), true ) ? $atts['match'] : 'any';
         $scope   = in_array( $atts['scope'], array( 'all', 'peers' ), true ) ? $atts['scope'] : 'all';
-        $orderby = isset( self::SORT_OPTIONS[ $atts['orderby'] ] ) ? $atts['orderby'] : 'modified';
+        $orderby = in_array( $atts['orderby'], self::SORT_OPTIONS, true ) ? $atts['orderby'] : 'modified';
 
         $wrapper_class = 'tc-peer-browse';
         if ( ! empty( $atts['class'] ) ) {
@@ -243,9 +265,9 @@ class TC_Shortcode_PeerBrowse {
             $html .= '<div class="tc-pb-field tc-pb-sort-field">';
             $html .= '<label class="tc-pb-label" for="' . esc_attr( $uid ) . '-sort">' . esc_html__( 'Sort', 'termconnect' ) . '</label>';
             $html .= '<select id="' . esc_attr( $uid ) . '-sort" class="tc-pb-sort">';
-            foreach ( self::SORT_OPTIONS as $value => $label ) {
+            foreach ( self::SORT_OPTIONS as $value ) {
                 $html .= '<option value="' . esc_attr( $value ) . '" ' . selected( $value, $orderby, false ) . '>'
-                       . esc_html( __( $label, 'termconnect' ) ) . '</option>';
+                       . esc_html( self::sort_label( $value ) ) . '</option>';
             }
             $html .= '</select>';
             $html .= '</div>';
@@ -395,7 +417,7 @@ class TC_Shortcode_PeerBrowse {
         $match   = ( isset( $_POST['match'] ) && 'all' === $_POST['match'] ) ? 'all' : 'any';
         $scope   = ( isset( $_POST['scope'] ) && 'peers' === $_POST['scope'] ) ? 'peers' : 'all';
         $orderby = isset( $_POST['orderby'] ) ? sanitize_text_field( wp_unslash( $_POST['orderby'] ) ) : 'modified';
-        if ( ! isset( self::SORT_OPTIONS[ $orderby ] ) ) {
+        if ( ! in_array( $orderby, self::SORT_OPTIONS, true ) ) {
             $orderby = 'modified';
         }
         $offset = max( 0, (int) ( $_POST['offset'] ?? 0 ) );
