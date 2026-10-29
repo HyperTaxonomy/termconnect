@@ -282,7 +282,11 @@ function tc_sv_sync_source( array $source ): array {
         if ( ! empty( $proposals ) ) {
             $existing_proposals = get_option( 'tc_merge_proposals', array() );
             $tc_settings        = get_option( 'tc_settings', array() );
-            $auto_merge         = ! empty( $tc_settings['auto_accept_redirects'] ) && ( wp_doing_ajax() || ( defined( 'DOING_CRON' ) && DOING_CRON ) );
+            // Auto-accept only applies to manual syncs (AJAX). A scheduled cron sync must
+            // always queue the proposal for manual review — see docs/user-guide/shared-vocabularies.md
+            // ("Merge proposals"): "a merge triggered during a manual sync (not cron) ... runs
+            // automatically without review."
+            $auto_merge         = ! empty( $tc_settings['auto_accept_redirects'] ) && wp_doing_ajax();
 
             foreach ( $proposals as $proposal_id => $proposal ) {
                 if ( $auto_merge && function_exists( 'htax_merge_terms' ) ) {
