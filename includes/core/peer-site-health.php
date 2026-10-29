@@ -28,6 +28,9 @@ const TC_PEER_UNREACHABLE_THRESHOLD = 10;
 const TC_PEER_DEGRADED_MULTIPLIER   = 4;
 // Fixed backoff TTL (seconds) when unreachable.
 const TC_PEER_UNREACHABLE_TTL       = 86400;
+// Minimum seconds between persisted option writes for failures that don't
+// change status (see tc_peer_site_health_record_failure()).
+const TC_PEER_HEALTH_MIN_WRITE_INTERVAL = 60;
 
 // ==============================================================================
 // STATE ACCESSORS
@@ -114,6 +117,18 @@ function tc_peer_site_health_record_success( string $slug ): void {
  * DEGRADED_THRESHOLD the backoff window grows to DEGRADED_MULTIPLIER × normal_ttl.
  * At UNREACHABLE_THRESHOLD it switches to a fixed UNREACHABLE_TTL.
  *
+ * The option write itself is throttled while status stays 'ok': nothing
+ * functionally depends on persisting every single failure immediately in that
+ * case (no backoff change happens), so writes below the degraded threshold are
+ * skipped unless at least TC_PEER_HEALTH_MIN_WRITE_INTERVAL seconds have passed
+ * since the last persisted failure — avoiding a DB write on every failed
+ * request from a chronically flaky peer under regular traffic. A throttled
+ * call is skipped entirely rather than deferred: the next failure's
+ * read-then-increment against the still-stale option naturally catches up the
+ * count, so a flaky peer still reaches DEGRADED/UNREACHABLE at roughly the
+ * same time — just with a slightly coarser count during the throttled window,
+ * and always written immediately on any actual status change.
+ *
  * @since 1.0.0
  * @param string $slug       Link-type slug.
  * @param string $error      Short error description (HTTP status or WP_Error message).
@@ -123,7 +138,10 @@ function tc_peer_site_health_record_failure( string $slug, string $error, int $n
     if ( '' === $slug ) {
         return;
     }
-    $state                          = tc_peer_site_health_get( $slug );
+    $state             = tc_peer_site_health_get( $slug );
+    $prev_status       = $state['status'];
+    $prev_last_failure = $state['last_failure'];
+
     $state['consecutive_failures'] += 1;
     $state['last_failure']          = time();
     $state['last_error']            = $error;
@@ -140,7 +158,13 @@ function tc_peer_site_health_record_failure( string $slug, string $error, int $n
         $state['next_allowed'] = 0;
     }
 
-    tc_peer_site_health_save( $slug, $state );
+    $should_write = $state['status'] !== $prev_status
+        || 'ok' !== $state['status']
+        || ( time() - (int) $prev_last_failure ) >= TC_PEER_HEALTH_MIN_WRITE_INTERVAL;
+
+    if ( $should_write ) {
+        tc_peer_site_health_save( $slug, $state );
+    }
 }
 
 // ==============================================================================
