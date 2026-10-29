@@ -371,39 +371,41 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): void {
 
     $placeholders = implode( ',', array_fill( 0, count( $term_ids ), '%d' ) );
 
+    // Restore original names/descriptions via wp_update_term() — one call per term,
+    // combining both restores where a term needs both — so edit_term/edited_term fire
+    // as they do for every other restore path in this file (tc_remove_identity_source(),
+    // tc_update_identity_sync_flags()). The previous raw UPDATE ... INNER JOIN termmeta
+    // statements only called clean_term_cache() afterward, leaving HyperTaxonomy's search
+    // index (or any other edited_term listener) stale after a bulk source removal.
+    // A wp_update_term() failure for one term is logged and does not abort the rest of
+    // the cleanup below, matching how those two sibling functions handle restore errors.
+    foreach ( $term_ids as $term_id ) {
+        $term = get_term( $term_id );
+        if ( ! $term || is_wp_error( $term ) ) {
+            continue;
+        }
+        $restores = array();
+        if ( in_array( $term_id, $name_restore_ids, true ) ) {
+            $original_name = get_term_meta( $term_id, TC_META_ORIGINAL_NAME, true );
+            if ( false !== $original_name && '' !== $original_name ) {
+                $restores['name'] = $original_name;
+            }
+        }
+        if ( in_array( $term_id, $desc_restore_ids, true ) ) {
+            $original_desc = get_term_meta( $term_id, TC_META_ORIGINAL_DESCRIPTION, true );
+            if ( false !== $original_desc ) {
+                $restores['description'] = $original_desc;
+            }
+        }
+        if ( ! empty( $restores ) ) {
+            $result = wp_update_term( $term_id, $term->taxonomy, $restores );
+            if ( is_wp_error( $result ) ) {
+                error_log( 'TermConnect: bulk delegation restore failed for term ' . $term_id . ': ' . $result->get_error_message() );
+            }
+        }
+    }
+
     $wpdb->query( 'START TRANSACTION' );
-
-    // Restore original names only for terms that had sync_name enabled and have a backup.
-    if ( ! empty( $name_restore_ids ) ) {
-        $name_placeholders = implode( ',', array_fill( 0, count( $name_restore_ids ), '%d' ) );
-        $result = $wpdb->query( $wpdb->prepare(
-            "UPDATE {$wpdb->terms} t
-             INNER JOIN {$wpdb->termmeta} tm ON tm.term_id = t.term_id AND tm.meta_key = %s
-             SET t.name = tm.meta_value
-             WHERE tm.meta_value != '' AND t.term_id IN ({$name_placeholders})",
-            array_merge( array( TC_META_ORIGINAL_NAME ), $name_restore_ids )
-        ) );
-        if ( false === $result ) {
-            $wpdb->query( 'ROLLBACK' );
-            return;
-        }
-    }
-
-    // Restore original descriptions only for terms that had sync_description enabled.
-    if ( ! empty( $desc_restore_ids ) ) {
-        $desc_placeholders = implode( ',', array_fill( 0, count( $desc_restore_ids ), '%d' ) );
-        $result = $wpdb->query( $wpdb->prepare(
-            "UPDATE {$wpdb->term_taxonomy} tt
-             INNER JOIN {$wpdb->termmeta} tm ON tm.term_id = tt.term_id AND tm.meta_key = %s
-             SET tt.description = tm.meta_value
-             WHERE tt.term_id IN ({$desc_placeholders})",
-            array_merge( array( TC_META_ORIGINAL_DESCRIPTION ), $desc_restore_ids )
-        ) );
-        if ( false === $result ) {
-            $wpdb->query( 'ROLLBACK' );
-            return;
-        }
-    }
 
     foreach ( array(
         TC_META_IDENTITY_SOURCE,
