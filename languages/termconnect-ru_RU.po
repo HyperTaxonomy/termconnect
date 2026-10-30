@@ -3301,7 +3301,6 @@ msgid "Peer Browse"
 msgstr "Peer Browse"
 
 #: blocks/peer-browse/block.json
-#, fuzzy
 msgctxt "block description"
 msgid "An interactive topic browser: visitors pick terms and see matching posts from this site and configured peer sites and feeds."
 msgstr "Интерактивный обзор тем: посетители выбирают термины и видят подходящие записи с этого сайта, а также с настроенных сторонних сайтов и лент."
@@ -3342,7 +3341,6 @@ msgid "Peer Posts"
 msgstr "Peer Posts"
 
 #: blocks/peer-posts/block.json
-#, fuzzy
 msgctxt "block description"
 msgid "Displays related posts from configured peer WordPress sites, scored by shared term relevance."
 msgstr "Выводит связанные записи с настроенных сторонних сайтов WordPress, упорядоченные по релевантности общих терминов."
