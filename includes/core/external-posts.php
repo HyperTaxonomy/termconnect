@@ -1583,8 +1583,8 @@ function tc_external_get_foaf_candidates(
     // Mechanism A data, fetched up front: one request per up-to-100 terms per
     // taxonomy (via tc_external_get_term_data_batch()) rather than one request
     // per term — $term_taxonomy_map can hold many terms for a single FOAF
-    // discovery call, and the single-term REST endpoint used previously meant
-    // one HTTP round-trip per term every time.
+    // discovery call, and the single-term REST endpoint would cost one HTTP
+    // round-trip per term.
     $tc_enabled = tc_external_is_tc_enabled( $origin );
     $term_data_by_id = array();
     if ( $tc_enabled ) {

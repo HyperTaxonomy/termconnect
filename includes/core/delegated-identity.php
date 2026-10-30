@@ -778,13 +778,9 @@ function tc_sv_propagate_descendants( int $term_id, array $source ): void {
  * the same connection when a second is acquired. None of this plugin's lock
  * sections nest, so that constraint does not apply here.
  *
- * The default timeout intentionally mirrors the fail-fast behavior of the
- * transient-retry pattern this replaces (3 attempts at 0.2s apart, ~0.6s):
- * these critical sections are all short, so a caller that can't get the
- * lock quickly is almost always a dead/expired lock-holder's crashed
- * request, not one still legitimately working — better to fail fast (and,
- * in AJAX contexts, let the user retry) than block the current request for
- * a long wait in a cron tick or page load.
+ * The default timeout is short on purpose: these critical sections are all
+ * brief, so failing fast (and, in AJAX contexts, letting the user retry) is
+ * better than blocking a cron tick or page load on a long wait.
  *
  * @param string $name    Lock name — must match exactly between every caller
  *                         sharing the same critical section.
@@ -793,7 +789,7 @@ function tc_sv_propagate_descendants( int $term_id, array $source ): void {
  */
 function tc_acquire_mysql_lock( string $name, int $timeout = 2 ): bool {
     global $wpdb;
-    return '1' === $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $name, $timeout ) );
+    return '1' === $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', tc_mysql_lock_name( $name ), $timeout ) );
 }
 
 /**
@@ -803,7 +799,24 @@ function tc_acquire_mysql_lock( string $name, int $timeout = 2 ): bool {
  */
 function tc_release_mysql_lock( string $name ): void {
     global $wpdb;
-    $wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $name ) );
+    $wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', tc_mysql_lock_name( $name ) ) );
+}
+
+/**
+ * Scope an advisory lock name to this site.
+ *
+ * GET_LOCK() names are global to the whole MySQL server, not per database, so
+ * unscoped names would make separate WordPress installs sharing a server (and
+ * the subsites of a multisite network) block each other's syncs. Prefixing a
+ * hash of the database name and table prefix keeps each site's locks
+ * independent while staying under MySQL's 64-character lock-name limit.
+ *
+ * @param string $name Lock name used by callers.
+ * @return string Site-scoped lock name.
+ */
+function tc_mysql_lock_name( string $name ): string {
+    global $wpdb;
+    return substr( md5( DB_NAME . '|' . $wpdb->prefix ), 0, 12 ) . '_' . $name;
 }
 
 /**
@@ -1174,21 +1187,31 @@ add_action( 'tc_refresh_identity_caches', 'tc_cron_refresh_identity_caches' );
  * this tick stay stale (last_fetched unchanged) and are simply picked up on
  * the next scheduled run (twicedaily, per termconnect.php) — nothing here is
  * a queue that loses items by being skipped.
+ *
+ * Stale terms are refreshed oldest-first. A fixed order would let the same
+ * leading terms (which go stale again after TC_IDENTITY_CACHE_TTL) consume the
+ * budget every run, so terms near the end of the list would never refresh.
  */
 function tc_cron_refresh_identity_caches(): void {
     $deadline = time() + TC_CRON_TIME_BUDGET;
-    $term_ids = tc_get_delegated_term_ids();
-    foreach ( $term_ids as $term_id ) {
-        if ( time() >= $deadline ) {
-            break;
-        }
+
+    $stale = array();
+    foreach ( tc_get_delegated_term_ids() as $term_id ) {
         $source = tc_get_identity_source( (int) $term_id );
         if ( null === $source ) {
             continue;
         }
-        if ( time() - (int) $source['last_fetched'] < TC_IDENTITY_CACHE_TTL ) {
-            continue;
+        $last_fetched = (int) $source['last_fetched'];
+        if ( time() - $last_fetched >= TC_IDENTITY_CACHE_TTL ) {
+            $stale[ (int) $term_id ] = $last_fetched;
         }
-        tc_refresh_identity_cache( (int) $term_id );
+    }
+    asort( $stale );
+
+    foreach ( array_keys( $stale ) as $term_id ) {
+        if ( time() >= $deadline ) {
+            break;
+        }
+        tc_refresh_identity_cache( $term_id );
     }
 }

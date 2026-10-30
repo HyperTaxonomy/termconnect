@@ -34,6 +34,10 @@ tc_external_search_terms( string $origin, string $taxonomy, string $search, int 
 
 tc_external_get_term_data( string $origin, string $taxonomy, int $term_id ): array
 // Fetches tc_links and htax_includes for a remote term (for FOAF discovery).
+
+tc_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array
+// Same data for many terms at once, keyed by term ID: one collection request per
+// up to 100 uncached terms. Shares tc_external_get_term_data()'s per-term cache.
 ```
 
 ### Author Search (peer users)
