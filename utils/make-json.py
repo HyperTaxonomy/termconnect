@@ -98,13 +98,25 @@ locale = sys.argv[3] if len(sys.argv) > 3 else 'ru_RU'
 po = os.path.join(root, 'languages', '%s-%s.po' % (domain, locale))
 entries = parse_po(po)
 
-# Plural-Forms from header.
+# Plural-Forms and PO-Revision-Date from the header.
 plural_forms = 'nplurals=2; plural=(n != 1);'
+po_revision = None
 for e in entries:
     if e['id'] == '':
-        m = re.search(r'Plural-Forms:\s*([^\n]+)', unescape(e['strs'].get(0, '')))
+        header = unescape(e['strs'].get(0, ''))
+        m = re.search(r'Plural-Forms:\s*([^\n]+)', header)
         if m: plural_forms = m.group(1).strip()
+        m = re.search(r'PO-Revision-Date:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\s*([+-]\d{4})', header)
+        if m:
+            po_revision = datetime.datetime.strptime(m.group(1) + m.group(2), '%Y-%m-%d %H:%M%z')
         break
+
+# The JSON's translation-revision-date comes from the .po (not the current time), so
+# regenerating unchanged translations produces byte-identical files. Falls back to the
+# .po file's modification time when the header is missing or still the template placeholder.
+if po_revision is None:
+    po_revision = datetime.datetime.fromtimestamp(os.path.getmtime(po), datetime.timezone.utc)
+revision = po_revision.astimezone(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S+0000')
 
 # Reviewed, translated JS strings, each with the set of source files referencing it.
 js_entries = []
@@ -147,7 +159,6 @@ for pair in [p for p in os.environ.get('EXTRA_HANDLES', '').split(',') if p]:
         sys.exit('EXTRA_HANDLES file not found: %s' % rel)
     scripts.append((handle, entry))
 
-revision = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S+0000')
 for handle, entry in scripts:
     sources = bundle_sources(root, entry)
     messages = {'': {'domain': 'messages', 'lang': locale, 'plural-forms': plural_forms}}
