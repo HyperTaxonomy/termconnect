@@ -9,7 +9,7 @@
 set -e
 
 PLUGIN_SLUG="termconnect"
-SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -W)"
+SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST="$SRC/dist"
 ZIP="$DIST/$PLUGIN_SLUG.zip"
 
@@ -76,9 +76,6 @@ dst  = sys.argv[2]
 name = sys.argv[3]
 
 rules = parse_gitignore(os.path.join(src, '.gitignore'))
-
-# blocks/*/build/ is gitignored (builds not committed) but must be in the zip.
-rules = [(p, d, a) for (p, d, a) in rules if p != 'blocks/*/build/']
 
 # Package-only exclusions: committed to git but not for distribution.
 rules += [

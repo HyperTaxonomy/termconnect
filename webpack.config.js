@@ -1,15 +1,5 @@
 const path = require( 'path' );
-
-// Resolve @wordpress/scripts from TC's own node_modules first,
-// then fall back to HT's sibling node_modules for local development.
-let wpScriptsConfig;
-try {
-	wpScriptsConfig = require.resolve( '@wordpress/scripts/config/webpack.config' );
-} catch ( e ) {
-	// Fallback to sibling HT install during local development.
-	wpScriptsConfig = path.resolve( __dirname, '../hypertaxonomy/node_modules/@wordpress/scripts/config/webpack.config' );
-}
-const defaultConfig = require( wpScriptsConfig );
+const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 
 // Add an entry here for each new block.
 const blocks = [

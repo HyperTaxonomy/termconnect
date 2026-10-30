@@ -27,8 +27,6 @@ CLAUDE.md
 node_modules/
 npm-debug.log
 yarn-error.log
-package-lock.json
-yarn.lock
 
 # Composer
 vendor/
@@ -62,10 +60,12 @@ desktop.ini
 *.bak
 *.orig
 
-# Developer tooling config — commit only the portable packaging script
+# Developer tooling config — commit only the packaging/translation scripts
 phpcs.xml
 utils/*
 !utils/package.sh
+!utils/make-pot.sh
+!utils/make-json.py
 
 # Development and testing
 .phpunit.result.cache
