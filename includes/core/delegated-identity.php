@@ -329,8 +329,14 @@ function tc_update_identity_sync_flags( int $term_id, bool $sync_name, bool $syn
  * restoring original names and descriptions where they were backed up before syncing.
  *
  * @param string $sv_source_id Shared vocabulary source UUID.
+ * @return array[] One entry per term whose name/description restore failed:
+ *                 { term_id: int, message: string }. The original-name/description
+ *                 backup meta is kept for these terms (every other delegation meta
+ *                 key is still removed), so the data isn't lost — just left for
+ *                 manual follow-up, since there's no automated retry for a source
+ *                 that's already been deleted.
  */
-function tc_sv_remove_delegations_by_source( string $sv_source_id ): void {
+function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
     global $wpdb;
 
     $rows = $wpdb->get_results( $wpdb->prepare(
@@ -347,7 +353,7 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): void {
     }
 
     if ( empty( $term_ids ) ) {
-        return;
+        return array();
     }
 
     // Separate which terms opted out of name/description sync so locally-edited
@@ -377,8 +383,13 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): void {
     // tc_update_identity_sync_flags()). The previous raw UPDATE ... INNER JOIN termmeta
     // statements only called clean_term_cache() afterward, leaving HyperTaxonomy's search
     // index (or any other edited_term listener) stale after a bulk source removal.
-    // A wp_update_term() failure for one term is logged and does not abort the rest of
-    // the cleanup below, matching how those two sibling functions handle restore errors.
+    // A wp_update_term() failure for one term (most plausibly a name collision with an
+    // unrelated term) is reported in the return value and does not abort the rest of the
+    // cleanup below — but the term's original-name/description backup meta is kept out
+    // of the deletion pass further down, so the data needed to retry the restore by hand
+    // isn't destroyed along with it.
+    $failed_term_ids = array();
+    $failures        = array();
     foreach ( $term_ids as $term_id ) {
         $term = get_term( $term_id );
         if ( ! $term || is_wp_error( $term ) ) {
@@ -400,27 +411,39 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): void {
         if ( ! empty( $restores ) ) {
             $result = wp_update_term( $term_id, $term->taxonomy, $restores );
             if ( is_wp_error( $result ) ) {
-                error_log( 'TermConnect: bulk delegation restore failed for term ' . $term_id . ': ' . $result->get_error_message() );
+                $message            = $result->get_error_message();
+                $failed_term_ids[]  = $term_id;
+                $failures[]         = array( 'term_id' => $term_id, 'message' => $message );
+                error_log( 'TermConnect: bulk delegation restore failed for term ' . $term_id . ': ' . $message );
             }
         }
     }
 
     $wpdb->query( 'START TRANSACTION' );
 
+    // TC_META_ORIGINAL_NAME/DESCRIPTION are skipped for terms whose restore failed above,
+    // so a future manual fix (e.g. renaming the colliding term out of the way) has the
+    // backup value to restore from — every other delegation meta key is cleared for all
+    // affected terms regardless, since the source itself is gone either way.
+    $backup_term_ids = array_values( array_diff( $term_ids, $failed_term_ids ) );
     foreach ( array(
-        TC_META_IDENTITY_SOURCE,
-        TC_META_DELEGATED_LINKS_DATA,
-        TC_META_ORIGINAL_NAME,
-        TC_META_ORIGINAL_DESCRIPTION,
-        TC_META_REL_SYNC_ISSUES,
-    ) as $meta_key ) {
-        $result = $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$wpdb->termmeta} WHERE meta_key = %s AND term_id IN ({$placeholders})",
-            array_merge( array( $meta_key ), $term_ids )
+        TC_META_IDENTITY_SOURCE     => $term_ids,
+        TC_META_DELEGATED_LINKS_DATA => $term_ids,
+        TC_META_ORIGINAL_NAME       => $backup_term_ids,
+        TC_META_ORIGINAL_DESCRIPTION => $backup_term_ids,
+        TC_META_REL_SYNC_ISSUES     => $term_ids,
+    ) as $meta_key => $ids_for_key ) {
+        if ( empty( $ids_for_key ) ) {
+            continue;
+        }
+        $key_placeholders = implode( ',', array_fill( 0, count( $ids_for_key ), '%d' ) );
+        $result            = $wpdb->query( $wpdb->prepare(
+            "DELETE FROM {$wpdb->termmeta} WHERE meta_key = %s AND term_id IN ({$key_placeholders})",
+            array_merge( array( $meta_key ), $ids_for_key )
         ) );
         if ( false === $result ) {
             $wpdb->query( 'ROLLBACK' );
-            return;
+            return $failures;
         }
     }
 
@@ -431,7 +454,7 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): void {
     ) );
     if ( false === $result ) {
         $wpdb->query( 'ROLLBACK' );
-        return;
+        return $failures;
     }
 
     $wpdb->query( 'COMMIT' );
@@ -450,6 +473,8 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): void {
 
     tc_flush_delegated_term_ids();
     delete_transient( 'tc_stale_rel_term_ids' );
+
+    return $failures;
 }
 
 /**

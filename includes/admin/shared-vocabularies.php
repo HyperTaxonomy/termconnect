@@ -1057,6 +1057,7 @@ function tc_sv_render_page(): void {
             $.post(ajaxurl, {action:'tc_sv_delete', nonce:$(this).data('nonce'), id:$(this).data('id')})
              .done(function(resp){
                 if (resp.success){
+                    var warning = resp.data && resp.data.warning;
                     var $tbody = $row.closest('tbody');
                     $row.fadeOut(200, function(){
                         $(this).remove();
@@ -1065,6 +1066,7 @@ function tc_sv_render_page(): void {
                         var newCount = $tbody.find('tr').length;
                         $tab.find('span').remove();
                         if (newCount) { $tab.append($('<span style="margin-left:4px;background:#72aee6;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px">').text(newCount)); }
+                        if (warning) { alert(warning); }
                     });
                 } else { alert((resp.data && resp.data.message) || 'Error.'); }
              });

@@ -2894,3 +2894,10 @@ msgstr ""
 #: blocks/shared/peer-checklist.js:55
 msgid "(feed)"
 msgstr ""
+
+#: includes/admin/shared-vocabularies-ajax.php
+#, php-format
+msgid "Source removed, but the original name/description could not be restored for %d term — its synced values were left in place and the backup was kept for manual recovery."
+msgid_plural "Source removed, but the original name/description could not be restored for %d terms — their synced values were left in place and the backups were kept for manual recovery."
+msgstr[0] ""
+msgstr[1] ""

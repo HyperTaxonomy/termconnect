@@ -260,9 +260,27 @@ function tc_sv_ajax_delete(): void {
         }
     }
 
-    tc_sv_remove_delegations_by_source( $id );
+    $restore_failures = tc_sv_remove_delegations_by_source( $id );
 
-    wp_send_json_success();
+    $response = array();
+    if ( ! empty( $restore_failures ) ) {
+        // The source and its delegation meta are already gone either way; only the
+        // name/description restore itself failed for these terms (most likely a name
+        // collision with an unrelated term), and their original-name/description
+        // backup meta was deliberately kept so the restore can be finished by hand.
+        $response['warning'] = sprintf(
+            /* translators: %d: number of terms whose name/description could not be restored */
+            _n(
+                'Source removed, but the original name/description could not be restored for %d term — its synced values were left in place and the backup was kept for manual recovery.',
+                'Source removed, but the original name/description could not be restored for %d terms — their synced values were left in place and the backups were kept for manual recovery.',
+                count( $restore_failures ),
+                'termconnect'
+            ),
+            count( $restore_failures )
+        );
+    }
+
+    wp_send_json_success( $response );
 }
 
 /**
