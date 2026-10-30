@@ -11,17 +11,23 @@ def q(l):
     return m.group(1) if m else ''
 
 def unescape(s):
-    return s.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
+    # Single left-to-right pass: a sequential chain of .replace() calls would
+    # consume a literal "\\n" (escaped backslash followed by a literal letter
+    # n) as if it were "\n" (an escaped newline), corrupting the backslash.
+    return re.sub(r'\\(.)', lambda m: {'n': '\n', 't': '\t', '"': '"', '\\': '\\'}.get(m.group(1), m.group(1)), s)
 
 def parse_po(path):
     text = io.open(path, encoding='utf-8').read()
     entries = []
     for b in re.split(r'\n\n+', text):
-        e = {'ctx': None, 'id': None, 'plural': None, 'strs': {}, 'refs': []}
+        e = {'ctx': None, 'id': None, 'plural': None, 'strs': {}, 'refs': [], 'fuzzy': False}
         cur = None
         for l in b.split('\n'):
             if l.startswith('#:'):
                 e['refs'] += l[2:].split()
+            elif l.startswith('#,'):
+                if 'fuzzy' in [f.strip() for f in l[2:].split(',')]:
+                    e['fuzzy'] = True
             elif l.startswith('msgctxt '):
                 e['ctx'] = q(l); cur = ('ctx',)
             elif l.startswith('msgid_plural '):
@@ -53,7 +59,7 @@ entries = parse_po(po)
 plural_forms = 'nplurals=2; plural=(n != 1);'
 for e in entries:
     if e['id'] == '':
-        m = re.search(r'Plural-Forms:\s*([^\\]+)', unescape(e['strs'].get(0, '')))
+        m = re.search(r'Plural-Forms:\s*([^\n]+)', unescape(e['strs'].get(0, '')))
         if m: plural_forms = m.group(1).strip()
         break
 
@@ -61,6 +67,8 @@ for e in entries:
 messages = {'': {'domain': 'messages', 'lang': locale, 'plural-forms': plural_forms}}
 for e in entries:
     if not e['id']:
+        continue
+    if e['fuzzy']:
         continue
     if not any(r.split(':')[0].endswith('.js') for r in e['refs']):
         continue
