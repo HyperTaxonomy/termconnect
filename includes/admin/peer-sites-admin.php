@@ -807,6 +807,9 @@ function tc_handle_peer_site_delete(): void {
     } else {
         error_log( 'TermConnect: could not acquire tc_peer_health_lock to remove health entry for peer site "' . $slug . '".' );
     }
+    // The failure tally lives outside the health option; clear it too, or a peer
+    // re-added under the same slug would start from the old failure count.
+    tc_peer_health_tally_reset( $slug );
 
     unset( $types[ $slug ] );
     tc_set_link_types( $types );

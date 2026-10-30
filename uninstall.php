@@ -30,6 +30,7 @@ function tc_uninstall_cleanup() {
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'tc\_ext\_ltfetch\_%'" );
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'tc\_ext\_ltver\_%'" );
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'tc\_feed\_poll\_stat\_%'" );
+	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'tc\_ph\_tally\_%'" );
 
 	// Always clear scheduled events.
 	wp_unschedule_hook( 'tc_feed_poll' );
