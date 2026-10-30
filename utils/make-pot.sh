@@ -26,13 +26,13 @@ trap 'rm -rf "$TMP"' EXIT
 
 # PHP strings.
 find . -name '*.php' -not -path '*/node_modules/*' -not -path '*/vendor/*' \
-  | sed 's|^\./||' > "$TMP/php.list"
+  | sort | sed 's|^\./||' > "$TMP/php.list"
 xgettext $KW -L PHP --from-code=UTF-8 --force-po -f "$TMP/php.list" \
   --package-name="$PLUGIN_NAME" --package-version="1.0.0" -o "$TMP/php.pot"
 
 # JS strings — source only, never build/ output or minified files.
 find . -name '*.js' -not -path '*/node_modules/*' -not -path '*/vendor/*' \
-  -not -path '*/build/*' -not -name '*.min.js' | sed 's|^\./||' > "$TMP/js.list"
+  -not -path '*/build/*' -not -name '*.min.js' | sort | sed 's|^\./||' > "$TMP/js.list"
 xgettext $KW -L JavaScript --from-code=UTF-8 --force-po -f "$TMP/js.list" -o "$TMP/js.pot"
 
 # block.json strings (title, description, keywords), with the contexts WordPress
