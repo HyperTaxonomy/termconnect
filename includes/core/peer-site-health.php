@@ -83,10 +83,54 @@ function tc_peer_site_health_save( string $slug, array $state ): void {
 // ==============================================================================
 
 /**
+ * Atomically increment the lightweight per-slug failure tally.
+ *
+ * This single small row — not the full tc_peer_site_health option, which holds
+ * every peer site's state — is the true count of consecutive failures since
+ * the last success. Incrementing it is a single indexed UPDATE, cheap enough to
+ * do on every failure, so the throttling in tc_peer_site_health_record_failure()
+ * (which skips the much larger full-state write) never has to discard a count
+ * to stay cheap.
+ *
+ * @since 1.0.0
+ * @param string $slug Link-type slug.
+ * @return int New tally value.
+ */
+function tc_peer_health_tally_increment( string $slug ): int {
+    global $wpdb;
+    $name = 'tc_ph_tally_' . $slug;
+    $wpdb->query( $wpdb->prepare(
+        "INSERT INTO {$wpdb->options} (option_name, option_value, autoload)
+         VALUES (%s, '1', 'no')
+         ON DUPLICATE KEY UPDATE option_value = option_value + 1",
+        $name
+    ) );
+    return (int) $wpdb->get_var( $wpdb->prepare(
+        "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s",
+        $name
+    ) );
+}
+
+/**
+ * Clear a per-slug failure tally.
+ *
+ * @since 1.0.0
+ * @param string $slug Link-type slug.
+ */
+function tc_peer_health_tally_reset( string $slug ): void {
+    global $wpdb;
+    $wpdb->delete( $wpdb->options, array( 'option_name' => 'tc_ph_tally_' . $slug ) );
+}
+
+/**
  * Record a successful fetch from a peer site.
  *
- * Resets consecutive failure count and removes backoff. No-op when the site
- * is already healthy, to avoid unnecessary option writes on every request.
+ * Resets consecutive failure count and removes backoff. The full-state write
+ * is a no-op when the site is already healthy, to avoid unnecessary option
+ * writes on every request, but the failure tally is always cleared regardless
+ * — it can hold a nonzero count the full state was never written with, while
+ * failures stayed throttled below the write threshold (see
+ * tc_peer_site_health_record_failure()).
  *
  * @since 1.0.0
  * @param string $slug Link-type slug.
@@ -95,6 +139,7 @@ function tc_peer_site_health_record_success( string $slug ): void {
     if ( '' === $slug ) {
         return;
     }
+    tc_peer_health_tally_reset( $slug );
     $state = tc_peer_site_health_get( $slug );
     if ( 'ok' === $state['status'] && 0 === $state['consecutive_failures'] ) {
         return;
@@ -117,17 +162,19 @@ function tc_peer_site_health_record_success( string $slug ): void {
  * DEGRADED_THRESHOLD the backoff window grows to DEGRADED_MULTIPLIER × normal_ttl.
  * At UNREACHABLE_THRESHOLD it switches to a fixed UNREACHABLE_TTL.
  *
- * The option write itself is throttled while status stays 'ok': nothing
- * functionally depends on persisting every single failure immediately in that
- * case (no backoff change happens), so writes below the degraded threshold are
- * skipped unless at least TC_PEER_HEALTH_MIN_WRITE_INTERVAL seconds have passed
- * since the last persisted failure — avoiding a DB write on every failed
- * request from a chronically flaky peer under regular traffic. A throttled
- * call is skipped entirely rather than deferred: the next failure's
- * read-then-increment against the still-stale option naturally catches up the
- * count, so a flaky peer still reaches DEGRADED/UNREACHABLE at roughly the
- * same time — just with a slightly coarser count during the throttled window,
- * and always written immediately on any actual status change.
+ * The true consecutive-failure count comes from tc_peer_health_tally_increment()
+ * — a small row incremented atomically on every single failure — not from the
+ * full tc_peer_site_health option. That full-state write IS throttled while
+ * status stays 'ok': nothing functionally depends on persisting every single
+ * failure immediately in that case (no backoff change happens), so it's skipped
+ * unless at least TC_PEER_HEALTH_MIN_WRITE_INTERVAL seconds have passed since
+ * the last persisted failure — avoiding a DB write of the (potentially large,
+ * multi-peer) full state on every failed request from a chronically flaky peer
+ * under regular traffic. Because the tally is always current regardless of this
+ * throttling, a DEGRADED/UNREACHABLE threshold crossing is detected on the exact
+ * failure that causes it and always written immediately (status change is one
+ * of the write triggers below) — the full state's consecutive_failures can lag
+ * the true tally by up to the throttle window only while status stays 'ok'.
  *
  * @since 1.0.0
  * @param string $slug       Link-type slug.
@@ -142,14 +189,16 @@ function tc_peer_site_health_record_failure( string $slug, string $error, int $n
     $prev_status       = $state['status'];
     $prev_last_failure = $state['last_failure'];
 
-    $state['consecutive_failures'] += 1;
-    $state['last_failure']          = time();
-    $state['last_error']            = $error;
+    $consecutive_failures = tc_peer_health_tally_increment( $slug );
 
-    if ( $state['consecutive_failures'] >= TC_PEER_UNREACHABLE_THRESHOLD ) {
+    $state['consecutive_failures'] = $consecutive_failures;
+    $state['last_failure']         = time();
+    $state['last_error']           = $error;
+
+    if ( $consecutive_failures >= TC_PEER_UNREACHABLE_THRESHOLD ) {
         $state['status']       = 'unreachable';
         $state['next_allowed'] = time() + TC_PEER_UNREACHABLE_TTL;
-    } elseif ( $state['consecutive_failures'] >= TC_PEER_DEGRADED_THRESHOLD ) {
+    } elseif ( $consecutive_failures >= TC_PEER_DEGRADED_THRESHOLD ) {
         $state['status']       = 'degraded';
         $state['next_allowed'] = time() + ( $normal_ttl * TC_PEER_DEGRADED_MULTIPLIER );
     } else {
