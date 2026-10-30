@@ -23,7 +23,7 @@ Works with any WordPress site. When [HyperTaxonomy](https://wordpress.org/plugin
 
 | Item | Version |
 |------|---------|
-| WordPress | 5.8+ |
+| WordPress | 6.6+ |
 | PHP | 7.4+ |
 
 ## Optional

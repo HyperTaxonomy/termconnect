@@ -6,7 +6,7 @@
  * Version:     1.0.0
  * Author:      Eugene Weinstein
  * Author URI:  https://hypertaxonomy.org
- * Requires at least: 5.8
+ * Requires at least: 6.6
  * Tested up to: 7.1
  * Requires PHP: 7.4
  * License:     GPLv2 or later
