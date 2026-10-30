@@ -3281,16 +3281,83 @@ msgstr "(лента)"
 #, php-format
 msgid "Source removed, but the original name/description could not be restored for %d term — its synced values were left in place and the backup was kept for manual recovery."
 msgid_plural "Source removed, but the original name/description could not be restored for %d terms — their synced values were left in place and the backups were kept for manual recovery."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Источник удалён, но не удалось восстановить исходное название/описание для %d термина — его синхронизированные значения оставлены, а резервная копия сохранена для ручного восстановления."
+msgstr[1] "Источник удалён, но не удалось восстановить исходное название/описание для %d терминов — их синхронизированные значения оставлены, а резервные копии сохранены для ручного восстановления."
+msgstr[2] "Источник удалён, но не удалось восстановить исходное название/описание для %d терминов — их синхронизированные значения оставлены, а резервные копии сохранены для ручного восстановления."
 
 #: includes/core/delegated-identity.php
 msgid "Term could not be re-read after restoring."
-msgstr ""
+msgstr "Не удалось повторно прочитать термин после восстановления."
 
 #. translators: %s: comma-separated field names (name, description)
 #: includes/core/delegated-identity.php
 #, php-format
 msgid "Restored value was not saved (%s)."
-msgstr ""
+msgstr "Восстановленное значение не сохранено (%s)."
+
+#: blocks/peer-browse/block.json
+msgctxt "block title"
+msgid "Peer Browse"
+msgstr "Peer Browse"
+
+#: blocks/peer-browse/block.json
+#, fuzzy
+msgctxt "block description"
+msgid "An interactive topic browser: visitors pick terms and see matching posts from this site and configured peer sites and feeds."
+msgstr "Интерактивный обзор тем: посетители выбирают термины и видят подходящие записи с этого сайта, а также с настроенных сторонних сайтов и лент."
+
+#: blocks/peer-browse/block.json blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "peer"
+msgstr "peer"
+
+#: blocks/peer-browse/block.json
+msgctxt "block keyword"
+msgid "browse"
+msgstr "browse"
+
+#: blocks/peer-browse/block.json
+msgctxt "block keyword"
+msgid "topics"
+msgstr "topics"
+
+#: blocks/peer-browse/block.json
+msgctxt "block keyword"
+msgid "facet"
+msgstr "facet"
+
+#: blocks/peer-browse/block.json blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "federated"
+msgstr "federated"
+
+#: blocks/peer-browse/block.json blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "termconnect"
+msgstr "termconnect"
+
+#: blocks/peer-posts/block.json
+msgctxt "block title"
+msgid "Peer Posts"
+msgstr "Peer Posts"
+
+#: blocks/peer-posts/block.json
+#, fuzzy
+msgctxt "block description"
+msgid "Displays related posts from configured peer WordPress sites, scored by shared term relevance."
+msgstr "Выводит связанные записи с настроенных сторонних сайтов WordPress, упорядоченные по релевантности общих терминов."
+
+#: blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "posts"
+msgstr "posts"
+
+#: blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "related"
+msgstr "related"
+
+#: blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "external"
+msgstr "external"

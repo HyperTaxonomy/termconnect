@@ -2911,3 +2911,68 @@ msgstr ""
 #, php-format
 msgid "Restored value was not saved (%s)."
 msgstr ""
+
+#: blocks/peer-browse/block.json
+msgctxt "block title"
+msgid "Peer Browse"
+msgstr ""
+
+#: blocks/peer-browse/block.json
+msgctxt "block description"
+msgid "An interactive topic browser: visitors pick terms and see matching posts from this site and configured peer sites and feeds."
+msgstr ""
+
+#: blocks/peer-browse/block.json blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "peer"
+msgstr ""
+
+#: blocks/peer-browse/block.json
+msgctxt "block keyword"
+msgid "browse"
+msgstr ""
+
+#: blocks/peer-browse/block.json
+msgctxt "block keyword"
+msgid "topics"
+msgstr ""
+
+#: blocks/peer-browse/block.json
+msgctxt "block keyword"
+msgid "facet"
+msgstr ""
+
+#: blocks/peer-browse/block.json blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "federated"
+msgstr ""
+
+#: blocks/peer-browse/block.json blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "termconnect"
+msgstr ""
+
+#: blocks/peer-posts/block.json
+msgctxt "block title"
+msgid "Peer Posts"
+msgstr ""
+
+#: blocks/peer-posts/block.json
+msgctxt "block description"
+msgid "Displays related posts from configured peer WordPress sites, scored by shared term relevance."
+msgstr ""
+
+#: blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "posts"
+msgstr ""
+
+#: blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "related"
+msgstr ""
+
+#: blocks/peer-posts/block.json
+msgctxt "block keyword"
+msgid "external"
+msgstr ""
