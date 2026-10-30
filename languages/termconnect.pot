@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the termconnect package.
+# This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: termconnect 1.0.0\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 21:34-0400\n"
+"POT-Creation-Date: 2026-10-30 08:35-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 msgid "Terms"
 msgstr ""
 
-#: includes/admin/class-admin.php:67 includes/admin/peer-sites-admin.php:905
+#: includes/admin/class-admin.php:67 includes/admin/peer-sites-admin.php:908
 #: includes/admin/settings.php:95
 msgid "Peer Sites"
 msgstr ""
@@ -47,8 +47,8 @@ msgstr ""
 #: includes/admin/delegated-identity-health.php:210
 #: includes/admin/delegated-identity-health.php:346
 #: includes/admin/delegated-identity-health.php:358
-#: includes/core/display.php:90 includes/core/peer-site-health.php:239
-#: includes/core/peer-site-health.php:268
+#: includes/core/display.php:90 includes/core/peer-site-health.php:288
+#: includes/core/peer-site-health.php:317
 msgid "TermConnect"
 msgstr ""
 
@@ -277,7 +277,7 @@ msgstr ""
 #: includes/admin/delegated-identity-edit.php:215
 #: includes/admin/delegated-identity-edit.php:562
 #: includes/admin/delegated-identity-edit.php:589
-#: includes/admin/peer-sites-admin.php:1416
+#: includes/admin/peer-sites-admin.php:1419
 #: includes/admin/shared-vocabularies.php:256
 msgid "Cancel"
 msgstr ""
@@ -318,7 +318,7 @@ msgid "Remote term redirected — current delegation kept"
 msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:301
-#: includes/admin/peer-sites-admin.php:969 includes/admin/settings.php:176
+#: includes/admin/peer-sites-admin.php:972 includes/admin/settings.php:176
 #: includes/admin/shared-vocabularies.php:45
 #: includes/admin/shared-vocabularies.php:312
 #: includes/admin/shared-vocabularies.php:326
@@ -709,36 +709,36 @@ msgid ""
 "redundant HTTP self-requests and duplicate post results."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:907
+#: includes/admin/peer-sites-admin.php:910
 msgid ""
 "Manage external sites, feeds and services where your terms can have "
 "identifiers. Enable the namespaces relevant to your content; once enabled, "
 "you can add identifiers to individual terms from their edit screens."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:909
+#: includes/admin/peer-sites-admin.php:912
 msgid ""
 "When a local term shares an identifier with a term on a peer WordPress site, "
 "TermConnect can delegate its identity to the peer — keeping the name, "
 "description, and external links in sync automatically."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:913
+#: includes/admin/peer-sites-admin.php:916
 #, php-format
 msgid ""
 "A collection of terms whose identity is delegated to a peer site is called a "
 "%s."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:914
+#: includes/admin/peer-sites-admin.php:917
 msgid "Shared Vocabulary"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:932
+#: includes/admin/peer-sites-admin.php:935
 msgid "Enabled"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:934
+#: includes/admin/peer-sites-admin.php:937
 msgid ""
 "Drag rows up or down to change their display order. Links to the identifiers "
 "from enabled namespaces will appear in this order in the \"See also\" "
@@ -746,319 +746,319 @@ msgid ""
 "the namespace has \"Show on archives\" checked."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:966
-#: includes/admin/peer-sites-admin.php:1235
-#: includes/admin/peer-sites-admin.php:1328
+#: includes/admin/peer-sites-admin.php:969
+#: includes/admin/peer-sites-admin.php:1238
+#: includes/admin/peer-sites-admin.php:1331
 msgid "Label"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:967
-#: includes/admin/peer-sites-admin.php:1335
-#: includes/admin/peer-sites-admin.php:1434
+#: includes/admin/peer-sites-admin.php:970
+#: includes/admin/peer-sites-admin.php:1338
+#: includes/admin/peer-sites-admin.php:1437
 msgid "URI Prefix"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:968
-#: includes/admin/peer-sites-admin.php:1238
-#: includes/admin/peer-sites-admin.php:1369
+#: includes/admin/peer-sites-admin.php:971
+#: includes/admin/peer-sites-admin.php:1241
+#: includes/admin/peer-sites-admin.php:1372
 msgid "Platform"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:970
+#: includes/admin/peer-sites-admin.php:973
 msgid "Archives"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:971
+#: includes/admin/peer-sites-admin.php:974
 msgid "Status"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:972
-#: includes/admin/peer-sites-admin.php:1239
+#: includes/admin/peer-sites-admin.php:975
+#: includes/admin/peer-sites-admin.php:1242
 #: includes/admin/shared-vocabularies.php:377
 msgid "Actions"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:980
+#: includes/admin/peer-sites-admin.php:983
 #: includes/admin/shared-vocabularies.php:403
 msgid "Drag to reorder"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:984
-#: includes/admin/peer-sites-admin.php:1247
+#: includes/admin/peer-sites-admin.php:987
+#: includes/admin/peer-sites-admin.php:1250
 msgid "Built-in"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:991
-#: includes/admin/peer-sites-admin.php:1256
+#: includes/admin/peer-sites-admin.php:994
+#: includes/admin/peer-sites-admin.php:1259
 msgid "WordPress"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:993
-#: includes/admin/peer-sites-admin.php:1258
+#: includes/admin/peer-sites-admin.php:996
+#: includes/admin/peer-sites-admin.php:1261
 msgid "Feed"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1033
+#: includes/admin/peer-sites-admin.php:1036
 msgid "Degraded"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1035
+#: includes/admin/peer-sites-admin.php:1038
 #, php-format
 msgid "%d failure"
 msgid_plural "%d failures"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1044
+#: includes/admin/peer-sites-admin.php:1047
 msgid "OK"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1052
-#: includes/admin/peer-sites-admin.php:1066
+#: includes/admin/peer-sites-admin.php:1055
+#: includes/admin/peer-sites-admin.php:1069
 #, php-format
 msgid "%d term mapped"
 msgid_plural "%d terms mapped"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1053
+#: includes/admin/peer-sites-admin.php:1056
 #, php-format
 msgid "%d post cached"
 msgid_plural "%d posts cached"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1055
+#: includes/admin/peer-sites-admin.php:1058
 #, php-format
 msgid "Fetched %s ago"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1070
+#: includes/admin/peer-sites-admin.php:1073
 #, php-format
 msgid "%1$d post, %2$d categories"
 msgid_plural "%1$d posts, %2$d categories"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1076
+#: includes/admin/peer-sites-admin.php:1079
 #, php-format
 msgid "Last poll performed %s ago"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1079
+#: includes/admin/peer-sites-admin.php:1082
 #, php-format
 msgid "Next poll in %s"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1081
+#: includes/admin/peer-sites-admin.php:1084
 msgid "Not scheduled"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1087
-#: includes/admin/peer-sites-admin.php:1180
-#: includes/admin/peer-sites-admin.php:1191
+#: includes/admin/peer-sites-admin.php:1090
+#: includes/admin/peer-sites-admin.php:1183
+#: includes/admin/peer-sites-admin.php:1194
 msgid "Poll Now"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1109
+#: includes/admin/peer-sites-admin.php:1112
 msgid "Restrict"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1109
-#: includes/admin/peer-sites-admin.php:1287
+#: includes/admin/peer-sites-admin.php:1112
+#: includes/admin/peer-sites-admin.php:1290
 #: includes/admin/shared-vocabularies.php:419
 msgid "Edit"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1116
-#: includes/admin/peer-sites-admin.php:1124
+#: includes/admin/peer-sites-admin.php:1119
+#: includes/admin/peer-sites-admin.php:1127
 msgid "Clear Cache"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1134
+#: includes/admin/peer-sites-admin.php:1137
 msgid "Disable"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1171
+#: includes/admin/peer-sites-admin.php:1174
 msgid "Polling…"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1185
-#: includes/admin/peer-sites-admin.php:1212
+#: includes/admin/peer-sites-admin.php:1188
+#: includes/admin/peer-sites-admin.php:1215
 msgid "posts"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1185
-#: includes/admin/peer-sites-admin.php:1212
+#: includes/admin/peer-sites-admin.php:1188
+#: includes/admin/peer-sites-admin.php:1215
 msgid "categories"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1187
+#: includes/admin/peer-sites-admin.php:1190
 msgid "Last poll performed just now"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1222
+#: includes/admin/peer-sites-admin.php:1225
 msgid "No peer sites enabled yet. Enable peer sites from the list below."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1226
+#: includes/admin/peer-sites-admin.php:1229
 msgid "+ Add peer site"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1230
+#: includes/admin/peer-sites-admin.php:1233
 msgid "Available"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1236
-#: includes/admin/peer-sites-admin.php:1324
+#: includes/admin/peer-sites-admin.php:1239
+#: includes/admin/peer-sites-admin.php:1327
 msgid "Slug"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1237
-#: includes/admin/peer-sites-admin.php:1343
+#: includes/admin/peer-sites-admin.php:1240
+#: includes/admin/peer-sites-admin.php:1346
 #: includes/admin/shared-vocabularies.php:119
 msgid "Description"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1270 includes/admin/settings.php:204
+#: includes/admin/peer-sites-admin.php:1273 includes/admin/settings.php:204
 #: includes/admin/settings.php:630
 msgid "Enable"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1291
+#: includes/admin/peer-sites-admin.php:1294
 msgid "Delete this peer site and remove all its term meta values?"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1296
+#: includes/admin/peer-sites-admin.php:1299
 msgid "Delete"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1315
-#: includes/admin/peer-sites-admin.php:1415
-#: includes/admin/peer-sites-admin.php:1522
-#: includes/admin/peer-sites-admin.php:1523
+#: includes/admin/peer-sites-admin.php:1318
+#: includes/admin/peer-sites-admin.php:1418
+#: includes/admin/peer-sites-admin.php:1525
+#: includes/admin/peer-sites-admin.php:1526
 msgid "Add Peer Site"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1331
+#: includes/admin/peer-sites-admin.php:1334
 msgid "Display name. Slug is auto-derived and cannot be changed later."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1339
-#: includes/admin/peer-sites-admin.php:1446
+#: includes/admin/peer-sites-admin.php:1342
+#: includes/admin/peer-sites-admin.php:1449
 msgid "URL prefix prepended to the identifier to form the full URI."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1349
+#: includes/admin/peer-sites-admin.php:1352
 msgid "Show on Archives"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1353
+#: includes/admin/peer-sites-admin.php:1356
 msgid "Include in \"See also\" section on term archive pages"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1359
+#: includes/admin/peer-sites-admin.php:1362
 msgid "Restrict to taxonomies"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1364
+#: includes/admin/peer-sites-admin.php:1367
 msgid "Leave all unchecked to allow any taxonomy."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1373
+#: includes/admin/peer-sites-admin.php:1376
 msgid "WordPress peer (REST API)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1377
+#: includes/admin/peer-sites-admin.php:1380
 msgid "RSS / Atom feed"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1381
+#: includes/admin/peer-sites-admin.php:1384
 msgid "MediaWiki (identifier + autocomplete)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1385
+#: includes/admin/peer-sites-admin.php:1388
 msgid "Custom identifier"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1387
+#: includes/admin/peer-sites-admin.php:1390
 msgid ""
 "WordPress peers fetch related posts via REST API. Feed types poll an RSS/"
 "Atom feed URL. MediaWiki sites provide autocomplete via OpenSearch. Custom "
 "identifier stores external identifiers only."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1391
+#: includes/admin/peer-sites-admin.php:1394
 msgid "Remote taxonomy REST base"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1394
+#: includes/admin/peer-sites-admin.php:1397
 msgid ""
 "e.g. topics (leave blank to use remote taxonomies with same slug as local "
 "ones)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1395
+#: includes/admin/peer-sites-admin.php:1398
 msgid ""
 "REST base of the taxonomy on the peer site. Leave blank when the peer uses "
 "the same taxonomy slug as your site."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1399
+#: includes/admin/peer-sites-admin.php:1402
 msgid "Poll interval (seconds)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1402
+#: includes/admin/peer-sites-admin.php:1405
 msgid ""
 "How often to poll the feed. Minimum 300 seconds, maximum 86400 (24 hours)."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1406
+#: includes/admin/peer-sites-admin.php:1409
 msgid "Max cached posts"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1409
+#: includes/admin/peer-sites-admin.php:1412
 msgid ""
 "Maximum posts to accumulate across polls. Oldest are pruned when exceeded."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1431
+#: includes/admin/peer-sites-admin.php:1434
 msgid "Peer site URL"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1432
+#: includes/admin/peer-sites-admin.php:1435
 msgid "Feed URL"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1433
+#: includes/admin/peer-sites-admin.php:1436
 msgid "Wiki URL"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1443
+#: includes/admin/peer-sites-admin.php:1446
 msgid ""
 "The peer site root URL. No path needed — the taxonomy archive path is "
 "derived automatically from the Remote taxonomy REST base."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1444
+#: includes/admin/peer-sites-admin.php:1447
 msgid "The full RSS or Atom feed URL."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1445
+#: includes/admin/peer-sites-admin.php:1448
 msgid ""
 "The wiki article URL prefix (e.g. https://wiki.example.com/wiki/). "
 "Autocomplete is provided automatically via the OpenSearch API."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1554
+#: includes/admin/peer-sites-admin.php:1557
 msgid "Restrict to Taxonomies"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1555
+#: includes/admin/peer-sites-admin.php:1558
 msgid "Edit Peer Site Settings"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1556
+#: includes/admin/peer-sites-admin.php:1559
 msgid "Save Changes"
 msgstr ""
 
@@ -1091,7 +1091,7 @@ msgstr ""
 msgid "Export / Import"
 msgstr ""
 
-#: includes/admin/settings.php:99
+#: includes/admin/settings.php:99 blocks/peer-posts/src/index.js:295
 msgid "Advanced"
 msgstr ""
 
@@ -1134,7 +1134,7 @@ msgid ""
 "Appends external links to term archive descriptions for enabled taxonomies."
 msgstr ""
 
-#: includes/admin/settings.php:217
+#: includes/admin/settings.php:217 blocks/peer-posts/src/index.js:238
 msgid "Format"
 msgstr ""
 
@@ -1847,6 +1847,7 @@ msgstr ""
 
 #: includes/admin/shared-vocabularies.php:374
 #: includes/shortcodes/class-peer-browse.php:255
+#: blocks/peer-posts/src/index.js:70 blocks/peer-posts/src/index.js:107
 msgid "Source"
 msgstr ""
 
@@ -2338,15 +2339,15 @@ msgstr ""
 msgid "Every %d seconds (TermConnect feed)"
 msgstr ""
 
-#: includes/core/peer-site-health.php:220
+#: includes/core/peer-site-health.php:269
 msgid "TermConnect peer sites"
 msgstr ""
 
-#: includes/core/peer-site-health.php:237
+#: includes/core/peer-site-health.php:286
 msgid "All TermConnect peer sites are reachable"
 msgstr ""
 
-#: includes/core/peer-site-health.php:260
+#: includes/core/peer-site-health.php:309
 #, php-format
 msgid "%d TermConnect peer site is unreachable or degraded"
 msgid_plural "%d TermConnect peer sites are unreachable or degraded"
@@ -2506,18 +2507,22 @@ msgid "Load more"
 msgstr ""
 
 #: includes/shortcodes/class-peer-browse.php:56
+#: blocks/peer-browse/src/index.js:100
 msgid "Recently updated"
 msgstr ""
 
 #: includes/shortcodes/class-peer-browse.php:58
+#: blocks/peer-browse/src/index.js:101
 msgid "Newest"
 msgstr ""
 
 #: includes/shortcodes/class-peer-browse.php:60
+#: blocks/peer-browse/src/index.js:102
 msgid "Title"
 msgstr ""
 
 #: includes/shortcodes/class-peer-browse.php:62
+#: blocks/peer-browse/src/index.js:103
 msgid "Relevance (grouped by site)"
 msgstr ""
 
@@ -2548,10 +2553,12 @@ msgid "All"
 msgstr ""
 
 #: includes/shortcodes/class-peer-browse.php:257
+#: blocks/peer-browse/src/index.js:91 blocks/peer-posts/src/index.js:115
 msgid "Local + peers"
 msgstr ""
 
 #: includes/shortcodes/class-peer-browse.php:258
+#: blocks/peer-browse/src/index.js:92 blocks/peer-posts/src/index.js:114
 msgid "Peers only"
 msgstr ""
 

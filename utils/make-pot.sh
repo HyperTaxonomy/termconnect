@@ -28,12 +28,14 @@ trap 'rm -rf "$TMP"' EXIT
 find . -name '*.php' -not -path '*/node_modules/*' -not -path '*/vendor/*' \
   | LC_ALL=C sort | sed 's|^\./||' > "$TMP/php.list"
 xgettext $KW -L PHP --from-code=UTF-8 --force-po -f "$TMP/php.list" \
-  --package-name="$PLUGIN_NAME" --package-version="1.0.0" -o "$TMP/php.pot"
+  --package-name="$PLUGIN_NAME" --package-version="1.0.0" -o "$TMP/code.pot"
 
 # JS strings — source only, never build/ output or minified files.
 find . -name '*.js' -not -path '*/node_modules/*' -not -path '*/vendor/*' \
   -not -path '*/build/*' -not -name '*.min.js' | LC_ALL=C sort | sed 's|^\./||' > "$TMP/js.list"
-xgettext $KW -L JavaScript --from-code=UTF-8 --force-po -f "$TMP/js.list" -o "$TMP/js.pot"
+# --join-existing adds them to the PHP template, merging the references of strings used
+# in both, so make-json.py can tell which scripts use each string.
+xgettext $KW -L JavaScript --from-code=UTF-8 --force-po --join-existing -f "$TMP/js.list" -o "$TMP/code.pot"
 
 # block.json strings (title, description, keywords), with the contexts WordPress
 # uses when translating block metadata. xgettext can't read block.json.
@@ -57,8 +59,9 @@ for (ctx, text), refs in entries.items():
 io.open(sys.argv[1], 'w', encoding='utf-8', newline='\n').write('\n'.join(out))
 PY
 
-# Merge (PHP wins on duplicate references) and fix the charset placeholder.
-msgcat --use-first "$TMP/php.pot" "$TMP/js.pot" "$TMP/blocks.pot" -o "$POT"
+# Add the block.json entries (their contexts never collide with code strings) and fix the
+# charset placeholder.
+msgcat --use-first "$TMP/code.pot" "$TMP/blocks.pot" -o "$POT"
 sed -i 's/charset=CHARSET/charset=UTF-8/' "$POT"
 
 echo "Wrote $POT"
