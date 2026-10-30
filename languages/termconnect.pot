@@ -2901,3 +2901,13 @@ msgid "Source removed, but the original name/description could not be restored f
 msgid_plural "Source removed, but the original name/description could not be restored for %d terms — their synced values were left in place and the backups were kept for manual recovery."
 msgstr[0] ""
 msgstr[1] ""
+
+#: includes/core/delegated-identity.php
+msgid "Term could not be re-read after restoring."
+msgstr ""
+
+#. translators: %s: comma-separated field names (name, description)
+#: includes/core/delegated-identity.php
+#, php-format
+msgid "Restored value was not saved (%s)."
+msgstr ""

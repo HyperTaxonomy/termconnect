@@ -3284,3 +3284,13 @@ msgid_plural "Source removed, but the original name/description could not be res
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+
+#: includes/core/delegated-identity.php
+msgid "Term could not be re-read after restoring."
+msgstr ""
+
+#. translators: %s: comma-separated field names (name, description)
+#: includes/core/delegated-identity.php
+#, php-format
+msgid "Restored value was not saved (%s)."
+msgstr ""

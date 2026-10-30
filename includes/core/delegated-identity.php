@@ -325,6 +325,41 @@ function tc_update_identity_sync_flags( int $term_id, bool $sync_name, bool $syn
 }
 
 /**
+ * Check that a wp_update_term() restore actually reached the database.
+ *
+ * wp_update_term() does not check the result of its own UPDATE, so a failed write
+ * still returns success. Re-read the term and compare each restored field with the
+ * value WordPress would store for it (the same 'db' sanitization wp_update_term()
+ * applies, e.g. '&' becomes '&amp;' in a name).
+ *
+ * @since 1.0.0
+ * @param int    $term_id  Term ID.
+ * @param string $taxonomy Term taxonomy.
+ * @param array  $restores Fields passed to wp_update_term(): 'name' and/or 'description'.
+ * @return string Empty when every field matches; otherwise a message naming the fields.
+ */
+function tc_term_restore_mismatch( int $term_id, string $taxonomy, array $restores ): string {
+    clean_term_cache( $term_id, $taxonomy );
+    $fresh = get_term( $term_id, $taxonomy, OBJECT, 'raw' );
+    if ( ! $fresh || is_wp_error( $fresh ) ) {
+        return __( 'Term could not be re-read after restoring.', 'termconnect' );
+    }
+
+    $mismatched = array();
+    foreach ( $restores as $field => $value ) {
+        $expected = wp_unslash( sanitize_term_field( $field, $value, $term_id, $taxonomy, 'db' ) );
+        if ( (string) $fresh->$field !== (string) $expected ) {
+            $mismatched[] = $field;
+        }
+    }
+
+    return $mismatched
+        /* translators: %s: comma-separated field names (name, description) */
+        ? sprintf( __( 'Restored value was not saved (%s).', 'termconnect' ), implode( ', ', $mismatched ) )
+        : '';
+}
+
+/**
  * Remove all delegation meta for every term managed by a given shared vocabulary source,
  * restoring original names and descriptions where they were backed up before syncing.
  *
@@ -380,12 +415,11 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
     // Restore original names/descriptions via wp_update_term() — one call per term,
     // combining both restores where a term needs both — so edit_term/edited_term fire
     // as they do for every other restore path in this file (tc_remove_identity_source(),
-    // tc_update_identity_sync_flags()). The previous raw UPDATE ... INNER JOIN termmeta
-    // statements only called clean_term_cache() afterward, leaving HyperTaxonomy's search
-    // index (or any other edited_term listener) stale after a bulk source removal.
-    // A wp_update_term() failure for one term (most plausibly a name collision with an
-    // unrelated term) is reported in the return value and does not abort the rest of the
-    // cleanup below — but the term's original-name/description backup meta is kept out
+    // tc_update_identity_sync_flags()), keeping HyperTaxonomy's search index (and any
+    // other edited_term listener) current after a bulk source removal.
+    // A restore that fails for one term (wp_update_term() returns an error, or the
+    // re-read in tc_term_restore_mismatch() shows the write didn't land) is reported in
+    // the return value and does not abort the rest of the cleanup below — but the term's original-name/description backup meta is kept out
     // of the deletion pass further down, so the data needed to retry the restore by hand
     // isn't destroyed along with it.
     $failed_term_ids = array();
@@ -409,9 +443,11 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
             }
         }
         if ( ! empty( $restores ) ) {
-            $result = wp_update_term( $term_id, $term->taxonomy, $restores );
-            if ( is_wp_error( $result ) ) {
-                $message            = $result->get_error_message();
+            $result  = wp_update_term( $term_id, $term->taxonomy, $restores );
+            $message = is_wp_error( $result )
+                ? $result->get_error_message()
+                : tc_term_restore_mismatch( $term_id, $term->taxonomy, $restores );
+            if ( '' !== $message ) {
                 $failed_term_ids[]  = $term_id;
                 $failures[]         = array( 'term_id' => $term_id, 'message' => $message );
                 error_log( 'TermConnect: bulk delegation restore failed for term ' . $term_id . ': ' . $message );

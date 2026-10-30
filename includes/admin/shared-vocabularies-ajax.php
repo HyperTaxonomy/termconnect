@@ -265,9 +265,9 @@ function tc_sv_ajax_delete(): void {
     $response = array();
     if ( ! empty( $restore_failures ) ) {
         // The source and its delegation meta are already gone either way; only the
-        // name/description restore itself failed for these terms (most likely a name
-        // collision with an unrelated term), and their original-name/description
-        // backup meta was deliberately kept so the restore can be finished by hand.
+        // name/description restore itself failed for these terms, and their
+        // original-name/description backup meta was deliberately kept so the restore
+        // can be finished by hand.
         $response['warning'] = sprintf(
             /* translators: %d: number of terms whose name/description could not be restored */
             _n(
@@ -278,6 +278,24 @@ function tc_sv_ajax_delete(): void {
             ),
             count( $restore_failures )
         );
+
+        // Name the affected terms so the admin can find them: nothing else in the admin
+        // surfaces a kept backup once the term is no longer delegated. Plain text, since
+        // the message is shown with alert().
+        $lines = array();
+        foreach ( $restore_failures as $failure ) {
+            $term = get_term( (int) $failure['term_id'] );
+            if ( ! $term || is_wp_error( $term ) ) {
+                continue;
+            }
+            $original = (string) get_term_meta( $term->term_id, TC_META_ORIGINAL_NAME, true );
+            $lines[]  = '' !== $original && $original !== $term->name
+                ? sprintf( '%s (ID %d) → %s: %s', $term->name, $term->term_id, $original, $failure['message'] )
+                : sprintf( '%s (ID %d): %s', $term->name, $term->term_id, $failure['message'] );
+        }
+        if ( $lines ) {
+            $response['warning'] .= "\n\n" . implode( "\n", $lines );
+        }
     }
 
     wp_send_json_success( $response );
