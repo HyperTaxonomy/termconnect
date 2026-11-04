@@ -224,6 +224,7 @@ function tc_sort_terms_by_ext_links( array $clauses, array $taxonomies, array $a
           AND tm.meta_key LIKE '\_tc\_link\_%'
           AND tm.meta_value != ''
     ) {$order}";
+    $clauses['order'] = '';
 
     return $clauses;
 }

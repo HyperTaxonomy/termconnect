@@ -510,7 +510,11 @@ function tc_external_get_term_data_batch( string $origin, string $taxonomy, arra
         $response = wp_remote_get( $url, array(
             'timeout'    => 5,
             'user-agent' => 'TermConnect/' . TC_VERSION,
-            'headers'    => array( 'X-TermConnect' => TC_VERSION ),
+            // HyperTaxonomy omits htax_includes from collection responses without its own header.
+            'headers'    => array(
+                'X-TermConnect'   => TC_VERSION,
+                'X-HyperTaxonomy' => TC_VERSION,
+            ),
             'sslverify'  => true,
         ) );
 

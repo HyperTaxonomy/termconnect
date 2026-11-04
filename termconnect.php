@@ -43,6 +43,10 @@ function tc_plugin_activate(): void {
     }
     tc_activation_purge_stale_sv_queues();
     tc_add_indexes();
+    // Deactivation unschedules feed polling. The feed code and its cron schedules aren't
+    // loaded during the activation request, so tc_feed_reschedule_after_activation()
+    // restores the events on the next load.
+    update_option( 'tc_feed_reschedule', 1, false );
 }
 
 function tc_add_indexes(): void {

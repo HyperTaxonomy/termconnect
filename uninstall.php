@@ -25,6 +25,7 @@ function tc_uninstall_cleanup() {
 	delete_option( 'tc_enabled_taxonomies' );
 	delete_option( 'tc_link_types' );
 	delete_option( 'tc_peer_site_health' );
+	delete_option( 'tc_feed_reschedule' );
 
 	// Per-link-type options stored with dynamic suffixes.
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'tc\_ext\_ltfetch\_%'" );

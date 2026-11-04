@@ -86,4 +86,6 @@ A feed link type polls an RSS or Atom feed on a configurable schedule and accumu
 2. Click **Pick category…** — a filterable list of all categories seen in recent polls
 3. Select the matching category (e.g. "Machine Learning")
 
+**Deactivating TermConnect** stops all feed polling; enabled feeds are rescheduled automatically when you reactivate it.
+
 **Category accumulation:** Each poll merges new items into the cache. Categories never disappear once seen, even if they scroll off the feed. Click **Refresh from feed** in the picker panel to load categories from the latest poll.

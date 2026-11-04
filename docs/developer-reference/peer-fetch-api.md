@@ -37,7 +37,8 @@ tc_external_get_term_data( string $origin, string $taxonomy, int $term_id ): arr
 
 tc_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array
 // Same data for many terms at once, keyed by term ID: one collection request per
-// up to 100 uncached terms. Shares tc_external_get_term_data()'s per-term cache.
+// up to 100 uncached terms, sending both X-TermConnect and X-HyperTaxonomy so collection
+// responses include htax_includes. Shares tc_external_get_term_data()'s per-term cache.
 ```
 
 ### Author Search (peer users)

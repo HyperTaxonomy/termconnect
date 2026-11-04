@@ -368,6 +368,25 @@ function tc_feed_schedule( string $peer_site_slug, int $interval ): void {
 }
 
 /**
+ * Schedule every enabled feed on the first load after the plugin is activated.
+ *
+ * @since 1.0.0
+ */
+function tc_feed_reschedule_after_activation(): void {
+	if ( ! get_option( 'tc_feed_reschedule' ) ) {
+		return;
+	}
+	delete_option( 'tc_feed_reschedule' );
+
+	foreach ( tc_get_all_link_types() as $slug => $type ) {
+		if ( 'feed' === ( $type['platform'] ?? '' ) && ! empty( $type['enabled'] ) ) {
+			tc_feed_schedule( (string) $slug, (int) ( $type['poll_interval'] ?? 3600 ) );
+		}
+	}
+}
+add_action( 'init', 'tc_feed_reschedule_after_activation' );
+
+/**
  * Remove the cron event for a feed link type.
  *
  * @since 1.0.0
