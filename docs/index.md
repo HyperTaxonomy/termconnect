@@ -14,15 +14,7 @@ The result is a decentralized vocabulary layer — sites that independently cura
 
 Works with any WordPress site. HyperTaxonomy adds relevance scoring, synonym expansion, and proximity search when both are active; TermConnect contributes its identifier data to HyperTaxonomy's abstraction layer to make it accessible to integrations like WP-SKOS.
 
-## Part of the HyperTaxonomy suite
-
-One of five interoperable WordPress plugins for richer, connected taxonomies. Each works on its own; together they share a common term model. Learn more at [hypertaxonomy.org](https://hypertaxonomy.org).
-
-- **[HyperTaxonomy](https://hypertaxonomy.org/hypertaxonomy/)** — the core: term groups, inclusions, synonyms, redirects, icons, relevance-scored search, and enhanced archives.
-- **TermConnect** (this plugin) — link terms to knowledge-base identifiers (Wikidata, GeoNames, LCSH…) and peer sites; delegated identity, shared vocabularies, and cross-site related content.
-- **[Social Hashtags & Mentions](https://hypertaxonomy.org/social-hashtags-mentions/)** — inline #hashtags and @mentions as taxonomy terms, linked to the social networks you enable (built on TermConnect).
-- **[As the Crow Flies](https://hypertaxonomy.org/as-the-crow-flies/)** — attach physical locations to terms and filter content by distance/proximity.
-- **[WP-SKOS](https://hypertaxonomy.org/wp-skos/)** — expose your taxonomies as SKOS linked data via a Skosmos-compatible REST API.
+Part of the [HyperTaxonomy suite](https://hypertaxonomy.org) of interoperable WordPress taxonomy plugins.
 
 ## Documentation map
 
