@@ -1051,10 +1051,11 @@ function tc_get_term_links_data( int $term_id, bool $reset = false ): array {
         $cache = array();
     }
 
-    $term    = get_term( $term_id );
-    $enabled = $term instanceof WP_Term
-        ? tc_get_enabled_link_types_for_taxonomy( $term->taxonomy )
-        : tc_get_enabled_link_types();
+    $term = get_term( $term_id );
+    if ( ! $term instanceof WP_Term ) {
+        return array(); // Not cached: a term that doesn't resolve here may for someone else.
+    }
+    $enabled = tc_get_enabled_link_types_for_taxonomy( $term->taxonomy );
 
     if ( empty( $enabled ) ) {
         return $cache[ $term_id ] = array();
