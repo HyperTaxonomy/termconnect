@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 6
 ---
 
-## 22. Providing External Posts
+## Providing External Posts
 
 TermConnect contributes related posts from configured peer sites and feeds to any
 same-site consumer that asks HyperTaxonomy for a term's external posts — for

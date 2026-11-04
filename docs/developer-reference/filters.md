@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 1
 ---
 
-## 17. Filters
+## Filters
 
 ### `tc_link_types`
 

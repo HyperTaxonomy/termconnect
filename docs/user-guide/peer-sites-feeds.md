@@ -4,7 +4,7 @@ parent: User Guide
 nav_order: 1
 ---
 
-## 1. Enabled Taxonomies
+## Enabled Taxonomies
 
 Go to **Settings → TermConnect → Enabled Taxonomies** and check each taxonomy where you want TermConnect active. Enabling a taxonomy:
 
@@ -16,7 +16,7 @@ Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear i
 
 ---
 
-## 2. Peer Sites
+## Peer Sites
 
 **Terms → Peer Sites** is where you manage external sites, feeds and services where your terms can have identifiers. A namespace defines what kind of identifier it holds and how to construct a URL from it: Wikidata Q-numbers, GeoNames IDs, Wikipedia article slugs, a peer WordPress site, an RSS feed, or any custom service. Once a namespace is enabled, editors can attach identifiers to individual terms from the **External Links** panel on each term's edit screen.
 
@@ -58,7 +58,7 @@ Deleting a custom namespace also removes all stored identifiers for that namespa
 
 ---
 
-## 3. WordPress Peer Sites
+## WordPress Peer Sites
 
 When a link type's **Platform** is *WordPress peer (REST API)*, the identifier stored per term is the **slug of the matching term on the peer site** (e.g. `javascript` for `https://blog.example.com/tag/javascript/`). Multiple WordPress peer link types can point to different sites; the same term can have identifiers for several peers simultaneously.
 
@@ -70,7 +70,7 @@ The **Remote taxonomy REST base** field handles cases where the peer site uses a
 
 ---
 
-## 4. RSS / Atom Feeds
+## RSS / Atom Feeds
 
 A feed link type polls an RSS or Atom feed on a configurable schedule and accumulates posts into a local cache. Local terms are mapped to feed categories; `[tc_peer_posts]` scores the cached posts by category match.
 

@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 2
 ---
 
-## 18. Term Links API
+## Term Links API
 
 ### Registry
 

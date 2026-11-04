@@ -4,7 +4,7 @@ parent: User Guide
 nav_order: 5
 ---
 
-## 9. Settings & Cache
+## Settings & Cache
 
 Go to **Settings → TermConnect** to configure global peer site behavior.
 
@@ -23,7 +23,7 @@ Go to **Settings → TermConnect** to configure global peer site behavior.
 
 ---
 
-## 10. Export / Import
+## Export / Import
 
 Go to **Settings → TermConnect → Export / Import** to back up and restore configuration.
 

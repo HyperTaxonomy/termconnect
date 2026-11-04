@@ -4,7 +4,7 @@ parent: User Guide
 nav_order: 3
 ---
 
-## 7. Delegated Identity
+## Delegated Identity
 
 Delegated identity lets a term defer its authoritative definition to a matching term on a peer WordPress site. The peer becomes the canonical source for the term's slug, name, description, and external links; changes on the remote are reflected locally on the next sync.
 
@@ -63,9 +63,9 @@ The remote term is always looked up in the same taxonomy as the local term. Cros
 
 Click the × button on the active delegation pill to open a confirmation panel. The panel lets you:
 
-- **Restore original name** (shown only when Sync name is on) — reverts to the name the term had before delegation. On by default.
-- **Restore original description** (shown only when Sync description is on) — reverts to the original description. On by default.
-- **Keep external links from remote** — when checked, any external links that were pulled from the remote term are kept as local links after delegation ends. If a local link for the same site was previously suppressed by the delegated link, it is replaced by the delegated link (not restored); the delegated link wins and becomes the new local link for that platform. When unchecked, delegated links are discarded and any previously suppressed local links automatically become active again.
+- **Restore local name** (shown only when Sync name is on) — reverts to the name the term had before delegation. On by default.
+- **Restore local description** (shown only when Sync description is on) — reverts to the original description. On by default.
+- **Keep external links for existing peer sites** — when checked, any external links that were pulled from the remote term are kept as local links after delegation ends. If a local link for the same site was previously suppressed by the delegated link, it is replaced by the delegated link (not restored); the delegated link wins and becomes the new local link for that platform. When unchecked, delegated links are discarded and any previously suppressed local links automatically become active again.
 
 Whether delegation can be removed from the term edit screen depends on the vocabulary source that manages it:
 

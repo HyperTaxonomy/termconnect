@@ -4,7 +4,7 @@ parent: User Guide
 nav_order: 4
 ---
 
-## 8. Shared Vocabularies
+## Shared Vocabularies
 
 Shared Vocabularies lets you mirror a remote site's term structure into your local taxonomy — creating local terms that stay in sync with a peer, so your editors work with the same vocabulary as the wider community. Each mirrored term gets per-term delegated identity set up automatically, so descriptions and external links sync on the same schedule.
 
@@ -77,7 +77,7 @@ Terms are matched by slug — WordPress enforces unique slugs per taxonomy, so t
 2. A local term with the same slug already claimed by another source → skip (first-wins)
 3. No local term with that slug → create one, set up delegation
 
-The remote term's integer ID is stored as a secondary reference. Slug is always the canonical key: when a slug-match succeeds but the remote returns a different integer ID (e.g. after a peer database migration), the stored ID is updated automatically in both term meta and the source's roots entry. The ID is consulted only when the slug lookup fails (`not_found` status) — at that point it is used to probe whether the remote term was renamed. See [Delegated Identity — Site Health](delegated-identity.html#7-delegated-identity) for the rename-detection flow.
+The remote term's integer ID is stored as a secondary reference. Slug is always the canonical key: when a slug-match succeeds but the remote returns a different integer ID (e.g. after a peer database migration), the stored ID is updated automatically in both term meta and the source's roots entry. The ID is consulted only when the slug lookup fails (`not_found` status) — at that point it is used to probe whether the remote term was renamed. See [Delegated Identity — Site Health](delegated-identity.html#delegated-identity) for the rename-detection flow.
 
 **Sync scenarios:**
 
@@ -112,7 +112,7 @@ Configure per source in **Terms → Shared Vocabularies → Edit source → Miss
 
 When a Taxonomies source is configured and the peer runs HyperTaxonomy, two additional options appear:
 
-- **Enable relationship delegation** — imports custom relationship type definitions from the peer and writes relationship rows (term inclusions and custom-type relationships) alongside term sync. Disabled by default because it is expensive: one request per term plus one write per relationship row.
+- **Sync relationship types and relationships from this peer** — imports custom relationship type definitions from the peer and writes relationship rows (term inclusions and custom-type relationships) alongside term sync. Disabled by default because it is expensive: one request per term plus one write per relationship row.
 - **Include cross-taxonomy relationships** — additionally writes relationships whose target term is in a different taxonomy. Only processes targets that are themselves delegated to the same peer. Requires a prior full sync of each involved taxonomy.
 
 Relationship type definitions can also be imported on demand from **Terms → Term Relationship Types** (when HyperTaxonomy is active), using the **Discover from peer site** section at the bottom of the page.
@@ -150,7 +150,7 @@ Click **Remove** on any row to delete a vocabulary source. All delegations manag
 The `TermConnect shared vocabularies` Site Health test reports:
 - **Merge proposals pending** — orphaned terms matched to a replacement by shared KB identifier; review on the Shared Vocabularies page
 - **Terms in wrong position** — misplaced terms flagged for manual review
-- **Orphaned mirrored terms** — remote term confirmed gone; local term still exists with `not_found` status. Each entry includes a **Check for rename** link that lazily probes the remote term by its stored ID — see the rename-detection flow in [Delegated Identity](delegated-identity.html#7-delegated-identity).
+- **Orphaned mirrored terms** — remote term confirmed gone; local term still exists with `not_found` status. Each entry includes a **Check for rename** link that lazily probes the remote term by its stored ID — see the rename-detection flow in [Delegated Identity](delegated-identity.html#delegated-identity).
 - **Stale relationship rows** — delegated terms with local relationship rows for peer-owned custom types that were absent from the peer in the most recent sync
 - **Delegation from deleted sources** — terms still carrying `_tc_identity_source` meta pointing to a source that no longer exists; these terms are not synced. Re-add the source or end delegation from each affected term.
 

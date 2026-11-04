@@ -4,7 +4,7 @@ parent: User Guide
 nav_order: 2
 ---
 
-## 5. See Also on Archives
+## See Also on Archives
 
 When a term has identifiers set and the link type has **Show on archives** enabled, a "See also" section appears on the term's archive page.
 
@@ -21,7 +21,7 @@ When HyperTaxonomy's **Show Description** feature is enabled for a term, the "Se
 
 ---
 
-## 6. Link Suggestions
+## Link Suggestions
 
 When enabled, a short form appears on term archive pages (below "See also") inviting visitors to suggest an external link for that term. Suggestions are stored for admin review and are never applied automatically.
 
@@ -35,7 +35,7 @@ Each submission is stored as a WordPress comment with `comment_type = 'tc_sugges
 
 **Reviewing suggestions:**
 
-Go to **Comments → Link Suggestions**. This opens the standard WordPress comments admin filtered to `tc_suggested_link` type, with three customised columns:
+Go to **Comments → Link Suggestions**. This opens the standard WordPress comments admin filtered to `tc_suggested_link` type, with three customized columns:
 
 - **Proposed URL** — the submitted URL (clickable) with auto-match result shown below it.
 - **Note** — the submitter's optional note and email address.

@@ -4,7 +4,7 @@ parent: User Guide
 nav_order: 6
 ---
 
-## 11. [tc_peer_posts] Shortcode
+## [tc_peer_posts] Shortcode
 
 Fetches and displays related posts from configured WordPress peer sites and RSS/Atom feeds. Only renders on singular pages.
 
@@ -81,7 +81,7 @@ When `foaf_depth > 0`, TermConnect reads peer connection data embedded in HyperT
 
 ---
 
-## 12. Blending local and peer posts together
+## Blending local and peer posts together
 
 To show this site's own related posts **and** peer/feed results together in one block, set `scope="all"` on `[tc_peer_posts]` (or the Peer Posts block's **Source = Local + peers**). The local site is treated as another source; when HyperTaxonomy is active, local posts are selected via its relationship expansion (so relationship-related posts are included, not just directly-tagged ones), relevance-ranked by its search index, and `peer:asc,relevance:desc` groups the blend by source. TermConnect alone still handles term matching — without HyperTaxonomy the local side matches directly-assigned terms and isn't relevance-scored; HyperTaxonomy, when present, widens local recall, ranks the local side, and enforces term visibility.
 
@@ -93,7 +93,7 @@ To show this site's own related posts **and** peer/feed results together in one 
 
 ---
 
-## 13. [tc_peer_browse] Shortcode — interactive topic browser
+## [tc_peer_browse] Shortcode — interactive topic browser
 
 The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages).
 
@@ -145,7 +145,7 @@ By default only the topic pills and the Match toggle are shown; enable `show_sco
 
 ---
 
-## 14. Blocks
+## Blocks
 
 | Block | Shortcode equivalent | Description |
 |-------|---------------------|-------------|

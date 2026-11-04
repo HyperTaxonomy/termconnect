@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 4
 ---
 
-## 20. REST API
+## REST API
 
 When TermConnect is active, it adds fields to standard WordPress term endpoints for TermConnect-enabled taxonomies.
 

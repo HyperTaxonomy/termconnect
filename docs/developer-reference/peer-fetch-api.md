@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 3
 ---
 
-## 19. Peer Fetch API
+## Peer Fetch API
 
 Public functions for fetching and scoring posts from peer sites and feeds. All caching uses WordPress transients.
 

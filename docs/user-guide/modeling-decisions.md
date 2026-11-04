@@ -4,7 +4,7 @@ parent: User Guide
 nav_order: 7
 ---
 
-## 14. When Peer Networks Make Sense
+## When Peer Networks Make Sense
 
 Peer connections are most valuable when:
 
@@ -16,7 +16,7 @@ Peer connections work best when both sides maintain a careful, intentional taxon
 
 ---
 
-## 15. Term Equivalence and External Identifiers
+## Term Equivalence and External Identifiers
 
 When you link a local term to a peer term by its slug, you are asserting equivalence. That assertion is fragile: a slug like `python` means the programming language on a technology site and the reptile on a wildlife site. Slug similarity is not semantic equivalence.
 
@@ -31,7 +31,7 @@ When Site A maps its "Python" tag to Wikidata Q28865, and Site B maps its "Pytho
 
 ---
 
-## 16. Max FOAF Depth
+## Max FOAF Depth
 
 `foaf_depth="0"` (the default) queries only explicitly configured peers. Increasing to 1 or 2 discovers posts from peers-of-peers automatically — useful for a wider community but only as reliable as your direct peers' own peer configurations.
 
