@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: termconnect 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 08:35-0400\n"
-"PO-Revision-Date: 2026-10-30 08:49-0400\n"
+"POT-Creation-Date: 2026-11-06 00:59-0500\n"
+"PO-Revision-Date: 2026-11-06 00:59-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -57,14 +57,14 @@ msgstr "TermConnect"
 #: includes/admin/delegated-identity-ajax.php:75
 #: includes/admin/delegated-identity-ajax.php:223
 #: includes/admin/delegated-identity-ajax.php:324
-#: includes/admin/delegated-identity-ajax.php:371
-#: includes/admin/delegated-identity-ajax.php:397
-#: includes/admin/delegated-identity-ajax.php:426
-#: includes/admin/delegated-identity-ajax.php:500
-#: includes/admin/delegated-identity-ajax.php:551
-#: includes/admin/delegated-identity-ajax.php:590
-#: includes/admin/delegated-identity-ajax.php:647
-#: includes/admin/delegated-identity-ajax.php:684
+#: includes/admin/delegated-identity-ajax.php:387
+#: includes/admin/delegated-identity-ajax.php:413
+#: includes/admin/delegated-identity-ajax.php:442
+#: includes/admin/delegated-identity-ajax.php:516
+#: includes/admin/delegated-identity-ajax.php:567
+#: includes/admin/delegated-identity-ajax.php:606
+#: includes/admin/delegated-identity-ajax.php:663
+#: includes/admin/delegated-identity-ajax.php:700
 #: includes/admin/export-import.php:32 includes/admin/export-import.php:170
 #: includes/admin/settings.php:45 includes/admin/settings.php:65
 #: includes/admin/shared-vocabularies-ajax.php:34
@@ -85,16 +85,16 @@ msgstr "Доступ запрещён."
 
 #: includes/admin/delegated-identity-ajax.php:42
 #: includes/admin/delegated-identity-ajax.php:86
-#: includes/admin/delegated-identity-ajax.php:507
-#: includes/admin/delegated-identity-ajax.php:561
-#: includes/admin/delegated-identity-ajax.php:599
+#: includes/admin/delegated-identity-ajax.php:523
+#: includes/admin/delegated-identity-ajax.php:577
+#: includes/admin/delegated-identity-ajax.php:615
 #: includes/admin/shared-vocabularies-ajax.php:342
 msgid "Invalid parameters."
 msgstr "Недопустимые параметры."
 
 #: includes/admin/delegated-identity-ajax.php:47
 #: includes/admin/delegated-identity-ajax.php:91
-#: includes/admin/delegated-identity-ajax.php:517
+#: includes/admin/delegated-identity-ajax.php:533
 #: includes/core/delegated-identity.php:103
 msgid "Term not found."
 msgstr "Термин не найден."
@@ -118,9 +118,9 @@ msgid "Identity delegated successfully."
 msgstr "Определение успешно делегировано."
 
 #: includes/admin/delegated-identity-ajax.php:232
-#: includes/admin/delegated-identity-ajax.php:379
-#: includes/admin/delegated-identity-ajax.php:402
-#: includes/admin/delegated-identity-ajax.php:431
+#: includes/admin/delegated-identity-ajax.php:395
+#: includes/admin/delegated-identity-ajax.php:418
+#: includes/admin/delegated-identity-ajax.php:447
 msgid "Invalid term ID."
 msgstr "Недопустимый идентификатор термина."
 
@@ -138,75 +138,84 @@ msgstr ""
 msgid "Delegation ended."
 msgstr "Делегирование прекращено."
 
-#: includes/admin/delegated-identity-ajax.php:356
+#: includes/admin/delegated-identity-ajax.php:355
+#, php-format
+msgid ""
+"Stopped at the time limit: %1$d of %2$d term(s) refreshed. Click Re-sync All "
+"again to continue."
+msgstr ""
+"Остановлено по ограничению времени. Обновлено терминов: %1$d из %2$d. "
+"Нажмите «Пересинхронизировать всё» ещё раз, чтобы продолжить."
+
+#: includes/admin/delegated-identity-ajax.php:372
 #, php-format
 msgid "%1$d term(s) refreshed, %2$d error(s)."
 msgstr "Обновлено терминов: %1$d, ошибок: %2$d."
 
-#: includes/admin/delegated-identity-ajax.php:383
-#: includes/admin/delegated-identity-ajax.php:436
-#: includes/admin/delegated-identity-ajax.php:512
+#: includes/admin/delegated-identity-ajax.php:399
+#: includes/admin/delegated-identity-ajax.php:452
+#: includes/admin/delegated-identity-ajax.php:528
 msgid "No delegation found for this term."
 msgstr "Для этого термина делегирование не найдено."
 
-#: includes/admin/delegated-identity-ajax.php:386
+#: includes/admin/delegated-identity-ajax.php:402
 msgid "Settings updated."
 msgstr "Настройки обновлены."
 
-#: includes/admin/delegated-identity-ajax.php:411
+#: includes/admin/delegated-identity-ajax.php:427
 msgid "Identity data refreshed."
 msgstr "Данные определения обновлены."
 
-#: includes/admin/delegated-identity-ajax.php:441
+#: includes/admin/delegated-identity-ajax.php:457
 msgid "No remote term ID stored — cannot probe by ID."
 msgstr ""
 "Идентификатор удалённого термина не сохранён — невозможно выполнить проверку "
 "по ID."
 
-#: includes/admin/delegated-identity-ajax.php:446
+#: includes/admin/delegated-identity-ajax.php:462
 msgid "Local term not found."
 msgstr "Локальный термин не найден."
 
-#: includes/admin/delegated-identity-ajax.php:455
+#: includes/admin/delegated-identity-ajax.php:471
 msgid "Remote term not found by ID — it may have been deleted."
 msgstr "Удалённый термин не найден по ID — возможно, он был удалён."
 
-#: includes/admin/delegated-identity-ajax.php:539
+#: includes/admin/delegated-identity-ajax.php:555
 msgid "Term re-linked and renamed."
 msgstr "Термин повторно связан и переименован."
 
-#: includes/admin/delegated-identity-ajax.php:567
+#: includes/admin/delegated-identity-ajax.php:583
 msgid "Unknown link type."
 msgstr "Неизвестный тип ссылки."
 
-#: includes/admin/delegated-identity-ajax.php:572
+#: includes/admin/delegated-identity-ajax.php:588
 msgid "Failed to add link."
 msgstr "Не удалось добавить ссылку."
 
-#: includes/admin/delegated-identity-ajax.php:578
+#: includes/admin/delegated-identity-ajax.php:594
 msgid "Link added."
 msgstr "Ссылка добавлена."
 
-#: includes/admin/delegated-identity-ajax.php:604
+#: includes/admin/delegated-identity-ajax.php:620
 msgid "Target term not found."
 msgstr "Целевой термин не найден."
 
-#: includes/admin/delegated-identity-ajax.php:613
-#: includes/admin/delegated-identity-ajax.php:666
+#: includes/admin/delegated-identity-ajax.php:629
+#: includes/admin/delegated-identity-ajax.php:682
 msgid "Remote term has moved again. Retry from Site Health."
 msgstr ""
 "Удалённый термин снова был перемещён. Повторите из раздела «Здоровье сайта»."
 
-#: includes/admin/delegated-identity-ajax.php:632
+#: includes/admin/delegated-identity-ajax.php:648
 msgid "Delegation transferred."
 msgstr "Делегирование передано."
 
-#: includes/admin/delegated-identity-ajax.php:655
-#: includes/core/delegated-identity.php:1157
+#: includes/admin/delegated-identity-ajax.php:671
+#: includes/core/delegated-identity.php:1121
 msgid "There is no pending redirect for this term."
 msgstr "Для этого термина нет ожидающего перенаправления."
 
-#: includes/admin/delegated-identity-ajax.php:658
+#: includes/admin/delegated-identity-ajax.php:674
 msgid ""
 "This term is managed by a shared vocabulary; update the vocabulary source "
 "instead."
@@ -214,11 +223,11 @@ msgstr ""
 "Этот термин управляется общим словарём — обновите вместо этого источник "
 "словаря."
 
-#: includes/admin/delegated-identity-ajax.php:673
+#: includes/admin/delegated-identity-ajax.php:689
 msgid "Delegation now follows the new remote term."
 msgstr "Делегирование теперь следует за новым удалённым термином."
 
-#: includes/admin/delegated-identity-ajax.php:691
+#: includes/admin/delegated-identity-ajax.php:707
 msgid "Redirect declined; the current delegation is kept."
 msgstr "Перенаправление отклонено; текущее делегирование сохранено."
 
@@ -265,11 +274,13 @@ msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:190
 msgid ""
-"External Links for this term will be replaced by the remote term's "
-"identifiers while delegation is active."
+"The remote term's external links will be shown with this term's while "
+"delegation is active. Where both link to the same site, the remote link is "
+"used."
 msgstr ""
-"Внешние ссылки этого термина будут заменены идентификаторами удалённого "
-"термина, пока делегирование активно."
+"Пока делегирование активно, внешние ссылки удалённого термина показываются "
+"вместе со ссылками этого термина. Если обе ссылки ведут на один и тот же "
+"сайт, используется ссылка удалённого термина."
 
 #: includes/admin/delegated-identity-edit.php:196
 #: includes/admin/delegated-identity-edit.php:575
@@ -733,12 +744,12 @@ msgstr[2] ""
 
 #: includes/admin/delegated-identity-health.php:333
 msgid ""
-"These rows will be removed on the next sync if the peer restores them, or "
-"can be reviewed on each term's edit screen."
+"These rows are kept. You can review them on each term's edit screen, and the "
+"warning clears if the peer restores the relationship."
 msgstr ""
-"Эти строки будут удалены при следующей синхронизации, если сторонний сайт их "
-"восстановит, либо их можно просмотреть на странице редактирования каждого "
-"термина."
+"Эти строки сохраняются. Их можно просмотреть на странице редактирования "
+"каждого термина. Предупреждение исчезнет, если сторонний сайт восстановит "
+"связь."
 
 #: includes/admin/delegated-identity-health.php:343
 #, php-format
@@ -1553,11 +1564,14 @@ msgstr "Пересинхронизировать всё"
 
 #: includes/admin/settings.php:549
 msgid ""
-"How often delegated term data is refreshed from source sites. Re-sync All "
-"ignores the TTL and fetches immediately."
+"How often delegated term data is refreshed from source sites. Terms are "
+"checked twice daily, so values under 12 hours have no further effect. Re-"
+"sync All ignores this setting and fetches immediately."
 msgstr ""
 "Как часто данные делегированных терминов обновляются с исходных сайтов. "
-"«Пересинхронизировать всё» игнорирует TTL и получает данные немедленно."
+"Термины проверяются дважды в день, поэтому значения менее 12 часов ничего не "
+"меняют. «Пересинхронизировать всё» не учитывает эту настройку и получает "
+"данные немедленно."
 
 #: includes/admin/settings.php:571 includes/admin/shared-vocabularies.php:1082
 msgid "Syncing…"
@@ -1747,7 +1761,7 @@ msgid "Remote term has moved. Try the new slug."
 msgstr "Удалённый термин был перемещён. Попробуйте новый ярлык."
 
 #: includes/admin/shared-vocabularies-ajax.php:429
-#: includes/admin/shared-vocabulary-sync.php:1187
+#: includes/admin/shared-vocabulary-sync.php:1270
 msgid "HyperTaxonomy is required to merge terms."
 msgstr "Для слияния терминов требуется HyperTaxonomy."
 
@@ -1914,11 +1928,13 @@ msgstr "Синхронизировать типы связей и связи с 
 
 #: includes/admin/shared-vocabularies.php:190
 msgid ""
-"Fetches custom relationship type definitions and term relationships. "
-"Expensive — one request per term. Disabled by default."
+"Fetches custom relationship type definitions and term relationships with "
+"each sync, and writes each relationship. This adds time on large taxonomies, "
+"so it is disabled by default."
 msgstr ""
-"Получает определения пользовательских типов связей и связи терминов. "
-"Ресурсоёмко — один запрос на термин. Отключено по умолчанию."
+"Получает определения пользовательских типов связей и связи терминов при "
+"каждой синхронизации и записывает каждую связь. На больших таксономиях это "
+"занимает больше времени, поэтому по умолчанию отключено."
 
 #: includes/admin/shared-vocabularies.php:194
 msgid "Include cross-taxonomy relationships"
@@ -2310,46 +2326,50 @@ msgid ""
 msgstr ""
 "Делегирование связей пропущено — на стороннем сайте не активен HyperTaxonomy."
 
-#: includes/admin/shared-vocabulary-sync.php:524
+#: includes/admin/shared-vocabulary-sync.php:561
 msgid "Remote group scope requires HyperTaxonomy to be active."
 msgstr ""
 "Охват уровня удалённой группы требует активного HyperTaxonomy на стороннем "
 "сайте."
 
-#: includes/admin/shared-vocabulary-sync.php:538
+#: includes/admin/shared-vocabulary-sync.php:575
 msgid "Missing peer site or remote group slug."
 msgstr "Отсутствует сторонний сайт или ярлык удалённой группы."
 
-#: includes/admin/shared-vocabulary-sync.php:558
+#: includes/admin/shared-vocabulary-sync.php:595
 #, php-format
 msgid "Remote group endpoint returned HTTP %d."
 msgstr "Конечная точка групп терминов вернула HTTP статус %d."
 
-#: includes/admin/shared-vocabulary-sync.php:565
+#: includes/admin/shared-vocabulary-sync.php:602
 msgid "Invalid response from remote group endpoint."
 msgstr "Недопустимый ответ от конечной точки групп терминов."
 
-#: includes/admin/shared-vocabulary-sync.php:581
+#: includes/admin/shared-vocabulary-sync.php:618
 msgid "Could not create local group: "
 msgstr "Не удалось создать локальную группу: "
 
-#: includes/admin/shared-vocabulary-sync.php:998
+#: includes/admin/shared-vocabulary-sync.php:884
+msgid "Cannot resolve peer site URL."
+msgstr "Не удалось определить URL-адрес стороннего сайта."
+
+#: includes/admin/shared-vocabulary-sync.php:1081
 #: includes/core/delegated-identity.php:586
-#: includes/core/delegated-identity.php:1005
+#: includes/core/delegated-identity.php:969
 #, php-format
 msgid "Remote site returned HTTP %d."
 msgstr "Сторонний сайт вернул HTTP статус %d."
 
-#: includes/admin/shared-vocabulary-sync.php:1287
+#: includes/admin/shared-vocabulary-sync.php:1370
 msgid "HyperTaxonomy not active — cannot register remote relationship types."
 msgstr ""
 "HyperTaxonomy не активен — невозможно зарегистрировать удалённые типы связей."
 
-#: includes/admin/shared-vocabulary-sync.php:1305
+#: includes/admin/shared-vocabulary-sync.php:1388
 msgid "Peer site does not have HyperTaxonomy active."
 msgstr "На стороннем сайте не активен HyperTaxonomy."
 
-#: includes/admin/shared-vocabulary-sync.php:1306
+#: includes/admin/shared-vocabulary-sync.php:1389
 msgid "Relationship types endpoint returned an unexpected status."
 msgstr "Конечная точка типов связей вернула неожиданный статус."
 
@@ -2620,12 +2640,12 @@ msgstr[2] "%d устаревших строк связи"
 
 #: includes/core/delegated-identity.php:108
 #: includes/core/delegated-identity.php:546
-#: includes/core/delegated-identity.php:976
+#: includes/core/delegated-identity.php:940
 msgid "Not a WordPress peer link type."
 msgstr "Это не тип ссылки на сторонний сайт WordPress."
 
 #: includes/core/delegated-identity.php:113
-#: includes/core/delegated-identity.php:981
+#: includes/core/delegated-identity.php:945
 msgid "Could not determine peer site URL."
 msgstr "Не удалось определить URL стороннего сайта."
 
@@ -2648,20 +2668,20 @@ msgstr "Не удалось определить URL стороннего сай
 
 #: includes/core/delegated-identity.php:581
 #: includes/core/delegated-identity.php:598
-#: includes/core/delegated-identity.php:1000
+#: includes/core/delegated-identity.php:964
 msgid "Remote term not found."
 msgstr "Удалённый термин не найден."
 
 #: includes/core/delegated-identity.php:592
-#: includes/core/delegated-identity.php:1011
+#: includes/core/delegated-identity.php:975
 msgid "Invalid response from remote site."
 msgstr "Недопустимый ответ от стороннего сайта."
 
-#: includes/core/delegated-identity.php:1109
+#: includes/core/delegated-identity.php:1073
 msgid "This term has no delegated identity."
 msgstr "У этого термина нет делегированного определения."
 
-#: includes/core/feed-platform.php:403
+#: includes/core/feed-platform.php:422
 #, php-format
 msgid "Every %d seconds (TermConnect feed)"
 msgstr "Каждые %d секунд (лента TermConnect)"

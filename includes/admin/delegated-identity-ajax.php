@@ -325,10 +325,20 @@ function tc_ajax_di_resync_all(): void {
     }
 
     global $wpdb;
-    $term_ids = $wpdb->get_col( $wpdb->prepare(
-        "SELECT DISTINCT term_id FROM {$wpdb->termmeta} WHERE meta_key = %s",
+    $rows = $wpdb->get_results( $wpdb->prepare(
+        "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s",
         TC_META_IDENTITY_SOURCE
     ) );
+
+    // Oldest first, so running this again after the time limit continues with the terms
+    // the last run didn't reach.
+    $last_fetched = array();
+    foreach ( $rows as $row ) {
+        $source = maybe_unserialize( $row->meta_value );
+        $last_fetched[ (int) $row->term_id ] = is_array( $source ) ? (int) ( $source['last_fetched'] ?? 0 ) : 0;
+    }
+    asort( $last_fetched );
+    $term_ids = array_keys( $last_fetched );
 
     $total     = count( $term_ids );
     $refreshed = 0;
@@ -340,6 +350,12 @@ function tc_ajax_di_resync_all(): void {
                 'refreshed'  => $refreshed,
                 'total'      => $total,
                 'incomplete' => true,
+                'message'    => sprintf(
+                    /* translators: 1: refreshed count, 2: total count */
+                    __( 'Stopped at the time limit: %1$d of %2$d term(s) refreshed. Click Re-sync All again to continue.', 'termconnect' ),
+                    $refreshed,
+                    $total
+                ),
             ) );
         }
         $result = tc_refresh_identity_cache( (int) $term_id );

@@ -56,6 +56,13 @@ Visitor link suggestions (see the user guide's *Archives & Suggestions*) are Wor
 
 To list a term's suggestions with `get_comments()`, query by meta: `'type' => 'tc_suggested_link', 'meta_key' => '_tc_term_id', 'meta_value' => (string) $term_id`.
 
+### Scheduled Events
+
+| Hook | Runs | Description |
+|------|------|-------------|
+| `tc_refresh_identity_caches` | Twice daily | Refreshes delegated terms older than the `identity_cache_ttl` setting. |
+| `tc_sync_shared_vocabularies` | Hourly | Syncs the Shared Vocabulary sources whose `sync_interval` has passed. |
+
 ### Cache Management
 
 The following functions manage site-wide caches for delegated identity metadata. They are internal helpers but relevant for developers who write to identity source or relationship sync meta directly.

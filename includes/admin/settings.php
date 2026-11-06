@@ -546,7 +546,7 @@ class TC_Settings {
                     </button>
                     <span class="tc-resync-status" style="margin-left:8px;"></span>
                     <p class="description" style="margin-top:6px">
-                        <?php esc_html_e( 'How often delegated term data is refreshed from source sites. Re-sync All ignores the TTL and fetches immediately.', 'termconnect' ); ?>
+                        <?php esc_html_e( 'How often delegated term data is refreshed from source sites. Terms are checked twice daily, so values under 12 hours have no further effect. Re-sync All ignores this setting and fetches immediately.', 'termconnect' ); ?>
                     </p>
                 </td>
             </tr>

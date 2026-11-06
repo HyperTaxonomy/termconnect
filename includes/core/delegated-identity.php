@@ -782,43 +782,7 @@ function tc_refresh_identity_cache( int $term_id ) {
         tc_sv_update_root_term_id( $source['sv_source_id'], $source['remote_slug'], $new_remote_term_id );
     }
 
-    // Propagate sync_descendants: find new/moved remote children and delegate them.
-    if ( ! empty( $source['sync_descendants'] ) && function_exists( 'tc_sv_sync_source' ) ) {
-        tc_sv_propagate_descendants( $term_id, $source );
-    }
-
     return true;
-}
-
-/**
- * Propagate delegation to any remote children not yet mirrored locally.
- * Builds a temporary single-root source config and delegates to the mirror logic.
- *
- * @param int   $term_id  Local term ID of the delegation root.
- * @param array $source   Identity source meta for this term.
- */
-function tc_sv_propagate_descendants( int $term_id, array $source ): void {
-    // Only propagate if the remote term ID is known.
-    if ( empty( $source['remote_term_id'] ) ) { return; }
-
-    // Build a temporary source config scoped to this term's subtree.
-    $tmp_source = array(
-        'id'           => 'propagate_' . $term_id,
-        'peer_site_slug'      => $source['peer_site_slug'],
-        'taxonomy'     => ( ( $t = get_term( $term_id ) ) && ! is_wp_error( $t ) ) ? $t->taxonomy : '',
-        'scope'        => 'roots',
-        'roots'        => array( array(
-            'remote_term_id' => (int) $source['remote_term_id'],
-            'remote_slug'    => $source['remote_slug'],
-        ) ),
-        'misplacement' => 'flag',
-        'sync_interval'=> 'daily',
-        'last_sync'    => 0,
-    );
-
-    if ( $tmp_source['taxonomy'] ) {
-        tc_sv_sync_source( $tmp_source );
-    }
 }
 
 // ==============================================================================
@@ -1250,11 +1214,17 @@ add_action( 'tc_refresh_identity_caches', 'tc_cron_refresh_identity_caches' );
  * a queue that loses items by being skipped.
  *
  * Stale terms are refreshed oldest-first. A fixed order would let the same
- * leading terms (which go stale again after TC_IDENTITY_CACHE_TTL) consume the
- * budget every run, so terms near the end of the list would never refresh.
+ * leading terms (which go stale again after the cache setting's interval) consume
+ * the budget every run, so terms near the end of the list would never refresh.
+ *
+ * Terms are refreshed partway through a run, so one refreshed a full interval ago
+ * can look a few seconds too young. The time budget is allowed for here, or a
+ * 24-hour setting would wait for the following run.
  */
 function tc_cron_refresh_identity_caches(): void {
     $deadline = time() + TC_CRON_TIME_BUDGET;
+    $settings = get_option( 'tc_settings', array() );
+    $ttl      = max( 60, (int) ( $settings['identity_cache_ttl'] ?? TC_IDENTITY_CACHE_TTL ) );
 
     $stale = array();
     foreach ( tc_get_delegated_term_ids() as $term_id ) {
@@ -1263,7 +1233,7 @@ function tc_cron_refresh_identity_caches(): void {
             continue;
         }
         $last_fetched = (int) $source['last_fetched'];
-        if ( time() - $last_fetched >= TC_IDENTITY_CACHE_TTL ) {
+        if ( time() - $last_fetched + TC_CRON_TIME_BUDGET >= $ttl ) {
             $stale[ (int) $term_id ] = $last_fetched;
         }
     }

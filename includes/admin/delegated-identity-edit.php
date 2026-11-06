@@ -187,7 +187,7 @@ function tc_render_delegated_identity_empty( int $term_id, $term, array $peer_si
                 <strong><?php esc_html_e( 'Before you continue:', 'termconnect' ); ?></strong>
                 <ul style="margin:4px 0 0 16px;list-style:disc">
                     <li><?php esc_html_e( 'The slug will be locked to match the remote term and kept in sync.', 'termconnect' ); ?></li>
-                    <li><?php esc_html_e( 'External Links for this term will be replaced by the remote term\'s identifiers while delegation is active.', 'termconnect' ); ?></li>
+                    <li><?php esc_html_e( 'The remote term\'s external links will be shown with this term\'s while delegation is active. Where both link to the same site, the remote link is used.', 'termconnect' ); ?></li>
                 </ul>
             </div>
             <div style="margin-bottom:8px">

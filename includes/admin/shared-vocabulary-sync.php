@@ -183,12 +183,13 @@ function tc_sv_sync_source( array $source ): array {
     }
 
     // 6. Process each remote term in scope.
+    $source_sync_flags = tc_sv_get_sync_flags( $source );
     foreach ( $scope_ids as $remote_id ) {
         $rt = $remote_by_id[ $remote_id ] ?? null;
         if ( ! $rt ) { continue; }
 
         $sync_desc = ( 'terms' !== $scope );
-        $r = tc_sv_process_term( $rt, $peer_site_slug, $taxonomy, $origin, $delegations, $remote_by_id, $misplace, $sync_desc, $source['id'] ?? '' );
+        $r = tc_sv_process_term( $rt, $peer_site_slug, $taxonomy, $origin, $delegations, $remote_by_id, $misplace, $sync_desc, $source['id'] ?? '', $source_sync_flags['name'], $source_sync_flags['description'] );
         $result['synced']    += $r['synced'];
         $result['created']   += $r['created'];
         $result['renamed']   += $r['renamed'];
@@ -265,7 +266,8 @@ function tc_sv_sync_source( array $source ): array {
                     continue;
                 }
                 // Still on remote — individual fetch recovered it; re-sync and move on.
-                tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, $refreshed, (bool) ( $src['sync_descendants'] ?? false ), $src['sv_source_id'] ?? '' );
+                $term_sync_flags = tc_sv_get_sync_flags( $src );
+                tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, $refreshed, (bool) ( $src['sync_descendants'] ?? false ), $src['sv_source_id'] ?? '', $term_sync_flags['name'], $term_sync_flags['description'] );
                 $result['synced']++;
                 continue;
             }
@@ -316,7 +318,7 @@ function tc_sv_sync_source( array $source ): array {
 
     // 10. Sync relationship rows (only for full-taxonomy scope with delegation enabled).
     if ( $rel_delegation ) {
-        $row_result = tc_sv_sync_relationship_rows( $remote_terms, $delegations, $taxonomy, $cross_taxonomy );
+        $row_result = tc_sv_sync_relationship_rows( $remote_terms, $delegations, $taxonomy, $cross_taxonomy, $peer_site_slug );
         $result['rel_rows'] += $row_result['rows_written'];
         foreach ( $row_result['errors'] as $e ) {
             $result['errors'][] = $e;
@@ -354,7 +356,26 @@ function tc_sv_sync_source( array $source ): array {
 }
 
 /**
+ * Read the name and description sync settings from a vocabulary source or a term's
+ * identity source. Both are on unless explicitly turned off.
+ *
+ * @since 1.0.0
+ * @param array $config Vocabulary source config or identity source meta.
+ * @return array { name: bool, description: bool }
+ */
+function tc_sv_get_sync_flags( array $config ): array {
+    return array(
+        'name'        => ! isset( $config['sync_name'] ) || ! empty( $config['sync_name'] ),
+        'description' => ! isset( $config['sync_description'] ) || ! empty( $config['sync_description'] ),
+    );
+}
+
+/**
  * Process a single remote term: match by slug → link or create; detect renames.
+ *
+ * A term that is already delegated keeps its own sync settings, because they can be
+ * changed per term from the term edit screen. Editing a source's settings updates its
+ * terms when the source is saved. The source's settings apply to newly delegated terms.
  *
  * @param array  $rt           Remote term data.
  * @param string $peer_site_slug      Peer link type slug.
@@ -363,9 +384,13 @@ function tc_sv_sync_source( array $source ): array {
  * @param array  $delegations  remote_term_id => local_term_id map (passed by reference to update on create).
  * @param array  $remote_by_id Full remote id => term_data map (for parent resolution).
  * @param string $misplace     Misplacement handling: 'flag' | 'link-only' | 're-parent'.
+ * @param bool   $sync_desc    Track descendants of this term.
+ * @param string $sv_source_id Vocabulary source ID that owns this delegation.
+ * @param bool   $sync_name    The source's name sync setting.
+ * @param bool   $sync_description The source's description sync setting.
  * @return array { synced, created, renamed, misplaced, error }
  */
-function tc_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy, string $origin, array &$delegations, array $remote_by_id, string $misplace, bool $sync_desc = true, string $sv_source_id = '' ): array {
+function tc_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy, string $origin, array &$delegations, array $remote_by_id, string $misplace, bool $sync_desc = true, string $sv_source_id = '', bool $sync_name = true, bool $sync_description = true ): array {
     $r = array( 'synced' => 0, 'created' => 0, 'renamed' => 0, 'misplaced' => 0, 'skipped' => 0, 'error' => '' );
 
     $remote_id   = (int) $rt['id'];
@@ -407,9 +432,16 @@ function tc_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy
                 return $r;
             }
 
-            // Check for slug change → rename local term.
+            if ( $existing_src ) {
+                $term_sync_flags  = tc_sv_get_sync_flags( $existing_src );
+                $sync_name        = $term_sync_flags['name'];
+                $sync_description = $term_sync_flags['description'];
+            }
+
+            // Check for slug change → rename local term. The name follows below, when
+            // tc_set_identity_source() applies the term's sync settings.
             if ( $local_term->slug !== $remote_slug ) {
-                $rename_result = wp_update_term( $local_term_id, $taxonomy, array( 'slug' => $remote_slug, 'name' => $rt['name'] ) );
+                $rename_result = wp_update_term( $local_term_id, $taxonomy, array( 'slug' => $remote_slug ) );
                 if ( ! is_wp_error( $rename_result ) ) {
                     $r['renamed']++;
                 } else {
@@ -432,7 +464,7 @@ function tc_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy
             }
 
             // Update identity data using already-fetched remote term payload.
-            $set_result = tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tc_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id );
+            $set_result = tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tc_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id, $sync_name, $sync_description );
             if ( is_wp_error( $set_result ) ) {
                 $r['error'] = $set_result->get_error_message();
                 return $r;
@@ -472,7 +504,12 @@ function tc_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy
         }
 
         // Link: set or update identity source.
-        $set_result = tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tc_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id );
+        if ( $existing_src ) {
+            $term_sync_flags  = tc_sv_get_sync_flags( $existing_src );
+            $sync_name        = $term_sync_flags['name'];
+            $sync_description = $term_sync_flags['description'];
+        }
+        $set_result = tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tc_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id, $sync_name, $sync_description );
         if ( is_wp_error( $set_result ) ) {
             $r['error'] = $set_result->get_error_message();
             return $r;
@@ -496,7 +533,7 @@ function tc_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy
     }
 
     $local_term_id = (int) $inserted['term_id'];
-    $set_result = tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tc_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id );
+    $set_result = tc_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tc_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id, $sync_name, $sync_description );
     if ( is_wp_error( $set_result ) ) {
         $r['error'] = $set_result->get_error_message();
         return $r;
@@ -630,6 +667,7 @@ function tc_sv_sync_remote_group_source( array $source, array $result ): array {
 
     // 5. Process each remote member term.
     $processed_local_ids = array();
+    $source_sync_flags   = tc_sv_get_sync_flags( $source );
 
     foreach ( $to_process as $taxonomy => $members ) {
         foreach ( $members as $remote_id => $rt ) {
@@ -642,7 +680,9 @@ function tc_sv_sync_remote_group_source( array $source, array $result ): array {
                 $remote_by_id[ $taxonomy ],
                 'flag',
                 $sync_desc,
-                $source_id
+                $source_id,
+                $source_sync_flags['name'],
+                $source_sync_flags['description']
             );
             $result['synced']  += $r['synced'];
             $result['created'] += $r['created'];
@@ -779,10 +819,14 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
     $orphan_action        = $source['orphan_action'] ?? 'flag';
 
     $processed_local_ids = array();
+    $source_sync_flags   = tc_sv_get_sync_flags( $source );
+    $delegations         = $existing_delegations;
+    $skip_scope_exit     = false;
 
     foreach ( $enabled_taxa as $taxonomy ) {
         $members = htax_get_terms_in_groups( array( $group_id ), $taxonomy );
         if ( empty( $members ) ) { continue; }
+        $member_roots = array();
 
         foreach ( $members as $local_term ) {
             $local_term_id = (int) $local_term->term_id;
@@ -811,6 +855,7 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
                         continue;
                     }
                     $result['synced']++;
+                    $member_roots[] = array( 'remote_term_id' => (int) ( $existing_src['remote_term_id'] ?? 0 ) );
                 } else {
                     $result['skipped'] = ( $result['skipped'] ?? 0 ) + 1;
                 }
@@ -826,16 +871,54 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
                 continue;
             }
 
-            tc_set_identity_source( $local_term_id, $peer_site_slug, $local_term->slug, $remote, $sync_desc, $source_id );
+            tc_set_identity_source( $local_term_id, $peer_site_slug, $local_term->slug, $remote, $sync_desc, $source_id, $source_sync_flags['name'], $source_sync_flags['description'] );
             $result['synced']++;
             $processed_local_ids[] = $local_term_id;
+            $member_roots[]        = array( 'remote_term_id' => (int) ( $remote['term_id'] ?? 0 ) );
+        }
+
+        // Descendants of hierarchical members, when the source tracks them.
+        if ( $sync_desc && ! empty( $member_roots ) && is_taxonomy_hierarchical( $taxonomy ) ) {
+            $link_type    = tc_get_link_type( $peer_site_slug );
+            $origin       = $link_type ? tc_external_get_site_origin( $link_type['uri_prefix'] ?? '' ) : '';
+            $remote_terms = $origin ? tc_sv_fetch_taxonomy( $origin, $taxonomy ) : new WP_Error( 'tc_invalid_origin', __( 'Cannot resolve peer site URL.', 'termconnect' ) );
+            if ( is_wp_error( $remote_terms ) ) {
+                // Without the remote list, descendants can't be told apart from terms that
+                // left scope, so leave every delegation in place until the next sync.
+                $skip_scope_exit    = true;
+                $result['errors'][] = $remote_terms->get_error_message();
+                continue;
+            }
+
+            $remote_by_id = array();
+            foreach ( $remote_terms as $rt ) {
+                $remote_by_id[ (int) $rt['id'] ] = $rt;
+            }
+            $root_ids = array_column( $member_roots, 'remote_term_id' );
+            foreach ( tc_sv_subtree_ids( $member_roots, $remote_by_id ) as $remote_id ) {
+                if ( in_array( $remote_id, $root_ids, true ) || ! isset( $remote_by_id[ $remote_id ] ) ) {
+                    continue;
+                }
+                $r = tc_sv_process_term( $remote_by_id[ $remote_id ], $peer_site_slug, $taxonomy, $origin, $delegations, $remote_by_id, $source['misplacement'] ?? 'flag', true, $source_id, $source_sync_flags['name'], $source_sync_flags['description'] );
+                $result['synced']    += $r['synced'];
+                $result['created']   += $r['created'];
+                $result['renamed']   += $r['renamed'];
+                $result['misplaced'] += $r['misplaced'];
+                $result['skipped']   += $r['skipped'];
+                if ( ! empty( $r['error'] ) ) {
+                    $result['errors'][] = $r['error'];
+                }
+                if ( isset( $delegations[ $remote_id ] ) ) {
+                    $processed_local_ids[] = (int) $delegations[ $remote_id ];
+                }
+            }
         }
     }
 
     // Scope-exit: terms previously delegated by this source that are no longer group members.
     // Group scope is dynamic — membership defines delegation. Terms that left the group
     // simply have their identity cleared; no remote fetch needed.
-    foreach ( $existing_delegations as $local_term_id ) {
+    foreach ( $skip_scope_exit ? array() : $existing_delegations as $local_term_id ) {
         if ( in_array( $local_term_id, $processed_local_ids, true ) ) {
             continue;
         }
@@ -1372,9 +1455,10 @@ function tc_sv_sync_relationship_types( string $origin ): array {
  * @param array   $delegations   remote_term_id => local_term_id for this sync run.
  * @param string  $taxonomy      Local taxonomy slug.
  * @param bool    $cross_taxonomy Whether to process cross-taxonomy relationships.
+ * @param string  $peer_site_slug Peer link type slug that cross-taxonomy targets must be delegated to.
  * @return array { rows_written: int, errors: string[] }
  */
-function tc_sv_sync_relationship_rows( array $remote_terms, array $delegations, string $taxonomy, bool $cross_taxonomy ): array {
+function tc_sv_sync_relationship_rows( array $remote_terms, array $delegations, string $taxonomy, bool $cross_taxonomy, string $peer_site_slug ): array {
     $result = array( 'rows_written' => 0, 'errors' => array() );
 
     if ( ! function_exists( 'htax_add_term_relationship' )
@@ -1431,7 +1515,9 @@ function tc_sv_sync_relationship_rows( array $remote_terms, array $delegations, 
             // Cross-taxonomy: require the local target to be delegated to the same peer.
             if ( $is_cross ) {
                 $target_src = tc_get_identity_source( $target->term_id );
-                if ( ! $target_src || ( $target_src['remote_slug'] ?? '' ) !== $target_slug ) {
+                if ( ! $target_src
+                     || ( $target_src['peer_site_slug'] ?? '' ) !== $peer_site_slug
+                     || ( $target_src['remote_slug'] ?? '' ) !== $target_slug ) {
                     continue;
                 }
             }

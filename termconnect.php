@@ -39,7 +39,7 @@ function tc_plugin_activate(): void {
         wp_schedule_event( time(), 'twicedaily', 'tc_refresh_identity_caches' );
     }
     if ( ! wp_next_scheduled( 'tc_sync_shared_vocabularies' ) ) {
-        wp_schedule_event( time(), 'daily', 'tc_sync_shared_vocabularies' );
+        wp_schedule_event( time(), 'hourly', 'tc_sync_shared_vocabularies' );
     }
     tc_activation_purge_stale_sv_queues();
     tc_add_indexes();

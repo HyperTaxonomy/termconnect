@@ -330,7 +330,7 @@ function tc_health_check_shared_vocabularies(): array {
             ) ),
             $stale_rel_count
         );
-        $description .= ' ' . esc_html__( 'These rows will be removed on the next sync if the peer restores them, or can be reviewed on each term\'s edit screen.', 'termconnect' );
+        $description .= ' ' . esc_html__( 'These rows are kept. You can review them on each term\'s edit screen, and the warning clears if the peer restores the relationship.', 'termconnect' );
         $description .= '</p>';
     }
 

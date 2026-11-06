@@ -187,7 +187,7 @@ function tc_sv_render_page(): void {
                             <input type="checkbox" id="tc-sv-rel-delegation" value="1">
                             <?php esc_html_e( 'Sync relationship types and relationships from this peer', 'termconnect' ); ?>
                         </label>
-                        <p class="description"><?php esc_html_e( 'Fetches custom relationship type definitions and term relationships. Expensive — one request per term. Disabled by default.', 'termconnect' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Fetches custom relationship type definitions and term relationships with each sync, and writes each relationship. This adds time on large taxonomies, so it is disabled by default.', 'termconnect' ); ?></p>
                         <div id="tc-sv-cross-taxonomy-row" style="display:none;margin-top:8px">
                             <label>
                                 <input type="checkbox" id="tc-sv-cross-taxonomy" value="1">
