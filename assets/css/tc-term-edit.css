@@ -162,25 +162,3 @@
 
 /* Pending pill: no additional styling — looks identical to committed pills */
 
-/* Delegation suggestions list — matches the .tc-links-dd-row row style */
-.tc-di-suggestions {
-    list-style: none;
-    margin: 4px 0 0;
-    padding: 0;
-    border-top: 1px solid #f0f0f1;
-}
-
-.tc-di-suggestions li {
-    padding: 5px 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f1;
-    font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.tc-di-suggestions li:hover,
-.tc-di-suggestions li:focus {
-    background: #f6f7f7;
-}
