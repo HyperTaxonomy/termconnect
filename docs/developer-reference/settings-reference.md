@@ -24,7 +24,7 @@ TermConnect stores its settings in the `tc_settings` WordPress option.
 | `allow_suggested_links` | bool | `false` | Show suggestion form on term archive pages |
 | `suggested_link_label` | string | `'Suggest a related concept'` | Label shown above the suggestion form |
 | `suggested_link_notifications` | bool | `true` | Email admin when a suggestion is submitted |
-| `delete_on_uninstall` | bool | `false` | Delete all term link and delegated identity data, and visitor link suggestions, when the plugin is uninstalled (settings, scheduled tasks and caches are always removed) |
-| `external_site_blacklist` | string[] | `[]` | Blocked domains |
+| `delete_on_uninstall` | bool | `false` | Also delete link types, enabled taxonomies, Shared Vocabulary sources, term link and delegated identity data, and visitor link suggestions when the plugin is uninstalled (settings, scheduled tasks, caches and review queues are always removed) |
+| `external_site_blacklist` | string[] | `[]` | Blocked domains; each also blocks its subdomains |
 
 Enabled taxonomies are stored separately in `tc_enabled_taxonomies` as a flat array of taxonomy slugs. Link type definitions are stored in `tc_link_types`. Shared Vocabularies source configs are stored in `tc_shared_vocabularies`. The delegated identity redirect review queue is stored in `tc_identity_redirect_queue`. `tc_feed_reschedule` is a temporary flag set on activation: the next page load schedules every enabled feed, then deletes it.

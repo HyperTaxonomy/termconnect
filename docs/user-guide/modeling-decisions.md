@@ -4,6 +4,8 @@ parent: User Guide
 nav_order: 7
 ---
 
+# Modeling Decisions
+
 ## When Peer Networks Make Sense
 
 Peer connections are most valuable when:
@@ -23,16 +25,16 @@ When you link a local term to a peer term by its slug, you are asserting equival
 External identifiers provide a stronger foundation. Many concepts are precisely defined in authoritative third-party vocabularies:
 
 - **Wikidata** (e.g. Q28865 for Python the programming language)
-- **GeoNames** (e.g. 2968815 for Paris, France)
-- **Library of Congress Subject Headings** (e.g. `sh85107984` for Python programming)
+- **GeoNames** (e.g. 2988507 for Paris, France)
+- **Library of Congress Subject Headings** (e.g. `sh96008834` for Python as a programming language)
 - **Domain-specific identifiers** — MeSH, legal thesauri, scientific classifications
 
-When Site A maps its "Python" tag to Wikidata Q28865, and Site B maps its "Python programming language" tag to the same identifier, the equivalence is grounded regardless of how each site names the term locally. The value compounds across a network: if three sites all anchor equivalent terms to the same QID, any site can match across all three without maintaining manual per-pair mappings.
+When Site A maps its "Python" tag to Wikidata Q28865, and Site B maps its "Python programming language" tag to the same identifier, the equivalence is grounded regardless of how each site names the term locally. The value compounds across a network: if three sites all anchor equivalent terms to the same QID, any site can match across all three without maintaining manual per-pair mappings, as long as those sites run TermConnect.
 
 ---
 
 ## Max FOAF Depth
 
-`foaf_depth="0"` (the default) queries only explicitly configured peers. Increasing to 1 or 2 discovers posts from peers-of-peers automatically — useful for a wider community but only as reliable as your direct peers' own peer configurations.
+`foaf_depth="0"` (the default) queries only explicitly configured peers. Increasing it discovers posts from peers-of-peers automatically — useful for a wider community but only as reliable as your direct peers' own peer configurations. The shortcode value is capped by **Max FOAF Depth** in Settings, which defaults to 1, so raise that setting to go further.
 
 Use depth 1 for a small group of editorially disciplined sites. Stay at 0 for a loosely curated network and map peers explicitly instead.

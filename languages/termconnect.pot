@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 00:59-0500\n"
+"POT-Creation-Date: 2026-11-06 02:47-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -64,7 +64,7 @@ msgstr ""
 #: includes/admin/delegated-identity-ajax.php:606
 #: includes/admin/delegated-identity-ajax.php:663
 #: includes/admin/delegated-identity-ajax.php:700
-#: includes/admin/export-import.php:32 includes/admin/export-import.php:170
+#: includes/admin/export-import.php:33 includes/admin/export-import.php:174
 #: includes/admin/settings.php:45 includes/admin/settings.php:65
 #: includes/admin/shared-vocabularies-ajax.php:34
 #: includes/admin/shared-vocabularies-ajax.php:232
@@ -1099,7 +1099,7 @@ msgstr ""
 msgid "Export / Import"
 msgstr ""
 
-#: includes/admin/settings.php:99 blocks/peer-posts/src/index.js:295
+#: includes/admin/settings.php:99 blocks/peer-posts/src/index.js:294
 msgid "Advanced"
 msgstr ""
 
@@ -1142,7 +1142,7 @@ msgid ""
 "Appends external links to term archive descriptions for enabled taxonomies."
 msgstr ""
 
-#: includes/admin/settings.php:217 blocks/peer-posts/src/index.js:238
+#: includes/admin/settings.php:217 blocks/peer-posts/src/index.js:237
 msgid "Format"
 msgstr ""
 
@@ -1441,8 +1441,9 @@ msgstr ""
 
 #: includes/admin/settings.php:647
 msgid ""
-"Delete all TermConnect data (link types, per-term identifiers, delegated "
-"identity, settings) when the plugin is deleted."
+"Delete all TermConnect data (link types, enabled taxonomies, shared "
+"vocabulary sources, per-term identifiers, delegated identity) when the "
+"plugin is deleted. Other settings are always removed."
 msgstr ""
 
 #: includes/admin/settings.php:650
@@ -2641,7 +2642,7 @@ msgid ""
 "peer."
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:114 blocks/peer-posts/src/index.js:199
+#: blocks/peer-browse/src/index.js:114 blocks/peer-posts/src/index.js:198
 msgid "Let peers expand via their own relationships"
 msgstr ""
 
@@ -2667,7 +2668,7 @@ msgstr ""
 msgid "Posts per page"
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:142
+#: blocks/peer-browse/src/index.js:142 blocks/peer-posts/src/index.js:141
 msgid "Max results"
 msgstr ""
 
@@ -2691,23 +2692,23 @@ msgstr ""
 msgid "Show Sort"
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:167 blocks/peer-posts/src/index.js:211
+#: blocks/peer-browse/src/index.js:167 blocks/peer-posts/src/index.js:210
 msgid "Display"
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:171 blocks/peer-posts/src/index.js:227
+#: blocks/peer-browse/src/index.js:171 blocks/peer-posts/src/index.js:226
 msgid "Columns"
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:176 blocks/peer-posts/src/index.js:215
+#: blocks/peer-browse/src/index.js:176 blocks/peer-posts/src/index.js:214
 msgid "Show thumbnail"
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:181 blocks/peer-posts/src/index.js:220
+#: blocks/peer-browse/src/index.js:181 blocks/peer-posts/src/index.js:219
 msgid "Show excerpt"
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:186 blocks/peer-posts/src/index.js:232
+#: blocks/peer-browse/src/index.js:186 blocks/peer-posts/src/index.js:231
 msgid "Image size"
 msgstr ""
 
@@ -2727,7 +2728,7 @@ msgstr ""
 msgid "Append"
 msgstr ""
 
-#: blocks/peer-browse/src/index.js:207 blocks/peer-posts/src/index.js:281
+#: blocks/peer-browse/src/index.js:207 blocks/peer-posts/src/index.js:280
 msgid "No-results message"
 msgstr ""
 
@@ -2797,134 +2798,130 @@ msgstr ""
 msgid "Results per page"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:141
-msgid "Max results (0 = use default)"
-msgstr ""
-
 #: blocks/peer-posts/src/index.js:143
 msgid ""
-"Total pages to fetch and cache (fetch size = max pages × per page). Extra "
-"pages are served via load-more without a new request to the peer site."
+"Maximum total results to fetch and cache. Results beyond the first page are "
+"shown with Load more, without a new request to the peer site."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:156
+#: blocks/peer-posts/src/index.js:155
 msgid "Peer Network"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:160
+#: blocks/peer-posts/src/index.js:159
 msgid "FOAF depth"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:162
+#: blocks/peer-posts/src/index.js:161
 msgid ""
 "Follow peer connections discovered from post responses. 0 = disabled. Capped "
 "at the global Max FOAF Depth setting."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:172
+#: blocks/peer-posts/src/index.js:171
 msgid "Require HyperTaxonomy peers only"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:174
+#: blocks/peer-posts/src/index.js:173
 msgid ""
 "Skip standard WordPress peers. Only query sites running HyperTaxonomy, which "
 "provide server-side relevance scoring."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:181
+#: blocks/peer-posts/src/index.js:180
 msgid "Include local synonyms"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:183
+#: blocks/peer-posts/src/index.js:182
 msgid ""
 "Resolve local synonym terms to their remote equivalents and send them as "
 "additional primary terms. Synonyms receive the same direct-match score as "
 "the primary queried term."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:190
+#: blocks/peer-posts/src/index.js:189
 msgid "Include related terms"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:192
+#: blocks/peer-posts/src/index.js:191
 msgid ""
 "Resolve locally included (non-synonym) terms to their remote equivalents and "
 "send them alongside the primary terms. Matched at a lower weight than direct "
 "or synonym matches."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:201
+#: blocks/peer-posts/src/index.js:200
 msgid ""
 "When on, each peer also matches the queried terms through its own "
 "relationship graph (not just direct assignments), surfacing more of its "
 "content. Off by default for predictable results."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:233
+#: blocks/peer-posts/src/index.js:232
 msgid "Registered image size; sets the uniform thumbnail aspect."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:241
+#: blocks/peer-posts/src/index.js:240
 msgid "Cards (div)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:242
+#: blocks/peer-posts/src/index.js:241
 msgid "Bulleted list (ul)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:243
+#: blocks/peer-posts/src/index.js:242
 msgid "Numbered list (ol)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:248
+#: blocks/peer-posts/src/index.js:247
 msgid "Template (style variant)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:249
+#: blocks/peer-posts/src/index.js:248
 msgid "CSS class suffix added as tc-result-{template}."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:254
+#: blocks/peer-posts/src/index.js:253
 msgid "Meta line"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:256
+#: blocks/peer-posts/src/index.js:255
 msgid ""
 "Template for the meta line below each title. Tokens: {date}, {label}, "
 "{hostname}, {origin}. Leave empty to hide."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:263
+#: blocks/peer-posts/src/index.js:262
 msgid "Prepend HTML (per item)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:265
+#: blocks/peer-posts/src/index.js:264
 msgid ""
 "HTML inserted before each result item. Tokens: {title}, {url}, {date}, "
 "{excerpt}, {label}, {hostname}, {origin}."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:272
+#: blocks/peer-posts/src/index.js:271
 msgid "Append HTML (per item)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:274
+#: blocks/peer-posts/src/index.js:273
 msgid "HTML inserted after each result item. Same tokens as prepend."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:282
+#: blocks/peer-posts/src/index.js:281
 msgid "Shown when no peer posts are found. Leave empty to render nothing."
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:287
+#: blocks/peer-posts/src/index.js:286
 msgid "Additional CSS class"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:299
+#: blocks/peer-posts/src/index.js:298
 msgid "Cache TTL (seconds)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:301
+#: blocks/peer-posts/src/index.js:300
 msgid ""
 "Leave empty to use the global External Posts Cache TTL from Settings → "
 "External Posts."

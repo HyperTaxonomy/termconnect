@@ -138,14 +138,13 @@ function Edit( { attributes, setAttributes } ) {
 						onChange={ ( val ) => setAttributes( { per_page: val } ) }
 					/>
 					<TextControl
-						label={ __( 'Max results (0 = use default)', 'termconnect' ) }
+						label={ __( 'Max results', 'termconnect' ) }
 						help={ __(
-							'Total pages to fetch and cache (fetch size = max pages × per page). Extra pages are served via load-more without a new request to the peer site.',
+							'Maximum total results to fetch and cache. Results beyond the first page are shown with Load more, without a new request to the peer site.',
 							'termconnect'
 						) }
 						type="number"
 						min="1"
-						max="20"
 						value={ max_results }
 						onChange={ ( val ) => setAttributes( { max_results: val } ) }
 					/>

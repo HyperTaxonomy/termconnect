@@ -89,17 +89,27 @@ function tc_is_self_origin( string $origin ): bool {
 }
 
 /**
- * Return true when the origin appears in the configured site blacklist.
+ * Return true when the origin's host is a blocked domain or one of its subdomains.
+ *
+ * Entries are domains, one per line in the setting. A pasted URL is reduced to its host.
  *
  * @since 1.0.0
  * @param string $origin scheme://host to check.
  * @return bool
  */
 function tc_external_is_blacklisted( string $origin ): bool {
-    $settings  = get_option( 'tc_settings', array() );
-    $blacklist = $settings['external_site_blacklist'] ?? array();
-    foreach ( (array) $blacklist as $entry ) {
-        if ( rtrim( (string) $entry, '/' ) === rtrim( $origin, '/' ) ) {
+    $settings = get_option( 'tc_settings', array() );
+    $host     = strtolower( (string) wp_parse_url( $origin, PHP_URL_HOST ) );
+    if ( '' === $host ) {
+        return false;
+    }
+    foreach ( (array) ( $settings['external_site_blacklist'] ?? array() ) as $entry ) {
+        $entry   = trim( (string) $entry );
+        $blocked = strtolower( (string) wp_parse_url( false !== strpos( $entry, '://' ) ? $entry : 'http://' . $entry, PHP_URL_HOST ) );
+        if ( '' === $blocked ) {
+            continue;
+        }
+        if ( $host === $blocked || '.' . $blocked === substr( $host, -( strlen( $blocked ) + 1 ) ) ) {
             return true;
         }
     }

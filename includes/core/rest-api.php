@@ -200,8 +200,10 @@ add_action( 'rest_api_init', static function () {
  * optionally tc_links when expose_links_api is enabled.
  *
  * @since 1.0.0
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response|WP_Error
  */
-function tc_rest_group_members( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+function tc_rest_group_members( WP_REST_Request $request ) {
     if ( ! $request->get_header( 'X-TermConnect' ) ) {
         return new WP_Error( 'tc_forbidden', __( 'X-TermConnect header required.', 'termconnect' ), array( 'status' => 403 ) );
     }

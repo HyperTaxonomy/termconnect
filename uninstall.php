@@ -3,8 +3,10 @@
  * Uninstall script for TermConnect.
  *
  * Plugin settings, cron jobs, and transients are always removed.
- * Term link meta and visitor link suggestions are only removed when the user has
- * explicitly enabled "Delete all data on uninstall" in Settings → TermConnect.
+ * Link types, enabled taxonomies, Shared Vocabulary sources, term link meta and visitor
+ * link suggestions are only removed when the user has explicitly enabled "Delete all data"
+ * in Settings → TermConnect. Term data depends on those definitions, so they stay together
+ * and a reinstall works as before.
  *
  * @package TermConnect
  * @since   1.0.0
@@ -22,8 +24,6 @@ function tc_uninstall_cleanup() {
 
 	// Always remove plugin options.
 	delete_option( 'tc_settings' );
-	delete_option( 'tc_enabled_taxonomies' );
-	delete_option( 'tc_link_types' );
 	delete_option( 'tc_peer_site_health' );
 	delete_option( 'tc_feed_reschedule' );
 
@@ -40,8 +40,7 @@ function tc_uninstall_cleanup() {
 	// Always remove the delegated identity redirect review queue.
 	delete_option( 'tc_identity_redirect_queue' );
 
-	// Always remove shared vocabulary source configs and mirror queues.
-	delete_option( 'tc_shared_vocabularies' );
+	// Always remove shared vocabulary review queues.
 	delete_option( 'tc_sv_misplaced_queue' );
 	delete_option( 'tc_merge_proposals' );
 	wp_unschedule_hook( 'tc_sync_shared_vocabularies' );
@@ -70,6 +69,10 @@ function tc_uninstall_cleanup() {
 
 	// Only remove term data if the user opted in.
 	if ( $delete_data ) {
+		delete_option( 'tc_enabled_taxonomies' );
+		delete_option( 'tc_link_types' );
+		delete_option( 'tc_shared_vocabularies' );
+
 		$wpdb->query( "DELETE FROM {$wpdb->termmeta} WHERE meta_key LIKE '\_tc\_link\_%'" );
 		$wpdb->query( "DELETE FROM {$wpdb->termmeta} WHERE meta_key = '_tc_identity_source'" );
 		$wpdb->query( "DELETE FROM {$wpdb->termmeta} WHERE meta_key = '_tc_delegated_links_data'" );

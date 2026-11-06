@@ -76,7 +76,7 @@ Works with any WordPress site. HyperTaxonomy adds relevance scoring and synonym 
 * **Terms → Peer Sites** — enable/disable/reorder/add/edit/delete link types; per-site cache controls (Clear Cache, Poll Now)
 * **Terms → Shared Vocabularies** — configure vocabulary mirror sources by peer site and taxonomy
 * **Links column** on taxonomy term list tables — sortable link count per term, with filter dropdown
-* **Settings → TermConnect** — enabled taxonomies, FOAF depth cap, site blacklist, cache TTLs, See Also format
+* **Settings → TermConnect** — enabled taxonomies, FOAF depth cap, blocked sites, cache TTLs, See Also format
 
 = Shortcodes & Blocks =
 

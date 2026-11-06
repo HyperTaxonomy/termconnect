@@ -6,7 +6,8 @@
  *   - link type definitions (tc_link_types option)
  *   - per-term external identifier values (_tc_link_{slug} term meta)
  *   - delegated identity sources (_tc_identity_source term meta)
- *   - original descriptions for delegated terms (_tc_original_description)
+ *   - original names and descriptions for delegated terms (_tc_original_name,
+ *     _tc_original_description)
  *
  * Import: restores all of the above. Link type definitions are merged (existing
  * custom types are preserved unless the file redefines them). Per-term values
@@ -74,10 +75,12 @@ function tc_handle_export_links(): void {
 
     // Collect delegated identity sources.
     $identity_rows = $wpdb->get_results(
-        "SELECT i.term_id, i.meta_value AS source, o.meta_value AS original_description
+        "SELECT i.term_id, i.meta_value AS source, o.meta_value AS original_description, n.meta_value AS original_name
          FROM {$wpdb->termmeta} i
          LEFT JOIN {$wpdb->termmeta} o
            ON o.term_id = i.term_id AND o.meta_key = '_tc_original_description'
+         LEFT JOIN {$wpdb->termmeta} n
+           ON n.term_id = i.term_id AND n.meta_key = '_tc_original_name'
          WHERE i.meta_key = '_tc_identity_source'
          ORDER BY i.term_id"
     );
@@ -97,6 +100,7 @@ function tc_handle_export_links(): void {
             'term_slug'            => $term->slug,
             'source'               => $source,
             'original_description' => $row->original_description ?? '',
+            'original_name'        => $row->original_name ?? null,
         );
     }
 
@@ -271,6 +275,10 @@ function tc_handle_import_links(): void {
             }
 
             update_term_meta( $term->term_id, TC_META_IDENTITY_SOURCE, $clean_source );
+
+            if ( isset( $entry['original_name'] ) ) {
+                update_term_meta( $term->term_id, TC_META_ORIGINAL_NAME, sanitize_text_field( $entry['original_name'] ) );
+            }
 
             if ( isset( $entry['original_description'] ) ) {
                 update_term_meta( $term->term_id, TC_META_ORIGINAL_DESCRIPTION, wp_kses_post( $entry['original_description'] ) );

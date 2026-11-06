@@ -644,7 +644,7 @@ class TC_Settings {
                     <label>
                         <input type="checkbox" name="tc_settings[delete_on_uninstall]"
                                value="1" <?php checked( $delete_on_uninstall ); ?> />
-                        <?php esc_html_e( 'Delete all TermConnect data (link types, per-term identifiers, delegated identity, settings) when the plugin is deleted.', 'termconnect' ); ?>
+                        <?php esc_html_e( 'Delete all TermConnect data (link types, enabled taxonomies, shared vocabulary sources, per-term identifiers, delegated identity) when the plugin is deleted. Other settings are always removed.', 'termconnect' ); ?>
                     </label>
                     <p class="description">
                         <?php esc_html_e( 'Deactivating the plugin never deletes data. Deletion only occurs when you use WordPress "Delete" on the Plugins screen.', 'termconnect' ); ?>

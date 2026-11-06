@@ -16,7 +16,7 @@ tc_external_validate_origin( string $origin ): bool
 // Blocks private IPs and loopback addresses. Call before any outbound request.
 
 tc_external_is_blacklisted( string $origin ): bool
-// Returns true when the origin is in the site blacklist setting.
+// Returns true when the origin's host is a blocked domain or one of its subdomains.
 
 tc_external_is_ht_enabled( string $origin ): bool
 // Returns true when the peer runs HyperTaxonomy (checks X-HyperTaxonomy header).
@@ -74,6 +74,14 @@ tc_external_fetch_relevance_posts( string $origin, string $taxonomy, array $all_
     string $peer_site_slug = '' ): array
 // Like tc_external_fetch_posts but sends ?search={keyword}&orderby=relevance.
 ```
+
+### How [tc_peer_posts] Queries Peers
+
+- **Identifier matching.** With no remote slug configured, the term's external identifiers are looked up with `?htax_term_uri=<uri>` on peers running TermConnect. A peer without it ignores the parameter, so this is skipped for those peers.
+- **HyperTaxonomy peers** get a scored request with `htax_includes`, `htax_match` and `htax_term_weights`, a per-term weight map derived from local per-taxonomy relevance settings (direct weight for primary and synonym terms, container weight for included terms). `peer_expand="true"` adds `htax_expand=1`. The peer returns `htax_score` from its own search index.
+- **Standard WordPress peers** get a standard `?tags=` request, and scoring happens locally with the same per-term weights.
+- **Source-post weighting.** Each term's weight also reflects its association strength with the current post, folded into `htax_term_weights` for HyperTaxonomy peers.
+- **Multiple taxonomies.** A peer is queried once per taxonomy, because the taxonomy filter can't express OR across taxonomies. A post returned for several taxonomies is scored as `combined = Σ(sᵢ × Wᵢ) / Σ Wᵢ`, where `sᵢ` is the per-taxonomy normalized score and `Wᵢ` is the total query-term weight for taxonomy *i*. The result stays between 0 and 1.
 
 ### Scoring & Cache
 
