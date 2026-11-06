@@ -59,7 +59,7 @@ function tc_ajax_peer_site_count_ineligible(): void {
     check_ajax_referer( 'tc_peer_site_edit', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
     global $wpdb;
@@ -117,12 +117,12 @@ function tc_ajax_clear_peer_cache(): void {
     check_ajax_referer( 'tc_clear_peer_cache', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Insufficient permissions.' ) );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ) );
     }
 
     $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
     if ( '' === $peer_site_slug ) {
-        wp_send_json_error( array( 'message' => 'Missing link type slug.' ) );
+        wp_send_json_error( array( 'message' => __( 'Missing link type slug.', 'termconnect' ) ) );
     }
 
     $type = tc_get_link_type( $peer_site_slug );
@@ -148,7 +148,7 @@ function tc_ajax_clear_all_peer_cache(): void {
     check_ajax_referer( 'tc_clear_all_peer_cache', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Insufficient permissions.' ) );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ) );
     }
 
     global $wpdb;
@@ -178,17 +178,17 @@ function tc_ajax_feed_categories(): void {
     check_ajax_referer( 'tc-link-suggest', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
     $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
     if ( '' === $peer_site_slug ) {
-        wp_send_json_error( array( 'message' => 'Missing peer_site_slug.' ) );
+        wp_send_json_error( array( 'message' => __( 'Missing peer_site_slug.', 'termconnect' ) ) );
     }
 
     $type = tc_get_link_type( $peer_site_slug );
     if ( null === $type || ( $type['platform'] ?? '' ) !== 'feed' ) {
-        wp_send_json_error( array( 'message' => 'Not a feed link type.' ) );
+        wp_send_json_error( array( 'message' => __( 'Not a feed link type.', 'termconnect' ) ) );
     }
 
     $force = ! empty( $_POST['force'] );
@@ -226,7 +226,7 @@ function tc_ajax_peer_site_identifier_suggest(): void {
     check_ajax_referer( 'tc-link-suggest', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
     $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
@@ -271,7 +271,7 @@ function tc_ajax_wp_peer_suggest(): void {
     check_ajax_referer( 'tc-link-suggest', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
     $peer_site_slug  = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
@@ -323,7 +323,7 @@ function tc_ajax_wp_peer_author_suggest(): void {
     check_ajax_referer( 'tc-link-suggest', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
     $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
@@ -394,17 +394,17 @@ function tc_ajax_poll_feed_now(): void {
     check_ajax_referer( 'tc_clear_peer_cache', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Insufficient permissions.' ) );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ) );
     }
 
     $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
     if ( '' === $peer_site_slug ) {
-        wp_send_json_error( array( 'message' => 'Missing link type slug.' ) );
+        wp_send_json_error( array( 'message' => __( 'Missing link type slug.', 'termconnect' ) ) );
     }
 
     $type = tc_get_link_type( $peer_site_slug );
     if ( null === $type || ( $type['platform'] ?? '' ) !== 'feed' ) {
-        wp_send_json_error( array( 'message' => 'Not a feed link type.' ) );
+        wp_send_json_error( array( 'message' => __( 'Not a feed link type.', 'termconnect' ) ) );
     }
 
     tc_feed_do_poll( $peer_site_slug );
@@ -430,7 +430,7 @@ function tc_ajax_clear_foaf_cache(): void {
     check_ajax_referer( 'tc_clear_foaf_cache', 'nonce' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => 'Insufficient permissions.' ) );
+        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ) );
     }
 
     global $wpdb;
@@ -540,7 +540,7 @@ function tc_ajax_peer_sites_reorder(): void {
     check_ajax_referer( 'tc_peer_sites_reorder' );
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( 'Forbidden', 403 );
+        wp_send_json_error( __( 'Permission denied.', 'termconnect' ), 403 );
     }
 
     $slugs = isset( $_POST['slugs'] ) && is_array( $_POST['slugs'] )
@@ -548,7 +548,7 @@ function tc_ajax_peer_sites_reorder(): void {
         : array();
 
     if ( empty( $slugs ) ) {
-        wp_send_json_error( 'No slugs provided', 400 );
+        wp_send_json_error( __( 'No slugs provided.', 'termconnect' ), 400 );
     }
 
     $types    = tc_get_all_link_types();

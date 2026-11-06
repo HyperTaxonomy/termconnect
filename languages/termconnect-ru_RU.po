@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: termconnect 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 02:47-0500\n"
-"PO-Revision-Date: 2026-11-06 02:47-0500\n"
+"POT-Creation-Date: 2026-11-06 12:52-0500\n"
+"PO-Revision-Date: 2026-11-06 14:30-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -66,18 +66,27 @@ msgstr "TermConnect"
 #: includes/admin/delegated-identity-ajax.php:663
 #: includes/admin/delegated-identity-ajax.php:700
 #: includes/admin/export-import.php:33 includes/admin/export-import.php:174
-#: includes/admin/settings.php:45 includes/admin/settings.php:65
-#: includes/admin/shared-vocabularies-ajax.php:34
-#: includes/admin/shared-vocabularies-ajax.php:232
-#: includes/admin/shared-vocabularies-ajax.php:310
-#: includes/admin/shared-vocabularies-ajax.php:334
-#: includes/admin/shared-vocabularies-ajax.php:370
-#: includes/admin/shared-vocabularies-ajax.php:425
-#: includes/admin/shared-vocabularies-ajax.php:477
-#: includes/admin/shared-vocabularies-ajax.php:509
-#: includes/admin/shared-vocabularies-ajax.php:561
-#: includes/admin/shared-vocabularies-ajax.php:611
-#: includes/admin/shared-vocabularies-ajax.php:668
+#: includes/admin/peer-sites-admin.php:62
+#: includes/admin/peer-sites-admin.php:120
+#: includes/admin/peer-sites-admin.php:151
+#: includes/admin/peer-sites-admin.php:181
+#: includes/admin/peer-sites-admin.php:229
+#: includes/admin/peer-sites-admin.php:274
+#: includes/admin/peer-sites-admin.php:326
+#: includes/admin/peer-sites-admin.php:397
+#: includes/admin/peer-sites-admin.php:433
+#: includes/admin/peer-sites-admin.php:543 includes/admin/settings.php:45
+#: includes/admin/settings.php:65
+#: includes/admin/shared-vocabularies-ajax.php:33
+#: includes/admin/shared-vocabularies-ajax.php:231
+#: includes/admin/shared-vocabularies-ajax.php:309
+#: includes/admin/shared-vocabularies-ajax.php:336
+#: includes/admin/shared-vocabularies-ajax.php:391
+#: includes/admin/shared-vocabularies-ajax.php:443
+#: includes/admin/shared-vocabularies-ajax.php:475
+#: includes/admin/shared-vocabularies-ajax.php:527
+#: includes/admin/shared-vocabularies-ajax.php:577
+#: includes/admin/shared-vocabularies-ajax.php:634
 #: includes/admin/shared-vocabularies.php:23
 #: includes/integration/class-hypertaxonomy-integration.php:368
 msgid "Permission denied."
@@ -88,7 +97,6 @@ msgstr "Доступ запрещён."
 #: includes/admin/delegated-identity-ajax.php:523
 #: includes/admin/delegated-identity-ajax.php:577
 #: includes/admin/delegated-identity-ajax.php:615
-#: includes/admin/shared-vocabularies-ajax.php:342
 msgid "Invalid parameters."
 msgstr "Недопустимые параметры."
 
@@ -96,6 +104,7 @@ msgstr "Недопустимые параметры."
 #: includes/admin/delegated-identity-ajax.php:91
 #: includes/admin/delegated-identity-ajax.php:533
 #: includes/core/delegated-identity.php:103
+#: includes/core/delegated-identity.php:660
 msgid "Term not found."
 msgstr "Термин не найден."
 
@@ -105,11 +114,11 @@ msgid "Remote term has moved. Refresh and try the new slug."
 msgstr "Удалённый термин был перемещён. Обновите и попробуйте новый ярлык."
 
 #: includes/admin/delegated-identity-ajax.php:161
-#: includes/admin/shared-vocabularies-ajax.php:156
-#: includes/admin/shared-vocabularies-ajax.php:241
-#: includes/admin/shared-vocabularies-ajax.php:385
-#: includes/admin/shared-vocabularies-ajax.php:435
-#: includes/admin/shared-vocabularies-ajax.php:674
+#: includes/admin/shared-vocabularies-ajax.php:155
+#: includes/admin/shared-vocabularies-ajax.php:240
+#: includes/admin/shared-vocabularies-ajax.php:351
+#: includes/admin/shared-vocabularies-ajax.php:401
+#: includes/admin/shared-vocabularies-ajax.php:640
 msgid "Another update is in progress. Please try again."
 msgstr "Другое обновление уже выполняется. Попробуйте ещё раз."
 
@@ -793,6 +802,21 @@ msgstr[2] ""
 "%d терминов в таксономиях, которые теперь исключены, имеют сохранённый "
 "идентификатор для этого типа ссылки. Они будут удалены. Продолжить?"
 
+#: includes/admin/peer-sites-admin.php:125
+#: includes/admin/peer-sites-admin.php:402
+msgid "Missing link type slug."
+msgstr "Не указан ярлык типа ссылки."
+
+#: includes/admin/peer-sites-admin.php:186
+#: includes/admin/shared-vocabulary-sync.php:105
+msgid "Missing peer_site_slug."
+msgstr "Не указан параметр peer_site_slug."
+
+#: includes/admin/peer-sites-admin.php:191
+#: includes/admin/peer-sites-admin.php:407
+msgid "Not a feed link type."
+msgstr "Этот тип ссылки не является лентой."
+
 #: includes/admin/peer-sites-admin.php:460
 msgid "You do not have permission to manage link types."
 msgstr "У вас нет доступа для управления типами ссылок."
@@ -800,6 +824,10 @@ msgstr "У вас нет доступа для управления типами
 #: includes/admin/peer-sites-admin.php:466
 msgid "Security check failed."
 msgstr "Проверка безопасности не пройдена."
+
+#: includes/admin/peer-sites-admin.php:551
+msgid "No slugs provided."
+msgstr "Ярлыки не указаны."
 
 #: includes/admin/peer-sites-admin.php:596
 #: includes/admin/peer-sites-admin.php:699
@@ -1671,34 +1699,34 @@ msgstr ""
 "Деактивация плагина никогда не удаляет данные. Удаление происходит только "
 "при использовании кнопки «Удалить» на странице плагинов WordPress."
 
-#: includes/admin/shared-vocabularies-ajax.php:64
+#: includes/admin/shared-vocabularies-ajax.php:63
 msgid "Invalid data."
 msgstr "Недопустимые данные."
 
-#: includes/admin/shared-vocabularies-ajax.php:69
+#: includes/admin/shared-vocabularies-ajax.php:68
 msgid "Peer site is required."
 msgstr "Требуется выбрать сторонний сайт."
 
-#: includes/admin/shared-vocabularies-ajax.php:73
+#: includes/admin/shared-vocabularies-ajax.php:72
 msgid "Taxonomy is required."
 msgstr "Требуется выбрать таксономию."
 
-#: includes/admin/shared-vocabularies-ajax.php:76
+#: includes/admin/shared-vocabularies-ajax.php:75
 #: includes/admin/shared-vocabularies.php:929
 msgid "Select a HyperTaxonomy group."
 msgstr "Выберите группу HyperTaxonomy."
 
-#: includes/admin/shared-vocabularies-ajax.php:79
+#: includes/admin/shared-vocabularies-ajax.php:78
 #: includes/admin/shared-vocabularies.php:932
 msgid "Select a remote group."
 msgstr "Выберите удалённую группу."
 
-#: includes/admin/shared-vocabularies-ajax.php:93
+#: includes/admin/shared-vocabularies-ajax.php:92
 #: includes/admin/shared-vocabularies.php:926
 msgid "Add at least one term."
 msgstr "Добавьте хотя бы один термин."
 
-#: includes/admin/shared-vocabularies-ajax.php:134
+#: includes/admin/shared-vocabularies-ajax.php:133
 msgid ""
 "Switching to full taxonomy will consolidate all individually configured "
 "terms. Existing delegations will be kept."
@@ -1706,7 +1734,7 @@ msgstr ""
 "Переключение на полную таксономию объединит все отдельно настроенные "
 "термины. Существующее делегирование будет сохранено."
 
-#: includes/admin/shared-vocabularies-ajax.php:136
+#: includes/admin/shared-vocabularies-ajax.php:135
 msgid ""
 "Switching to individual terms will stop tracking terms that are not "
 "explicitly listed. Existing delegations will be kept until manually removed."
@@ -1715,7 +1743,7 @@ msgstr ""
 "не указаны непосредственно. Существующее делегирование будет сохранено до "
 "его ручного удаления."
 
-#: includes/admin/shared-vocabularies-ajax.php:138
+#: includes/admin/shared-vocabularies-ajax.php:137
 msgid ""
 "Switching to individual terms (no descendants) will stop syncing descendants "
 "of configured roots. Existing descendant delegations will be kept until "
@@ -1726,12 +1754,12 @@ msgstr ""
 "индивидуально. Существующее делегирование дочерних терминов будет сохранено "
 "до его ручного удаления."
 
-#: includes/admin/shared-vocabularies-ajax.php:181
+#: includes/admin/shared-vocabularies-ajax.php:180
 msgid "A source for this peer site and group (or taxonomy) already exists."
 msgstr ""
 "Источник для этого стороннего сайта и группы (или таксономии) уже существует."
 
-#: includes/admin/shared-vocabularies-ajax.php:274
+#: includes/admin/shared-vocabularies-ajax.php:273
 #, php-format
 msgid ""
 "Source removed, but the original name/description could not be restored for "
@@ -1754,48 +1782,44 @@ msgstr[2] ""
 "%d терминов — их синхронизированные значения оставлены, а резервные копии "
 "сохранены для ручного восстановления."
 
-#: includes/admin/shared-vocabularies-ajax.php:321
+#: includes/admin/shared-vocabularies-ajax.php:320
 msgid "Source not found."
 msgstr "Источник не найден."
 
-#: includes/admin/shared-vocabularies-ajax.php:351
-msgid "Remote term has moved. Try the new slug."
-msgstr "Удалённый термин был перемещён. Попробуйте новый ярлык."
-
-#: includes/admin/shared-vocabularies-ajax.php:429
-#: includes/admin/shared-vocabulary-sync.php:1270
+#: includes/admin/shared-vocabularies-ajax.php:395
+#: includes/admin/shared-vocabulary-sync.php:1283
 msgid "HyperTaxonomy is required to merge terms."
 msgstr "Для слияния терминов требуется HyperTaxonomy."
 
-#: includes/admin/shared-vocabularies-ajax.php:444
-#: includes/admin/shared-vocabularies-ajax.php:681
+#: includes/admin/shared-vocabularies-ajax.php:410
+#: includes/admin/shared-vocabularies-ajax.php:647
 msgid "Proposal not found."
 msgstr "Предложение не найдено."
 
-#: includes/admin/shared-vocabularies-ajax.php:517
-#: includes/admin/shared-vocabularies-ajax.php:569
+#: includes/admin/shared-vocabularies-ajax.php:483
+#: includes/admin/shared-vocabularies-ajax.php:535
 #: includes/integration/class-hypertaxonomy-integration.php:376
 msgid "Invalid peer site."
 msgstr "Недопустимый сторонний сайт."
 
-#: includes/admin/shared-vocabularies-ajax.php:528
+#: includes/admin/shared-vocabularies-ajax.php:494
 msgid "Could not fetch taxonomies from peer."
 msgstr "Не удалось получить таксономии со стороннего сайта."
 
-#: includes/admin/shared-vocabularies-ajax.php:533
-#: includes/admin/shared-vocabularies-ajax.php:590
+#: includes/admin/shared-vocabularies-ajax.php:499
+#: includes/admin/shared-vocabularies-ajax.php:556
 msgid "Invalid response from peer."
 msgstr "Недопустимый ответ от стороннего сайта."
 
-#: includes/admin/shared-vocabularies-ajax.php:585
+#: includes/admin/shared-vocabularies-ajax.php:551
 msgid "Could not fetch groups from peer."
 msgstr "Не удалось получить группы со стороннего сайта."
 
-#: includes/admin/shared-vocabularies-ajax.php:624
+#: includes/admin/shared-vocabularies-ajax.php:590
 msgid "Link type not found."
 msgstr "Тип ссылки не найден."
 
-#: includes/admin/shared-vocabularies-ajax.php:629
+#: includes/admin/shared-vocabularies-ajax.php:595
 msgid "Cannot resolve peer URL."
 msgstr "Не удалось разрешить URL стороннего сайта."
 
@@ -2321,57 +2345,80 @@ msgstr[0] "%d предложение о слиянии"
 msgstr[1] "%d предложения о слиянии"
 msgstr[2] "%d предложений о слиянии"
 
-#: includes/admin/shared-vocabulary-sync.php:143
+#: includes/admin/shared-vocabulary-sync.php:121
+msgid "Missing taxonomy."
+msgstr "Не указана таксономия."
+
+#: includes/admin/shared-vocabulary-sync.php:128
+#, php-format
+msgid "Link type not found: %s"
+msgstr "Тип ссылки не найден: %s"
+
+#: includes/admin/shared-vocabulary-sync.php:134
+#: includes/admin/shared-vocabulary-sync.php:892
+msgid "Cannot resolve peer site URL."
+msgstr "Не удалось определить URL-адрес стороннего сайта."
+
+#: includes/admin/shared-vocabulary-sync.php:144
 msgid ""
 "Relationship delegation skipped — peer site does not have HyperTaxonomy "
 "active."
 msgstr ""
 "Делегирование связей пропущено — на стороннем сайте не активен HyperTaxonomy."
 
-#: includes/admin/shared-vocabulary-sync.php:561
+#: includes/admin/shared-vocabulary-sync.php:533
+#, php-format
+msgid "Failed to create term \"%1$s\": %2$s"
+msgstr "Не удалось создать термин «%1$s»: %2$s"
+
+#: includes/admin/shared-vocabulary-sync.php:563
 msgid "Remote group scope requires HyperTaxonomy to be active."
 msgstr ""
 "Охват уровня удалённой группы требует активного HyperTaxonomy на стороннем "
 "сайте."
 
-#: includes/admin/shared-vocabulary-sync.php:575
+#: includes/admin/shared-vocabulary-sync.php:577
 msgid "Missing peer site or remote group slug."
 msgstr "Отсутствует сторонний сайт или ярлык удалённой группы."
 
-#: includes/admin/shared-vocabulary-sync.php:595
+#: includes/admin/shared-vocabulary-sync.php:597
 #, php-format
 msgid "Remote group endpoint returned HTTP %d."
 msgstr "Конечная точка групп терминов вернула HTTP статус %d."
 
-#: includes/admin/shared-vocabulary-sync.php:602
+#: includes/admin/shared-vocabulary-sync.php:604
 msgid "Invalid response from remote group endpoint."
 msgstr "Недопустимый ответ от конечной точки групп терминов."
 
-#: includes/admin/shared-vocabulary-sync.php:618
+#: includes/admin/shared-vocabulary-sync.php:620
 msgid "Could not create local group: "
 msgstr "Не удалось создать локальную группу: "
 
-#: includes/admin/shared-vocabulary-sync.php:884
-msgid "Cannot resolve peer site URL."
-msgstr "Не удалось определить URL-адрес стороннего сайта."
+#: includes/admin/shared-vocabulary-sync.php:804
+msgid "Group scope requires HyperTaxonomy to be active."
+msgstr "Охват уровня группы требует активного HyperTaxonomy."
 
-#: includes/admin/shared-vocabulary-sync.php:1081
+#: includes/admin/shared-vocabulary-sync.php:814
+msgid "Group scope: no group_id configured."
+msgstr "Охват уровня группы: не настроен group_id."
+
+#: includes/admin/shared-vocabulary-sync.php:1094
 #: includes/core/delegated-identity.php:586
 #: includes/core/delegated-identity.php:969
 #, php-format
 msgid "Remote site returned HTTP %d."
 msgstr "Сторонний сайт вернул HTTP статус %d."
 
-#: includes/admin/shared-vocabulary-sync.php:1370
+#: includes/admin/shared-vocabulary-sync.php:1383
 msgid "HyperTaxonomy not active — cannot register remote relationship types."
 msgstr ""
 "HyperTaxonomy не активен — невозможно зарегистрировать удалённые типы связей."
 
-#: includes/admin/shared-vocabulary-sync.php:1388
+#: includes/admin/shared-vocabulary-sync.php:1401
 msgid "Peer site does not have HyperTaxonomy active."
 msgstr "На стороннем сайте не активен HyperTaxonomy."
 
-#: includes/admin/shared-vocabulary-sync.php:1389
+#: includes/admin/shared-vocabulary-sync.php:1402
 msgid "Relationship types endpoint returned an unexpected status."
 msgstr "Конечная точка типов связей вернула неожиданный статус."
 
@@ -2679,6 +2726,10 @@ msgstr "Удалённый термин не найден."
 msgid "Invalid response from remote site."
 msgstr "Недопустимый ответ от стороннего сайта."
 
+#: includes/core/delegated-identity.php:655
+msgid "No identity source set for this term."
+msgstr "Для этого термина не задан источник определения."
+
 #: includes/core/delegated-identity.php:1073
 msgid "This term has no delegated identity."
 msgstr "У этого термина нет делегированного определения."
@@ -2707,19 +2758,19 @@ msgstr[1] ""
 msgstr[2] ""
 "%d сторонних сайтов TermConnect недоступны или работают с ограничениями"
 
-#: includes/core/rest-api.php:206
+#: includes/core/rest-api.php:208
 msgid "X-TermConnect header required."
 msgstr "Требуется заголовок X-TermConnect."
 
-#: includes/core/rest-api.php:210
+#: includes/core/rest-api.php:212
 msgid "HyperTaxonomy not active."
 msgstr "HyperTaxonomy не активен."
 
-#: includes/core/rest-api.php:216
+#: includes/core/rest-api.php:218
 msgid "Group not found."
 msgstr "Группа не найдена."
 
-#: includes/core/rest-api.php:220
+#: includes/core/rest-api.php:222
 msgid "Group not available."
 msgstr "Группа недоступна."
 
@@ -2860,6 +2911,10 @@ msgstr "обновлено"
 #, php-format
 msgid "Sync complete: %1$d created, %2$d updated."
 msgstr "Синхронизация завершена: создано %1$d, обновлено %2$d."
+
+#: includes/shortcodes/class-external-post-list.php:590
+msgid "Invalid post."
+msgstr "Недопустимая запись."
 
 #: includes/shortcodes/class-external-post-list.php:1484
 #: includes/shortcodes/class-peer-browse.php:312

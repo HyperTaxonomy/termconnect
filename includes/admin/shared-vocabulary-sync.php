@@ -102,7 +102,7 @@ function tc_sv_sync_source( array $source ): array {
     $misplace  = $source['misplacement'] ?? 'flag';
 
     if ( ! $peer_site_slug ) {
-        $result['errors'][] = 'Missing peer_site_slug.';
+        $result['errors'][] = __( 'Missing peer_site_slug.', 'termconnect' );
         return $result;
     }
 
@@ -118,19 +118,20 @@ function tc_sv_sync_source( array $source ): array {
     }
 
     if ( ! $taxonomy ) {
-        $result['errors'][] = 'Missing taxonomy.';
+        $result['errors'][] = __( 'Missing taxonomy.', 'termconnect' );
         return $result;
     }
 
     $link_type = tc_get_link_type( $peer_site_slug );
     if ( ! $link_type ) {
-        $result['errors'][] = 'Link type not found: ' . $peer_site_slug;
+        /* translators: %s: link type slug */
+        $result['errors'][] = sprintf( __( 'Link type not found: %s', 'termconnect' ), $peer_site_slug );
         return $result;
     }
 
     $origin = tc_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
     if ( ! $origin ) {
-        $result['errors'][] = 'Cannot resolve peer site URL.';
+        $result['errors'][] = __( 'Cannot resolve peer site URL.', 'termconnect' );
         return $result;
     }
 
@@ -528,7 +529,8 @@ function tc_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy
     ) );
 
     if ( is_wp_error( $inserted ) ) {
-        $r['error'] = 'Failed to create term "' . $remote_slug . '": ' . $inserted->get_error_message();
+        /* translators: 1: term slug, 2: error message */
+        $r['error'] = sprintf( __( 'Failed to create term "%1$s": %2$s', 'termconnect' ), $remote_slug, $inserted->get_error_message() );
         return $r;
     }
 
@@ -799,7 +801,7 @@ function tc_sv_remove_remote_group_memberships( int $local_group_id, string $sv_
  */
 function tc_sv_sync_local_group_source( array $source, array $result ): array {
     if ( ! function_exists( 'htax_get_terms_in_groups' ) ) {
-        $result['errors'][] = 'Group scope requires HyperTaxonomy to be active.';
+        $result['errors'][] = __( 'Group scope requires HyperTaxonomy to be active.', 'termconnect' );
         return $result;
     }
 
@@ -809,7 +811,7 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
     $enabled_taxa = TC_Settings::get_enabled_taxonomies();
 
     if ( ! $group_id ) {
-        $result['errors'][] = 'Group scope: no group_id configured.';
+        $result['errors'][] = __( 'Group scope: no group_id configured.', 'termconnect' );
         return $result;
     }
 

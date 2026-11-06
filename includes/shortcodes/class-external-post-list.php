@@ -587,7 +587,7 @@ class TC_Shortcode_PeerPosts {
         $offset  = max( 0, (int) ( $_POST['offset'] ?? 0 ) );
 
         if ( ! $post_id || ! get_post( $post_id ) ) {
-            wp_send_json_error( array( 'message' => 'Invalid post.' ) );
+            wp_send_json_error( array( 'message' => __( 'Invalid post.', 'termconnect' ) ) );
             return;
         }
 

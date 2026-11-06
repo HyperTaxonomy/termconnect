@@ -652,12 +652,12 @@ function tc_fetch_remote_identity( string $peer_site_slug, string $taxonomy, str
 function tc_refresh_identity_cache( int $term_id ) {
     $source = tc_get_identity_source( $term_id );
     if ( null === $source ) {
-        return new WP_Error( 'tc_no_source', 'No identity source set for this term.' );
+        return new WP_Error( 'tc_no_source', __( 'No identity source set for this term.', 'termconnect' ) );
     }
 
     $term = get_term( $term_id );
     if ( ! $term || is_wp_error( $term ) ) {
-        return new WP_Error( 'tc_invalid_term', 'Term not found.' );
+        return new WP_Error( 'tc_invalid_term', __( 'Term not found.', 'termconnect' ) );
     }
 
     $remote = tc_fetch_remote_identity( $source['peer_site_slug'], $term->taxonomy, $source['remote_slug'] );
