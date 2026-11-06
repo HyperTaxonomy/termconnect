@@ -13,7 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'wp_ajax_tc_sv_save',                    'tc_sv_ajax_save' );
 add_action( 'wp_ajax_tc_sv_delete',                  'tc_sv_ajax_delete' );
 add_action( 'wp_ajax_tc_sv_sync',                    'tc_sv_ajax_sync' );
-add_action( 'wp_ajax_tc_sv_lookup_root',             'tc_sv_ajax_lookup_root' );
 add_action( 'wp_ajax_tc_sv_reorder',                 'tc_sv_ajax_reorder' );
 add_action( 'wp_ajax_tc_sv_merge_proposal',          'tc_sv_ajax_merge_proposal' );
 add_action( 'wp_ajax_tc_sv_dismiss_merge',           'tc_sv_ajax_dismiss_merge' );
@@ -323,39 +322,6 @@ function tc_sv_ajax_sync(): void {
 
     $result = tc_sv_sync_source( $source );
     wp_send_json_success( $result );
-}
-
-/**
- * Look up a root term by slug on a peer site (used in the Add Source form).
- */
-function tc_sv_ajax_lookup_root(): void {
-    check_ajax_referer( 'tc_sv_admin', 'nonce' );
-    if ( ! current_user_can( 'manage_options' ) ) {
-        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
-    }
-
-    $peer_site_slug  = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
-    $taxonomy = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
-    $slug     = sanitize_title( wp_unslash( $_POST['slug'] ?? '' ) );
-
-    if ( ! $peer_site_slug || ! $taxonomy || ! $slug ) {
-        wp_send_json_error( array( 'message' => __( 'Invalid parameters.', 'termconnect' ) ) );
-    }
-
-    $remote = tc_fetch_remote_identity( $peer_site_slug, $taxonomy, $slug );
-    if ( is_wp_error( $remote ) ) {
-        wp_send_json_error( array( 'message' => $remote->get_error_message() ) );
-    }
-
-    if ( ( $remote['type'] ?? '' ) === 'redirect' ) {
-        wp_send_json_error( array( 'message' => __( 'Remote term has moved. Try the new slug.', 'termconnect' ) ) );
-    }
-
-    wp_send_json_success( array(
-        'term_id' => $remote['term_id'],
-        'slug'    => $remote['slug'],
-        'name'    => $remote['name'],
-    ) );
 }
 
 /**

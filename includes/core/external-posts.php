@@ -131,32 +131,7 @@ function tc_external_is_blacklisted( string $origin ): bool {
  * @return bool
  */
 function tc_external_is_ht_enabled( string $origin ): bool {
-    $cache_key = 'tc_ext_ht_' . md5( $origin );
-    $cached    = get_transient( $cache_key );
-    if ( false !== $cached ) {
-        return (bool) $cached;
-    }
-
-    $settings = get_option( 'tc_settings', array() );
-    $ttl      = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
-
-    $response = wp_remote_head(
-        $origin . '/wp-json/',
-        array(
-            'timeout'    => 3,
-            'user-agent' => 'TermConnect/' . TC_VERSION,
-            'sslverify'  => true,
-        )
-    );
-
-    if ( is_wp_error( $response ) ) {
-        set_transient( $cache_key, 0, 300 );
-        return false;
-    }
-
-    $enabled = '' !== wp_remote_retrieve_header( $response, 'X-HyperTaxonomy' );
-    set_transient( $cache_key, $enabled ? 1 : 0, $enabled ? $ttl : 300 );
-    return $enabled;
+    return tc_external_detect_plugin_header( $origin, 'tc_ext_ht_', 'X-HyperTaxonomy' );
 }
 
 /**
@@ -170,7 +145,20 @@ function tc_external_is_ht_enabled( string $origin ): bool {
  * @return bool
  */
 function tc_external_is_tc_enabled( string $origin ): bool {
-    $cache_key = 'tc_ext_tc_' . md5( $origin );
+    return tc_external_detect_plugin_header( $origin, 'tc_ext_tc_', 'X-TermConnect' );
+}
+
+/**
+ * Check a peer's REST index for a plugin's response header. Result cached per origin.
+ *
+ * @since 1.0.0
+ * @param string $origin       scheme://host.
+ * @param string $cache_prefix Transient key prefix.
+ * @param string $header       Response header the plugin sends.
+ * @return bool
+ */
+function tc_external_detect_plugin_header( string $origin, string $cache_prefix, string $header ): bool {
+    $cache_key = $cache_prefix . md5( $origin );
     $cached    = get_transient( $cache_key );
     if ( false !== $cached ) {
         return (bool) $cached;
@@ -193,7 +181,7 @@ function tc_external_is_tc_enabled( string $origin ): bool {
         return false;
     }
 
-    $enabled = '' !== wp_remote_retrieve_header( $response, 'X-TermConnect' );
+    $enabled = '' !== wp_remote_retrieve_header( $response, $header );
     set_transient( $cache_key, $enabled ? 1 : 0, $enabled ? $ttl : 300 );
     return $enabled;
 }
