@@ -4,21 +4,21 @@ parent: Developer Reference
 nav_order: 4
 ---
 
-## REST API
+# REST API
 
 When TermConnect is active, it adds fields to standard WordPress term endpoints for TermConnect-enabled taxonomies.
 
 **`X-TermConnect` request header**
 
-TermConnect sends `X-TermConnect: {version}` on outbound requests to peer sites (delegated identity fetches, peer post requests). When the peer site runs HyperTaxonomy, this header triggers a richer response even on collection endpoints — normally collection responses omit `tc_links` and `htax_redirect` for performance, but peer requests receive both fields in a single round-trip.
+TermConnect sends `X-TermConnect: {version}` on outbound requests to peer sites (delegated identity fetches, peer post requests). On a peer running TermConnect, this header adds `tc_links` to term responses, and it's required by the `tc/v1/group-members` endpoint.
 
 **`X-HyperTaxonomy` request header**
 
-A separate, HyperTaxonomy-owned gate: on *collection* term responses, HT only includes `htax_includes` and `htax_relationships` when the request carries an `X-HyperTaxonomy: {version}` header — `_fields=htax_includes,htax_relationships` alone is not enough, and there is no error or empty-but-present field to signal the omission, the keys are simply absent. `X-TermConnect` does **not** satisfy this gate; the two headers are independent. Any TC code fetching a peer's full taxonomy collection with relationship delegation enabled must send both headers. `tc_sv_fetch_taxonomy()` (Shared Vocabularies full-taxonomy sync) sends `X-HyperTaxonomy` whenever it requests those fields.
+A separate, HyperTaxonomy-owned gate: on *collection* term responses, HT only includes `htax_redirect`, `htax_includes` and `htax_relationships` when the request carries an `X-HyperTaxonomy: {version}` header and asks for them in `_fields` — `_fields` alone is not enough, and there is no error or empty-but-present field to signal the omission, the keys are simply absent. `X-TermConnect` does **not** satisfy this gate; the two headers are independent. Any TC code fetching a peer's full taxonomy collection with relationship delegation enabled must send both headers. `tc_sv_fetch_taxonomy()` (Shared Vocabularies full-taxonomy sync) sends `X-HyperTaxonomy` whenever it requests those fields.
 
-**Term endpoints** (`/wp/v2/{taxonomy}/{id}` individual, or `?slug=…` collection with `X-TermConnect` header):
+**Term endpoints** (`/wp/v2/{taxonomy}/{id}` individual, or `?slug=…` collection):
 
-- `htax_redirect` — stub of the redirect target (`{ id, name, slug, taxonomy, link }`) when the term is an HyperTaxonomy redirect. The field itself is registered by HyperTaxonomy; TermConnect only triggers its inclusion on collection endpoints. On collection endpoints, only present when the request carries `X-TermConnect`.
+- `htax_redirect` — stub of the redirect target (`{ id, name, slug, taxonomy, link }`) when the term is an HyperTaxonomy redirect. The field itself is registered by HyperTaxonomy. On collection endpoints, it's only present when the request carries `X-HyperTaxonomy`, as TermConnect's delegated identity fetches do.
 - `tc_links` — TermConnect external links: a flat array of `{ url, platform, label, fetched_at }` objects. Built by `tc_build_merged_links()` which combines local `_tc_link_*` identifiers and delegated links from `_tc_delegated_links_data`, applying override logic (when a delegated link and a local link share the same site, the delegated link wins). Present for all TermConnect-enabled taxonomies on both individual and collection endpoints. Gated by the **Share external links** setting. Peer sites use this field for FOAF discovery and identity sync — a peer site only needs TermConnect active, not HyperTaxonomy.
 
 **Query filter — `htax_term_uri={full_uri}`**
@@ -31,14 +31,14 @@ GET /wp-json/wp/v2/tags?htax_term_uri=https://www.wikidata.org/wiki/Q28865&_fiel
 
 Returns terms that have that URI stored in the `_tc_uris` index. Used internally by `[tc_peer_posts]` to auto-resolve remote term IDs when no explicit peer slug is configured. Requires TermConnect to be installed and the taxonomy to be TermConnect-enabled on the queried site.
 
-The `tc_links` field is only included in term responses when the request carries an `X-TermConnect` header — consumers that don't identify as TC-enabled never receive it. TermConnect's **Share external links** setting (`expose_links_api`) is a second gate: disabling it suppresses `tc_links` even for TC-aware requests, letting you run TermConnect for internal term delegation only.
+The `tc_links` field is only included in term responses when the request carries an `X-TermConnect` header — other consumers get `null` for it, or don't see it at all if `_fields` leaves it out. TermConnect's **Share external links** setting (`expose_links_api`) is a second gate: disabling it suppresses `tc_links` even for TC-aware requests, letting you run TermConnect for internal term delegation only.
 
 HyperTaxonomy also adds `htax_locations` to term REST responses when ATCF is active and **Share list of locations** is enabled for the taxonomy. Cross-site term matching by location flows through the generic URI index (`tc_index_extra_uris` → `_tc_uris`), so location-bearing terms are matched the same way as any other shared identifier — there is no separate location score-boost.
 
 **Other registered surfaces**
 
-- `tc_content` (term field, boolean) — mirrors the taxonomy's `public` flag, so a peer can tell whether a matched term has a public archive before linking to it.
-- `GET /wp-json/tc/v1/group-members?group_slug={slug}` — returns the member terms of a HyperTaxonomy term group on the queried site, across TermConnect-enabled taxonomies (`taxonomy`, `id`, `slug`, `name`, `description`, `parent`, `parent_slug`, plus `tc_links` when **Share identifiers with other sites** is on). Gated by the `X-TermConnect` header; used for cross-site shared-vocabulary resolution. A hidden group returns 403, and hidden member terms are omitted, unless HyperTaxonomy lets the caller see hidden terms (peer sites call it anonymously, so for them hidden groups and members are always withheld).
+- `tc_content` and `show_ui` (boolean fields on the `/wp/v2/taxonomies` endpoint) — `tc_content` mirrors the taxonomy's `public` flag, and `show_ui` its `show_ui` flag. The Shared Vocabularies form uses them to leave utility taxonomies out of its list.
+- `GET /wp-json/tc/v1/group-members?group_slug={slug}` — returns the member terms of a HyperTaxonomy term group on the queried site, across TermConnect-enabled taxonomies (`taxonomy`, `id`, `slug`, `name`, `description`, `parent`, `parent_slug`, plus `tc_links` when **Share external links** is on). Gated by the `X-TermConnect` header; used for cross-site shared-vocabulary resolution. A hidden group returns 403, and hidden member terms are omitted, unless HyperTaxonomy lets the caller see hidden terms (peer sites call it anonymously, so for them hidden groups and members are always withheld).
 
 The block editor's peer-picker checklist does **not** use REST: the configured peers (`tc_get_browsable_peers()`) are localized into `window.TCPeers` on each block's editor script at registration time, avoiding a runtime round-trip.
 

@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 6
 ---
 
-## Providing External Posts
+# External Documents
 
 TermConnect contributes related posts from configured peer sites and feeds to any
 same-site consumer that asks HyperTaxonomy for a term's external posts — for
@@ -46,4 +46,4 @@ HyperTaxonomy forwards an opaque `$args` bag to the provider; TermConnect honors
 | `per_page` | `20` | Fetch-size hint. |
 
 Auto-matching (shared identifier + synonyms) is always applied for peers; it is not
-a separate toggle. Origin validation and the site blacklist apply throughout.
+a separate toggle. Origin validation and **Blocked Sites** apply throughout.

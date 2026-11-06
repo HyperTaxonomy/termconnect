@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 3
 ---
 
-## Peer Fetch API
+# Peer Fetch API
 
 Public functions for fetching and scoring posts from peer sites and feeds. All caching uses WordPress transients.
 
@@ -21,6 +21,10 @@ tc_external_is_blacklisted( string $origin ): bool
 tc_external_is_ht_enabled( string $origin ): bool
 // Returns true when the peer runs HyperTaxonomy (checks X-HyperTaxonomy header).
 // Cached per origin; failures cached 5 minutes.
+
+tc_external_is_tc_enabled( string $origin ): bool
+// Returns true when the peer runs TermConnect (checks X-TermConnect header).
+// Same caching. Check this before relying on htax_term_uri, which other sites ignore.
 ```
 
 ### Term Resolution

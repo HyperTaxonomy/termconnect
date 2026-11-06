@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 1
 ---
 
-## Filters
+# Filters
 
 ### `tc_link_types`
 
@@ -156,8 +156,8 @@ add_filter( 'htax_term_uris', function( array $uris, int $term_id ): array {
 TermConnect populates this HyperTaxonomy filter with related posts fetched from the term's configured WordPress peer sites, as plain normalized post arrays. Consumers read them (visibility-gated) via `htax_get_term_external_posts()` — see [External Documents](external-documents.html). Hook into it to contribute documents from your own source.
 
 ```php
-add_filter( 'htax_term_external_posts', function( array $docs, int $term_id ): array {
+add_filter( 'htax_term_external_posts', function( array $docs, int $term_id, array $args ): array {
     // $docs[] = [ 'url' => …, 'title' => …, 'date_gmt' => …, 'excerpt' => …, … ];
     return $docs;
-}, 10, 2 );
+}, 10, 3 );
 ```

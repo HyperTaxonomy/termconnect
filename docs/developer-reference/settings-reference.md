@@ -4,7 +4,7 @@ parent: Developer Reference
 nav_order: 5
 ---
 
-## Settings Reference
+# Settings Reference
 
 TermConnect stores its settings in the `tc_settings` WordPress option.
 
@@ -13,7 +13,7 @@ TermConnect stores its settings in the `tc_settings` WordPress option.
 | `expose_links_api` | bool | `true` | When `true`, external links are included in REST responses when the request carries `X-TermConnect`. The consuming site may connect terms based on overlapping external links. When `false`, suppresses `tc_links` even for TC-aware requests. |
 | `link_types_show_see_also` | bool | `true` | Show "See also" section on term archives |
 | `see_also_format` | string | `'inline'` | `'inline'` or `'list'` |
-| `see_also_label` | string | `'See also: '` | Label prepended in inline format |
+| `see_also_label` | string | `'See also:'` | Label prepended in inline format |
 | `max_foaf_depth` | int | `1` | Maximum FOAF hops (0–5) |
 | `external_posts_cache_ttl` | int | `3600` | Post list cache TTL in seconds |
 | `ht_status_cache_ttl` | int | `86400` | Peer plugin detection cache TTL in seconds (HyperTaxonomy and TermConnect presence checks) |
