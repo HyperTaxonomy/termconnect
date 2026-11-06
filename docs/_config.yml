@@ -10,7 +10,7 @@ heading_anchors: true
 color_scheme: light
 aux_links:
   "GitHub": ["https://github.com/HyperTaxonomy/termconnect"]
-  "HyperTaxonomy suite": ["https://hypertaxonomy.org"]
+  "HyperTaxonomy Suite": ["https://hypertaxonomy.org"]
 aux_links_new_tab: true
 callouts:
   note:
