@@ -853,6 +853,7 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
                         } else {
                             // Any other error is transient: leave status, don't count as synced.
                             // This member's descendants weren't checked either, so keep them.
+                            $result['errors'][]             = $local_term->slug . ': ' . $refresh->get_error_message();
                             $failed_taxonomies[ $taxonomy ] = true;
                         }
                         continue;
