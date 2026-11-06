@@ -11,6 +11,9 @@
 # wp.org SVN assets (icon/banner/screenshots) — published to assets/, not trunk/
 /.wordpress-org
 
+# Documentation source, published at hypertaxonomy.org
+/docs
+
 # Dependencies and build tooling
 /node_modules
 /vendor

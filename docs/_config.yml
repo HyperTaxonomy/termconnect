@@ -7,7 +7,7 @@ baseurl: "/termconnect"
 url: "https://hypertaxonomy.org"
 search_enabled: true
 heading_anchors: true
-color_scheme: light
+color_scheme: hypertaxonomy
 aux_links:
   "GitHub": ["https://github.com/HyperTaxonomy/termconnect"]
   "HyperTaxonomy Suite": ["https://hypertaxonomy.org"]
