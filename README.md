@@ -6,7 +6,7 @@ TermConnect connects WordPress taxonomy terms to the global web of knowledge. At
 
 The result is a decentralized web of WordPress sites that share vocabulary, surface related content, and defer to authoritative sources — without any central coordination.
 
-Works with any WordPress site. When [HyperTaxonomy](https://wordpress.org/plugins/hypertaxonomy/) is also active, scoring gains relevance weighting, synonym expansion, and proximity search; TermConnect contributes its identifier data to HyperTaxonomy's abstraction layer so integrations like WP-SKOS work without depending on TermConnect directly.
+Works with any WordPress site. When [HyperTaxonomy](https://wordpress.org/plugins/hypertaxonomy/) is also active, scoring gains relevance weighting and synonym expansion, plus proximity search when As the Crow Flies is active too; TermConnect contributes its identifier data to HyperTaxonomy's abstraction layer so integrations like WP-SKOS work without depending on TermConnect directly.
 
 ## Features
 

@@ -109,7 +109,7 @@ Organic, no big-bang launch:
 The distributed layer would not need to be perfect before anyone uses it — only good enough that sites prefer it over pointing at a peer site for concepts where no obvious authoritative peer exists.
 
 {: .note }
-> **The honest caveat.** There is no bootstrap path today, and it depends on adoption that may or may not happen. This is recorded as a direction, not a plan — a starting point should the community decide to take TermConnect's federation model further.
+> **The honest caveat.** Nothing exists yet to start from, and this path depends on adoption that may or may not happen. This is recorded as a direction, not a plan — a starting point should the community decide to take TermConnect's federation model further.
 
 ---
 
@@ -127,7 +127,7 @@ The distributed layer would not need to be perfect before anyone uses it — onl
 
 ## Open questions
 
-1. **Which DID method?** `did:web` still needs a server; `did:key` is serverless but immutable; `did:ipfs` or a custom method may be required.
+1. **Which DID method?** `did:web` still needs a server; `did:key` is serverless but immutable; a method built on IPFS, or a custom one, may be required.
 2. **Agent bootstrapping** — who runs the first agents before the network is large enough to sustain consensus?
 3. **Disambiguation** — "Python" the language vs. the snake vs. Monty Python: agents would need to look outward at a subscribing site's content, not just at the concept record.
 4. **Concept drift** — how does an identity core update as a concept's meaning evolves, without breaking interoperability for sites that subscribed to the older definition?

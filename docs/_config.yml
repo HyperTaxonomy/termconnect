@@ -12,6 +12,10 @@ aux_links:
   "GitHub": ["https://github.com/HyperTaxonomy/termconnect"]
   "HyperTaxonomy suite": ["https://hypertaxonomy.org"]
 aux_links_new_tab: true
+callouts:
+  note:
+    title: Note
+    color: blue
 # Local QA docs (gitignored); also excluded from the docs site build.
 exclude:
   - TEST-PLAN.md

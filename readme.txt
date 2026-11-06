@@ -15,7 +15,7 @@ Enrich your posts with related content on any topic from a decentralized network
 
 TermConnect connects WordPress taxonomy terms to the global web of knowledge. Attach external identifiers, delegate term definitions to authoritative sources, mirror shared vocabularies from peer sites, and pull related content from a network of peers. No central coordination required — each site connects directly to the others it trusts.
 
-Works with any WordPress site. HyperTaxonomy adds relevance scoring, synonym expansion, and proximity search when both are active.
+Works with any WordPress site. HyperTaxonomy adds relevance scoring and synonym expansion when both are active, and proximity search when As the Crow Flies is active too.
 
 = Core Features =
 
