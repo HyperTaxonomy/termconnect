@@ -4,9 +4,11 @@ parent: User Guide
 nav_order: 1
 ---
 
+# Peer Sites & Feeds
+
 ## Enabled Taxonomies
 
-Go to **Settings → TermConnect → Enabled Taxonomies** and check each taxonomy where you want TermConnect active. Enabling a taxonomy:
+Go to **Settings → TermConnect → General** and, under **Enabled Taxonomies**, check each taxonomy where you want TermConnect active. Enabling a taxonomy:
 
 - Shows the **Delegated Identity** and **External Links** panels on its term add/edit screens.
 - Includes it in "See also" display on term archive pages.
@@ -21,6 +23,8 @@ Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear i
 **Terms → Peer Sites** is where you manage external sites, feeds and services where your terms can have identifiers. A namespace defines what kind of identifier it holds and how to construct a URL from it: Wikidata Q-numbers, GeoNames IDs, Wikipedia article slugs, a peer WordPress site, an RSS feed, or any custom service. Once a namespace is enabled, editors can attach identifiers to individual terms from the **External Links** panel on each term's edit screen.
 
 > **Namespaces vs. link types.** A *namespace* is the identifier space plus its URL-construction rule (e.g. Wikidata Q-numbers → `wikidata.org/wiki/`). A *link type* — the configured entries shown on the **Peer Sites** screen — is an entry that uses a namespace. Peer sites and feeds are link types whose namespace is a remote WordPress or feed endpoint.
+>
+> **Namespaces of relationship types.** HyperTaxonomy's custom relationship types also have a namespace, which TermConnect can carry to other sites when it syncs them. There, the namespace is part of the type's identity: it says whose definition this is. It's distinct from a peer site, and doesn't have to be a working URL.
 
 When a local term shares an identifier with a term on a peer WordPress site, TermConnect can delegate its identity to the peer — keeping the name, description, and external links in sync automatically. A collection of terms whose identity is delegated to a peer site is called a **Shared Vocabulary** (see [Shared Vocabularies](shared-vocabularies.html)).
 
@@ -29,7 +33,7 @@ TermConnect also uses shared identifiers to auto-match equivalent terms on peer 
 **Setting up:**
 
 1. Go to **Terms → Peer Sites**. Twenty-one built-in namespaces are available: **General reference** (Wikidata, Wikipedia, Grokipedia, Wikiquote); **Language** (Wiktionary, Merriam-Webster); **Geography** (GeoNames, OpenStreetMap, Wikivoyage); **Biology/Nature** (Wikispecies, iNaturalist, GBIF); **People/Organizations** (VIAF, ORCID); **Library/Subject headings** (LCSH, MeSH, Getty AAT, Getty TGN); **Academic/Structured data** (OpenAlex, schema.org, GS1).
-2. Built-in namespaces start disabled — enable the ones relevant to your content by clicking **Enable**. Custom namespaces you add are enabled automatically. Drag rows up or down to change their display order; enabled namespaces appear in this order in the "See also" section on term archive pages (if that feature is enabled in Settings and the namespace has "Show on archives" checked).
+2. Built-in namespaces start disabled — enable the ones relevant to your content by clicking **Enable**. Custom namespaces you add are enabled automatically. Built-in namespaces also start with **Show on Archives** off, so check it in the namespace's edit form if you want their links in "See also". Drag rows up or down to change their display order; enabled namespaces appear in this order in the "See also" section on term archive pages (if that feature is enabled in Settings and the namespace has **Show on Archives** checked).
 3. Once a namespace is enabled, edit any term and fill in its identifier in the **External Links** panel. Enter just the identifier, not the full URL — `Q42` for Wikidata, `Douglas_Adams` for Wikipedia. TermConnect constructs the full URL from the namespace's URI prefix. A preview link appears once saved.
 
 **Restricting a namespace to specific taxonomies:**
@@ -42,7 +46,7 @@ Supported external services (Wikidata, Wikipedia, iNaturalist, VIAF, LCSH, and o
 
 **Adding a custom namespace:**
 
-At **Terms → Peer Sites**, fill in the **Add New** form:
+At **Terms → Peer Sites**, fill in the **Add Peer Site** form:
 
 - **Label** — shown to users
 - **Platform** — *WordPress peer (REST API)*, *RSS / Atom feed*, *MediaWiki (identifier + autocomplete)*, or *Custom identifier*. Peer and feed namespaces participate in `[tc_peer_posts]`; MediaWiki and custom identifier namespaces generate "See also" links.
@@ -76,8 +80,8 @@ A feed link type polls an RSS or Atom feed on a configurable schedule and accumu
 
 **Creating a feed link type:**
 
-1. Go to **Terms → Peer Sites → Add New**
-2. Set **Platform** to *RSS / Atom feed*, enter the feed URL, set poll interval (minimum 5 minutes, maximum 24 hours; default 1 hour) and **Max cached posts** (default 500)
+1. Go to **Terms → Peer Sites** and open the **Add Peer Site** form
+2. Set **Platform** to *RSS / Atom feed*, enter the feed URL, set **Poll interval (seconds)** (300 to 86400, that is, 5 minutes to 24 hours; default 3600) and **Max cached posts** (50 to 5000; default 500)
 3. Click **Add** — the type is enabled and scheduled immediately
 
 **Mapping a term to a feed category:**
