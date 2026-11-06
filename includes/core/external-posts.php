@@ -291,12 +291,12 @@ function tc_external_search_terms( string $origin, string $taxonomy, string $sea
         return (array) $cached;
     }
 
-    // WordPress stores term names HTML-encoded in the DB (e.g. "H&amp;M").
-    // WP REST API passes the search string directly into a LIKE clause, so
-    // "h&m" never matches "H&amp;M".  Decode any entities the caller typed,
-    // then re-encode to match DB storage before sending to the remote site.
+    // WordPress stores & in term names as an entity (e.g. "H&amp;M"), but leaves quotes as
+    // typed. WP REST API passes the search string directly into a LIKE clause, so "h&m" never
+    // matches "H&amp;M". Decode any entities the caller typed, then re-encode to match DB
+    // storage before sending to the remote site.
     $search_decoded = html_entity_decode( $search, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-    $search_for_api = htmlspecialchars( $search_decoded, ENT_QUOTES, 'UTF-8' );
+    $search_for_api = htmlspecialchars( $search_decoded, ENT_NOQUOTES, 'UTF-8' );
 
     $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
     $url       = $origin . '/wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
