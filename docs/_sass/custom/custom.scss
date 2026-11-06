@@ -7,3 +7,22 @@
   display: flex;
   justify-content: flex-end;
 }
+
+// Plugin logo before the site title, matching the suite landing site.
+.site-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.site-title-logo {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.site-title-text {
+  min-width: 0;
+  line-height: 1.1;
+}
