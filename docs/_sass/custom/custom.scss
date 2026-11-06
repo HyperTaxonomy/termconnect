@@ -1,0 +1,9 @@
+// Clicking anywhere on an expanded section's row collapses it. The theme only toggles a
+// section from its arrow, so the arrow's button is stretched across the row. A collapsed
+// section's row is still a link to its page.
+.site-nav .nav-list-item.active > .nav-list-expander {
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
