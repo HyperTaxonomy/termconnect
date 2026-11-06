@@ -821,7 +821,7 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
     $processed_local_ids = array();
     $source_sync_flags   = tc_sv_get_sync_flags( $source );
     $delegations         = $existing_delegations;
-    $skip_scope_exit     = false;
+    $failed_taxonomies   = array();
 
     foreach ( $enabled_taxa as $taxonomy ) {
         $members = htax_get_terms_in_groups( array( $group_id ), $taxonomy );
@@ -850,8 +850,11 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
                             // Remote term gone while local term is still a group member.
                             $result['orphaned']++;
                             tc_sv_apply_orphan_action( $local_term_id, $taxonomy, $orphan_action );
+                        } else {
+                            // Any other error is transient: leave status, don't count as synced.
+                            // This member's descendants weren't checked either, so keep them.
+                            $failed_taxonomies[ $taxonomy ] = true;
                         }
-                        // 'unreachable': transient error — leave status, don't count as synced.
                         continue;
                     }
                     $result['synced']++;
@@ -867,6 +870,8 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
             if ( is_wp_error( $remote ) ) {
                 if ( 'tc_not_found' !== $remote->get_error_code() ) {
                     $result['errors'][] = $local_term->slug . ': ' . $remote->get_error_message();
+                    // This member's descendants weren't checked, so keep them.
+                    $failed_taxonomies[ $taxonomy ] = true;
                 }
                 continue;
             }
@@ -883,9 +888,10 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
             $origin       = $link_type ? tc_external_get_site_origin( $link_type['uri_prefix'] ?? '' ) : '';
             $remote_terms = $origin ? tc_sv_fetch_taxonomy( $origin, $taxonomy ) : new WP_Error( 'tc_invalid_origin', __( 'Cannot resolve peer site URL.', 'termconnect' ) );
             if ( is_wp_error( $remote_terms ) ) {
-                // Without the remote list, descendants can't be told apart from terms that
-                // left scope, so leave every delegation in place until the next sync.
-                $skip_scope_exit    = true;
+                // Without the remote list, this taxonomy's descendants can't be told apart
+                // from terms that left scope, so leave its delegations in place until the
+                // next sync.
+                $failed_taxonomies[ $taxonomy ] = true;
                 $result['errors'][] = $remote_terms->get_error_message();
                 continue;
             }
@@ -918,8 +924,12 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
     // Scope-exit: terms previously delegated by this source that are no longer group members.
     // Group scope is dynamic — membership defines delegation. Terms that left the group
     // simply have their identity cleared; no remote fetch needed.
-    foreach ( $skip_scope_exit ? array() : $existing_delegations as $local_term_id ) {
+    foreach ( $existing_delegations as $local_term_id ) {
         if ( in_array( $local_term_id, $processed_local_ids, true ) ) {
+            continue;
+        }
+        $delegated_term = get_term( $local_term_id );
+        if ( $delegated_term instanceof WP_Term && isset( $failed_taxonomies[ $delegated_term->taxonomy ] ) ) {
             continue;
         }
         $src = tc_get_identity_source( $local_term_id );
