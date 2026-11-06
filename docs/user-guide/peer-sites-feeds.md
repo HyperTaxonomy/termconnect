@@ -24,7 +24,7 @@ Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear i
 
 > **Namespaces vs. link types.** A *namespace* is the identifier space plus its URL-construction rule (e.g. Wikidata Q-numbers → `wikidata.org/wiki/`). A *link type* — the configured entries shown on the **Peer Sites** screen — is an entry that uses a namespace. Peer sites and feeds are link types whose namespace is a remote WordPress or feed endpoint.
 >
-> **Namespaces of relationship types.** HyperTaxonomy's custom relationship types also have a namespace, which TermConnect can carry to other sites when it syncs them. There, the namespace is part of the type's identity: it says whose definition this is. It's distinct from a peer site, and doesn't have to be a working URL.
+> **Namespaces of relationship types.** HyperTaxonomy's custom relationship types also have a namespace, and TermConnect can sync those types to other sites. For a relationship type, the namespace is part of the type's identity: it says whose definition this is. It's distinct from a peer site, and doesn't have to be a working URL.
 
 When a local term shares an identifier with a term on a peer WordPress site, TermConnect can delegate its identity to the peer — keeping the name, description, and external links in sync automatically. A collection of terms whose identity is delegated to a peer site is called a **Shared Vocabulary** (see [Shared Vocabularies](shared-vocabularies.html)).
 
