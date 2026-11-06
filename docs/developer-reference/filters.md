@@ -1,7 +1,7 @@
 ---
 title: Filters
 parent: Developer Reference
-nav_order: 1
+nav_order: 5
 ---
 
 # Filters
@@ -153,7 +153,7 @@ add_filter( 'htax_term_uris', function( array $uris, int $term_id ): array {
 
 ### `htax_term_external_posts` *(HyperTaxonomy-defined)*
 
-TermConnect populates this HyperTaxonomy filter with related posts fetched from the term's configured WordPress peer sites, as plain normalized post arrays. Consumers read them (visibility-gated) via `htax_get_term_external_posts()` — see [External Documents](external-documents.html). Hook into it to contribute documents from your own source.
+TermConnect populates this HyperTaxonomy filter with related posts fetched from the term's configured WordPress peer sites, as plain normalized post arrays. Consumers read them (visibility-gated) via `htax_get_term_external_posts()` — see [External Documents API](external-documents.html). Hook into it to contribute documents from your own source.
 
 ```php
 add_filter( 'htax_term_external_posts', function( array $docs, int $term_id, array $args ): array {

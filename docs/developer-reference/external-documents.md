@@ -1,10 +1,10 @@
 ---
-title: External Documents
+title: External Documents API
 parent: Developer Reference
-nav_order: 6
+nav_order: 3
 ---
 
-# External Documents
+# External Documents API
 
 TermConnect contributes related posts from configured peer sites and feeds to any
 same-site consumer that asks HyperTaxonomy for a term's external posts — for

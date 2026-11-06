@@ -1,7 +1,7 @@
 ---
 title: Settings Reference
 parent: Developer Reference
-nav_order: 5
+nav_order: 6
 ---
 
 # Settings Reference

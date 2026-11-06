@@ -1,7 +1,7 @@
 ---
 title: Term Links API
 parent: Developer Reference
-nav_order: 2
+nav_order: 1
 ---
 
 # Term Links API

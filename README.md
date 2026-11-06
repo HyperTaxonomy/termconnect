@@ -45,7 +45,7 @@ To blend peer/feed posts together with local related posts in one block, use Hyp
 Full documentation is published at [hypertaxonomy.org/termconnect](https://hypertaxonomy.org/termconnect) (source in [`docs/`](docs/)):
 
 - [User Guide](docs/user-guide/index.md) — enabled taxonomies, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
-- [Developer Reference](docs/developer-reference/index.md) — filters, the Term Links API, the Peer Fetch API, REST API fields, the settings reference, and External Documents (contributing external posts via HyperTaxonomy's generic API).
+- [Developer Reference](docs/developer-reference/index.md) — the Term Links API, the Peer Fetch API, the External Documents API (contributing external posts via HyperTaxonomy's generic API), REST API fields, filters, and the settings reference.
 
 ## Translations
 
