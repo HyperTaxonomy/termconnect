@@ -20,7 +20,6 @@ Part of the [HyperTaxonomy suite](https://hypertaxonomy.org) of interoperable Wo
 
 - **[User Guide](user-guide/)** — for site admins: enabled taxonomies, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
 - **[Developer Reference](developer-reference/)** — for theme and plugin developers: filters, the Term Links API, the Peer Fetch API, REST API fields, the settings reference, and external documents.
-- **[Vision](vision.html)** — a forward-looking sketch (not a roadmap) of where TermConnect's federation model could go: a decentralized, serverless concept registry. Published for the community to build on, should it choose to.
 
 ## Requirements
 
