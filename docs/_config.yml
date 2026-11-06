@@ -11,7 +11,7 @@ color_scheme: light
 aux_links:
   "GitHub": ["https://github.com/HyperTaxonomy/termconnect"]
   "HyperTaxonomy Suite": ["https://hypertaxonomy.org"]
-aux_links_new_tab: true
+aux_links_new_tab: false
 callouts:
   note:
     title: Note
