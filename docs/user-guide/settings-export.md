@@ -1,7 +1,7 @@
 ---
 title: Settings, Cache & Export
 parent: User Guide
-nav_order: 5
+nav_order: 7
 ---
 
 # Settings, Cache & Export
@@ -12,7 +12,7 @@ Go to **Settings → TermConnect** to configure global peer site behavior.
 
 **General**
 
-- **Enabled Taxonomies** — see [Peer Sites & Feeds](peer-sites-feeds.html).
+- **Enabled Taxonomies** — see [Getting started](../#enabled-taxonomies).
 - **See Also** and **Identifier Suggestions** — see [Archives & Suggestions](archives-suggestions.html).
 
 **Peer Sites**

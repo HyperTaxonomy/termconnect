@@ -22,8 +22,25 @@ Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable Wo
 
 ## Documentation map
 
-- **[User Guide](user-guide/)** — for site admins: enabled taxonomies, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
+- **[User Guide](user-guide/)** — for site admins: concepts, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
 - **[Developer Reference](developer-reference/)** — for theme and plugin developers: the Term Links API, the Peer Fetch API, the External Documents API, REST API fields, filters, and the settings reference.
+
+## Getting started
+
+1. Install from the [WordPress.org plugin directory](https://wordpress.org/plugins/termconnect/), or download the zip from [GitHub Releases](https://github.com/HyperTaxonomy/termconnect/releases) and upload via **Plugins → Add New → Upload Plugin**, then activate it.
+2. Enable taxonomies (below).
+3. Edit a term in an enabled taxonomy and add an identifier, such as its Wikidata ID, in the **External Links** panel.
+4. To connect other sites, go to **Terms → Peer Sites**. See [Peer Sites & Feeds](user-guide/peer-sites-feeds.html).
+
+### Enabled taxonomies
+
+Go to **Settings → TermConnect → General** and, under **Enabled Taxonomies**, check each taxonomy where you want TermConnect active. Enabling a taxonomy:
+
+- Shows the **Delegated Identity** and **External Links** panels on its term add/edit screens.
+- Includes it in "See also" display on term archive pages.
+- Turns on peer site term matching when fetching cross-site posts.
+
+Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear in the list.
 
 ## Requirements
 

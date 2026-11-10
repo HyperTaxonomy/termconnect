@@ -1,22 +1,10 @@
 ---
 title: Peer Sites & Feeds
 parent: User Guide
-nav_order: 1
+nav_order: 2
 ---
 
 # Peer Sites & Feeds
-
-## Enabled Taxonomies
-
-Go to **Settings → TermConnect → General** and, under **Enabled Taxonomies**, check each taxonomy where you want TermConnect active. Enabling a taxonomy:
-
-- Shows the **Delegated Identity** and **External Links** panels on its term add/edit screens.
-- Includes it in "See also" display on term archive pages.
-- Turns on peer site term matching when fetching cross-site posts.
-
-Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear in the list.
-
----
 
 ## Peer Sites
 

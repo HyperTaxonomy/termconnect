@@ -1,10 +1,12 @@
 ---
-title: Modeling Decisions
+title: Concepts
 parent: User Guide
-nav_order: 7
+nav_order: 1
 ---
 
-# Modeling Decisions
+# Concepts
+
+What a term means across sites, when connecting sites pays off, and how far to follow peers. The [home page](../) explains how external links identify a concept.
 
 ## When Peer Networks Make Sense
 
