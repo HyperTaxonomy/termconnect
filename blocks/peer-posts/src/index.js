@@ -27,6 +27,7 @@ function Edit( { attributes, setAttributes } ) {
 		orderby,
 		per_page,
 		max_results,
+		cutoff_days,
 		foaf_depth,
 		require_ht,
 		include_synonyms,
@@ -148,6 +149,30 @@ function Edit( { attributes, setAttributes } ) {
 						value={ max_results }
 						onChange={ ( val ) => setAttributes( { max_results: val } ) }
 					/>
+					<ToggleControl
+						label={ __( 'Only peer posts near this post’s date', 'termconnect' ) }
+						help={ __(
+							'Leave off to show peer posts of any age.',
+							'termconnect'
+						) }
+						checked={ '' !== cutoff_days }
+						onChange={ ( on ) => setAttributes( { cutoff_days: on ? '0' : '' } ) }
+					/>
+					{ '' !== cutoff_days && (
+						<TextControl
+							label={ __( 'Days before this post', 'termconnect' ) }
+							help={ __(
+								'Show peer posts published or updated no more than this many days before this post was last published or updated. 0 shows only peer posts newer than this post.',
+								'termconnect'
+							) }
+							type="number"
+							min="0"
+							value={ cutoff_days }
+							onChange={ ( val ) => setAttributes( {
+								cutoff_days: String( Math.max( 0, parseInt( val, 10 ) || 0 ) ),
+							} ) }
+						/>
+					) }
 				</PanelBody>
 
 				{ /* ── Peer Network ───────────────────────────────────── */ }

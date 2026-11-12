@@ -123,6 +123,7 @@ class TC_Shortcode_PeerPosts {
             'orderby'                => 'score',
             'per_page'               => '5',
             'max_results'            => '20',
+            'cutoff_days'            => '',
             'foaf_depth'             => '0',
             'require_ht'             => 'false',
             'include_synonyms'       => 'true',
@@ -339,6 +340,10 @@ class TC_Shortcode_PeerPosts {
             'taxonomy'           => $atts['taxonomy'],
             'per_page'           => max( 1, (int) $atts['per_page'] ),
             'max_results'        => max( 0, (int) $atts['max_results'] ),
+            // -1 = no cutoff (empty or non-numeric); 0+ = days before the current post.
+            'cutoff_days'        => is_numeric( trim( (string) ( $atts['cutoff_days'] ?? '' ) ) )
+                ? max( 0, (int) $atts['cutoff_days'] )
+                : -1,
             'match'              => in_array( $atts['match'], array( 'any', 'all' ), true ) ? $atts['match'] : 'any',
             'scope'              => in_array( $atts['scope'] ?? 'peers', array( 'peers', 'all' ), true ) ? $atts['scope'] : 'peers',
             'orderby'            => $atts['orderby'],
@@ -387,6 +392,11 @@ class TC_Shortcode_PeerPosts {
         // Separate feed tuples — they use cached posts, not the REST API loop below.
         $feed_tuples = array_filter( $tuples, static fn( $t ) => ( $t['platform'] ?? '' ) === 'feed' );
         $tuples      = array_filter( $tuples, static fn( $t ) => ( $t['platform'] ?? '' ) !== 'feed' );
+
+        // Date cutoff (post context only): sent to peers as modified_after so they
+        // fill max_results from posts recent enough, then enforced locally below
+        // for feeds and for peers that ignore the parameter.
+        $modified_after = ( null === $explicit_term_ids ) ? $this->cutoff_modified_after( $post_id, $p['cutoff_days'] ) : '';
 
         $all_posts = $this->fetch_feed_posts( $feed_tuples );
 
@@ -444,13 +454,13 @@ class TC_Shortcode_PeerPosts {
             $is_ht       = tc_external_is_ht_enabled( $origin );
 
             if ( $is_ht ) {
-                $posts = tc_external_fetch_scored_posts( $origin, $taxonomy, $term_id_map, $p['match'], $term_weights, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $p['expand'] );
+                $posts = tc_external_fetch_scored_posts( $origin, $taxonomy, $term_id_map, $p['match'], $term_weights, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $p['expand'], $modified_after );
             } elseif ( ! $p['require_ht'] ) {
                 if ( 'relevance' === $this->primary_orderby_field( $p['orderby'] ) ) {
                     $keyword = (string) get_the_title( $post_id );
-                    $posts   = tc_external_fetch_relevance_posts( $origin, $taxonomy, $all_ids, $keyword, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug );
+                    $posts   = tc_external_fetch_relevance_posts( $origin, $taxonomy, $all_ids, $keyword, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $modified_after );
                 } else {
-                    $posts = tc_external_fetch_posts( $origin, $taxonomy, $all_ids, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug );
+                    $posts = tc_external_fetch_posts( $origin, $taxonomy, $all_ids, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $modified_after );
                 }
                 if ( 'all' === $p['match'] ) {
                     $posts = $this->filter_and_match( $posts, $and_groups );
@@ -474,14 +484,67 @@ class TC_Shortcode_PeerPosts {
                 foreach ( array_keys( $term_id_map ) as $rid ) {
                     $term_taxonomy_map[ $rid ] = $taxonomy;
                 }
-                $foaf_posts = $this->fetch_foaf( $origin, $term_taxonomy_map, $p['match'], $taxonomy, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], 1, $p['max_foaf'], $visited, $p['expand'] );
+                $foaf_posts = $this->fetch_foaf( $origin, $term_taxonomy_map, $p['match'], $taxonomy, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], 1, $p['max_foaf'], $visited, $p['expand'], $modified_after );
                 array_push( $all_posts, ...$foaf_posts );
             }
         }
 
         array_push( $all_posts, ...$this->combine_peer_fetches( $peer_fetches ) );
 
-        return $all_posts;
+        return $this->filter_by_cutoff( $all_posts, $modified_after );
+    }
+
+    /**
+     * Convert cutoff_days into the earliest date a peer post may have.
+     *
+     * The reference is the current post's latest activity (the later of its
+     * published and modified dates), minus the given number of days. A peer post
+     * qualifies when it was published or last updated after that point; since a
+     * post's modified date is never earlier than its published date, comparing
+     * modified dates is enough.
+     *
+     * @param int $post_id     Current post ID.
+     * @param int $cutoff_days Days before the current post; -1 = no cutoff.
+     * @return string ISO 8601 UTC date, or '' when no cutoff applies.
+     */
+    private function cutoff_modified_after( int $post_id, int $cutoff_days ): string {
+        if ( $cutoff_days < 0 || $post_id <= 0 ) {
+            return '';
+        }
+        $post = get_post( $post_id );
+        if ( ! $post ) {
+            return '';
+        }
+        $ref = max(
+            (int) strtotime( $post->post_date_gmt . ' UTC' ),
+            (int) strtotime( $post->post_modified_gmt . ' UTC' )
+        );
+        if ( $ref <= 0 ) {
+            return '';
+        }
+        return gmdate( 'Y-m-d\TH:i:s', $ref - $cutoff_days * DAY_IN_SECONDS ) . '+00:00';
+    }
+
+    /**
+     * Drop posts whose latest activity (modified date, or published date when a
+     * source has none) is not after the cutoff.
+     *
+     * @param array  $posts          Normalized posts.
+     * @param string $modified_after ISO 8601 cutoff from cutoff_modified_after(); '' keeps all.
+     * @return array
+     */
+    private function filter_by_cutoff( array $posts, string $modified_after ): array {
+        if ( '' === $modified_after ) {
+            return $posts;
+        }
+        $cutoff = strtotime( $modified_after );
+        return array_values( array_filter( $posts, static function ( $post ) use ( $cutoff ) {
+            $latest = max(
+                (int) strtotime( (string) ( $post['date_gmt'] ?? '' ) ),
+                (int) strtotime( (string) ( $post['modified_gmt'] ?? '' ) )
+            );
+            return $latest > $cutoff;
+        } ) );
     }
 
     /**
@@ -1087,6 +1150,7 @@ class TC_Shortcode_PeerPosts {
      * @param int    $max_depth
      * @param array  $visited           Origins already fetched this traversal.
      * @param bool   $expand            Pass htax_expand to discovered HT peers.
+     * @param string $modified_after    ISO 8601 date: only posts modified after it (empty = no limit).
      * @return array Normalized posts with foaf=true.
      *
      * Transitively-discovered peers are scored flat (each matched term = 1.0):
@@ -1104,7 +1168,8 @@ class TC_Shortcode_PeerPosts {
         int $depth,
         int $max_depth,
         array $visited,
-        bool $expand = false
+        bool $expand = false,
+        string $modified_after = ''
     ): array {
         if ( $depth > $max_depth ) {
             return array();
@@ -1133,9 +1198,9 @@ class TC_Shortcode_PeerPosts {
 
             $is_ht = tc_external_is_ht_enabled( $peer_origin );
             if ( $is_ht ) {
-                $posts = tc_external_fetch_scored_posts( $peer_origin, $taxonomy, $peer_map, $match, array(), $show_thumbnail, $fetch_size, $cache_ttl, '', $expand );
+                $posts = tc_external_fetch_scored_posts( $peer_origin, $taxonomy, $peer_map, $match, array(), $show_thumbnail, $fetch_size, $cache_ttl, '', $expand, $modified_after );
             } else {
-                $posts = tc_external_fetch_posts( $peer_origin, $taxonomy, array( $peer_id ), $show_thumbnail, $fetch_size, $cache_ttl );
+                $posts = tc_external_fetch_posts( $peer_origin, $taxonomy, array( $peer_id ), $show_thumbnail, $fetch_size, $cache_ttl, '', $modified_after );
                 $posts = tc_external_score_posts( $posts, $peer_map, $peer_id_to_slug, array() );
             }
 
@@ -1148,7 +1213,7 @@ class TC_Shortcode_PeerPosts {
 
             if ( $depth < $max_depth && $is_ht ) {
                 $next_map   = array( $peer_id => $taxonomy );
-                $foaf_posts = array_merge( $foaf_posts, $this->fetch_foaf( $peer_origin, $next_map, $match, $taxonomy, $show_thumbnail, $fetch_size, $cache_ttl, $depth + 1, $max_depth, $visited, $expand ) );
+                $foaf_posts = array_merge( $foaf_posts, $this->fetch_foaf( $peer_origin, $next_map, $match, $taxonomy, $show_thumbnail, $fetch_size, $cache_ttl, $depth + 1, $max_depth, $visited, $expand, $modified_after ) );
             }
         }
 

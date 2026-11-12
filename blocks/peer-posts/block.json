@@ -53,6 +53,10 @@
             "type": "string",
             "default": "20"
         },
+        "cutoff_days": {
+            "type": "string",
+            "default": ""
+        },
         "foaf_depth": {
             "type": "string",
             "default": "0"

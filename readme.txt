@@ -108,7 +108,7 @@ The **Peer Posts** and **Peer Browse** Gutenberg blocks are the block-editor equ
 
 = Key Attributes for [tc_peer_posts] =
 
-Key attributes: `link_types`, `taxonomy`, `match`, `scope` (`peers` or `all` to also blend in this site's own matching posts), `orderby` (including `peer:asc,relevance:desc` to group results by source), `foaf_depth`, `require_ht`, `peer_expand`, plus standard display attributes (`format`, `columns`, `show_thumbnail`, `meta`, etc.).
+Key attributes: `link_types`, `taxonomy`, `match`, `scope` (`peers` or `all` to also blend in this site's own matching posts), `orderby` (including `peer:asc,relevance:desc` to group results by source), `foaf_depth`, `require_ht`, `peer_expand`, `cutoff_days` (only peer posts published or updated within N days before the current post), plus standard display attributes (`format`, `columns`, `show_thumbnail`, `meta`, etc.).
 
 For the complete attribute reference, see [User Guide → Displaying Peer Posts](https://hypertaxonomy.org/termconnect/user-guide/displaying-peer-posts.html).
 

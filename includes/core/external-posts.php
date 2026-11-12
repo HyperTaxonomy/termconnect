@@ -1117,6 +1117,7 @@ function tc_external_record_fetch( string $peer_site_slug, int $count ): void {
  * @param int    $fetch_size     Number of posts to request from the remote site.
  * @param int    $ttl            Cache TTL in seconds.
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
+ * @param string $modified_after ISO 8601 date: only posts modified after it (empty = no limit).
  * @return array Normalized posts (score=0.0, ht_scored=false).
  */
 function tc_external_fetch_posts(
@@ -1126,7 +1127,8 @@ function tc_external_fetch_posts(
     bool $show_thumbnail,
     int $fetch_size,
     int $ttl,
-    string $peer_site_slug = ''
+    string $peer_site_slug = '',
+    string $modified_after = ''
 ): array {
     if ( empty( $all_term_ids ) ) {
         return array();
@@ -1137,7 +1139,7 @@ function tc_external_fetch_posts(
 
     $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
     $cache_key = 'tc_ext_posts_' . md5(
-        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' )
+        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . "|$modified_after"
     );
 
     $cached = get_transient( $cache_key );
@@ -1157,6 +1159,9 @@ function tc_external_fetch_posts(
         'orderby'  => 'date',
         'order'    => 'desc',
     );
+    if ( '' !== $modified_after ) {
+        $params['modified_after'] = $modified_after;
+    }
     if ( '' !== $fields_str ) {
         $params['_fields'] = $fields_str;
     }
@@ -1215,6 +1220,7 @@ function tc_external_fetch_posts(
  * @param int    $ttl            Cache TTL in seconds.
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
  * @param bool   $expand         Ask the peer to re-expand primaries via its own relationships (htax_expand).
+ * @param string $modified_after ISO 8601 date: only posts modified after it (empty = no limit).
  * @return array Normalized posts with score and matched_term_slugs from HT.
  */
 function tc_external_fetch_scored_posts(
@@ -1227,7 +1233,8 @@ function tc_external_fetch_scored_posts(
     int $fetch_size,
     int $ttl,
     string $peer_site_slug = '',
-    bool $expand = false
+    bool $expand = false,
+    string $modified_after = ''
 ): array {
     if ( empty( $term_id_map ) ) {
         return array();
@@ -1235,7 +1242,7 @@ function tc_external_fetch_scored_posts(
 
     $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
     $cache_key = 'tc_ext_scored_' . md5(
-        "$peer_site_slug|$version|$origin|$taxonomy|" . tc_external_serialize_term_id_map( $term_id_map ) . "|$match|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . wp_json_encode( $term_weights ) . '|' . ( $expand ? '1' : '0' )
+        "$peer_site_slug|$version|$origin|$taxonomy|" . tc_external_serialize_term_id_map( $term_id_map ) . "|$match|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . wp_json_encode( $term_weights ) . '|' . ( $expand ? '1' : '0' ) . "|$modified_after"
     );
 
     $cached = get_transient( $cache_key );
@@ -1266,6 +1273,9 @@ function tc_external_fetch_scored_posts(
         'per_page'   => $fetch_size,
         'orderby'    => 'score',
     );
+    if ( '' !== $modified_after ) {
+        $params['modified_after'] = $modified_after;
+    }
     if ( '' !== $fields_str ) {
         $params['_fields'] = $fields_str;
     }
@@ -1362,7 +1372,8 @@ function tc_external_fetch_relevance_posts(
     bool $show_thumbnail,
     int $fetch_size,
     int $ttl,
-    string $peer_site_slug = ''
+    string $peer_site_slug = '',
+    string $modified_after = ''
 ): array {
     if ( empty( $all_term_ids ) || '' === $search_keyword ) {
         return array();
@@ -1373,7 +1384,7 @@ function tc_external_fetch_relevance_posts(
 
     $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
     $cache_key = 'tc_ext_rel_' . md5(
-        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . '|' . md5( $search_keyword ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' )
+        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . '|' . md5( $search_keyword ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . "|$modified_after"
     );
 
     $cached = get_transient( $cache_key );
@@ -1393,6 +1404,9 @@ function tc_external_fetch_relevance_posts(
         'per_page' => $fetch_size,
         'orderby'  => 'relevance',
     );
+    if ( '' !== $modified_after ) {
+        $params['modified_after'] = $modified_after;
+    }
     if ( '' !== $fields_str ) {
         $params['_fields'] = $fields_str;
     }
