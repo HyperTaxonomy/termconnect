@@ -27,6 +27,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'admin_post_tc_export_links', 'tc_handle_export_links' );
 add_action( 'admin_post_tc_import_links', 'tc_handle_import_links' );
 
+/**
+ * Download every link type, term link and delegation as a TermConnect export file.
+ *
+ * @since 1.0.0
+ */
 function tc_handle_export_links(): void {
     check_admin_referer( 'tc_export_links' );
     if ( ! current_user_can( 'manage_options' ) ) {
@@ -168,6 +173,11 @@ function tc_import_sanitize_link_type( $type ): ?array {
     );
 }
 
+/**
+ * Import a TermConnect export file uploaded on the settings page.
+ *
+ * @since 1.0.0
+ */
 function tc_handle_import_links(): void {
     check_admin_referer( 'tc_import_links', 'tc_import_nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {

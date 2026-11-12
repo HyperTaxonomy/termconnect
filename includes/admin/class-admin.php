@@ -16,11 +16,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class TC_Admin {
 
+    /**
+     * Hook the admin menus and the plugin's Settings link.
+     *
+     * @since 1.0.0
+     */
     public static function register(): void {
         add_action( 'admin_menu', array( __CLASS__, 'register_menus' ), 15 );
         add_filter( 'plugin_action_links_' . TC_PLUGIN_BASENAME, array( __CLASS__, 'add_settings_link' ) );
     }
 
+    /**
+     * Add a Settings link to the plugin's row on the Plugins screen.
+     *
+     * @since 1.0.0
+     */
     public static function add_settings_link( array $links ): array {
         $settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=termconnect-settings' ) ) . '">'
             . esc_html__( 'Settings', 'termconnect' )
@@ -58,6 +68,11 @@ class TC_Admin {
         return 'tc-terms';
     }
 
+    /**
+     * Add the Peer Sites and Shared Vocabularies pages under the Terms menu, and Settings → TermConnect.
+     *
+     * @since 1.0.0
+     */
     public static function register_menus(): void {
         $parent = self::get_terms_menu_parent();
 

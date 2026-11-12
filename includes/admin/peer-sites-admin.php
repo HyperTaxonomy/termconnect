@@ -575,6 +575,8 @@ function tc_ajax_peer_sites_reorder(): void {
 add_action( 'wp_ajax_tc_peer_sites_reorder', 'tc_ajax_peer_sites_reorder' );
 
 /**
+ * Add a link type (peer site, feed or other namespace) from the Peer Sites form.
+ *
  * @since 1.0.0
  */
 function tc_handle_peer_site_add(): void {
@@ -668,6 +670,8 @@ function tc_handle_peer_site_add(): void {
 }
 
 /**
+ * Save changes to a link type from the Peer Sites form.
+ *
  * @since 1.0.0
  */
 function tc_handle_peer_site_edit(): void {
@@ -757,6 +761,8 @@ function tc_handle_peer_site_edit(): void {
 }
 
 /**
+ * Delete a link type and every term link stored for it.
+ *
  * @since 1.0.0
  */
 function tc_handle_peer_site_delete(): void {
@@ -816,6 +822,8 @@ function tc_handle_peer_site_delete(): void {
 }
 
 /**
+ * Enable or disable a link type.
+ *
  * @since 1.0.0
  */
 function tc_handle_peer_site_toggle(): void {
@@ -853,6 +861,8 @@ function tc_handle_peer_site_toggle(): void {
 }
 
 /**
+ * Turn a link type's "See also" display on term archives on or off.
+ *
  * @since 1.0.0
  */
 function tc_handle_peer_site_toggle_archives(): void {

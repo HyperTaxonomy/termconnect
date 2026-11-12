@@ -38,14 +38,16 @@ Works with any WordPress site. When [HyperTaxonomy](https://wordpress.org/plugin
 | `[tc_peer_posts]` | `termconnect/peer-posts` | Related posts from configured peer sites and feeds for the current post (optionally blend in local via `scope="all"`) |
 | `[tc_peer_browse]` | `termconnect/peer-browse` | Interactive topic browser: visitors pick terms, see matching posts from this site + peers |
 
-To blend peer/feed posts together with local related posts in one block, use HyperTaxonomy's `[ht_related_posts external="true"]` — TermConnect contributes the external content via HyperTaxonomy's generic external-posts API.
+To blend peer/feed posts together with this site's own related posts in one block, set `scope="all"` on `[tc_peer_posts]` (or the Peer Posts block's Source = Local + peers).
 
 ## Documentation
 
 Full documentation is published at [hypertaxonomy.org/termconnect](https://hypertaxonomy.org/termconnect) (source in [`docs/`](docs/)):
 
-- [User Guide](docs/user-guide/index.md) — enabled taxonomies, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
+- [User Guide](docs/user-guide/index.md) — concepts, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
 - [Developer Reference](docs/developer-reference/index.md) — the Term Links API, the Peer Fetch API, the External Documents API (contributing external posts via HyperTaxonomy's generic API), REST API fields, filters, and the settings reference.
+- [HyperTaxonomy Integration](docs/hypertaxonomy-integration.md) — what becomes available when HyperTaxonomy is active too.
+- [Architecture](docs/architecture/index.md) — file structure and loading, function and hook references, and the database schema. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
 
 ## Translations
 

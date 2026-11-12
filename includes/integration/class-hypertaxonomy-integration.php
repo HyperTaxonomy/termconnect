@@ -38,6 +38,11 @@ class TC_HT_Integration {
      */
     private static array $link_snapshots = array();
 
+    /**
+     * Hook TermConnect into HyperTaxonomy's filters, actions and admin screens.
+     *
+     * @since 1.0.0
+     */
     public static function init(): void {
         add_filter( 'htax_term_uris',             array( __CLASS__, 'provide_term_uris' ),        10, 2 );
         add_filter( 'htax_term_external_posts', array( __CLASS__, 'provide_term_external_posts' ), 10, 3 );
@@ -57,6 +62,11 @@ class TC_HT_Integration {
     // htax_term_uris
     // --------------------------------------------------------------------------
 
+    /**
+     * Add a term's TermConnect identifier URIs to HyperTaxonomy's htax_term_uris filter.
+     *
+     * @since 1.0.0
+     */
     public static function provide_term_uris( array $uris, int $term_id ): array {
         $cached  = get_transient( 'tc_uris_' . $term_id );
         $tc_uris = is_array( $cached ) ? $cached : (array) get_term_meta( $term_id, '_tc_uris' );
@@ -178,6 +188,11 @@ class TC_HT_Integration {
     // htax_term_peers REST field
     // --------------------------------------------------------------------------
 
+    /**
+     * Register the htax_term_peers REST field on posts.
+     *
+     * @since 1.0.0
+     */
     public static function register_rest_fields(): void {
         register_rest_field(
             'post',
@@ -195,6 +210,11 @@ class TC_HT_Integration {
         );
     }
 
+    /**
+     * REST field callback: peer site connections for a post's terms, in HyperTaxonomy's scored post responses.
+     *
+     * @since 1.0.0
+     */
     public static function rest_get_htax_term_peers( array $post ): ?array {
         global $_htax_rest_post_term_map, $_htax_rest_scoring_active;
         if ( empty( $_htax_rest_scoring_active ) ) {

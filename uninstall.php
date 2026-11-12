@@ -16,6 +16,11 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
+/**
+ * Remove TermConnect's options, caches, cron events and index, and its data when Delete data on uninstall is on.
+ *
+ * @since 1.0.0
+ */
 function tc_uninstall_cleanup() {
 	global $wpdb;
 

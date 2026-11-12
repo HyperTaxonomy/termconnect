@@ -13,6 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class TC_Settings {
 
     /** @return string[] */
+    /**
+     * Taxonomies TermConnect is enabled for, after the tc_enabled_taxonomies filter.
+     *
+     * @since 1.0.0
+     */
     public static function get_enabled_taxonomies(): array {
         $taxonomies = (array) get_option( 'tc_enabled_taxonomies', array() );
 
@@ -60,6 +65,11 @@ class TC_Settings {
     // RENDER
     // =========================================================================
 
+    /**
+     * Render the Settings → TermConnect page.
+     *
+     * @since 1.0.0
+     */
     public static function render(): void {
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_die( esc_html__( 'Permission denied.', 'termconnect' ) );

@@ -34,6 +34,11 @@ add_action( 'init', static function () {
     load_plugin_textdomain( 'termconnect', false, dirname( TC_PLUGIN_BASENAME ) . '/languages' );
 } );
 
+/**
+ * Schedule the cron events, add the term meta index, and mark feeds for rescheduling.
+ *
+ * @since 1.0.0
+ */
 function tc_plugin_activate(): void {
     if ( ! wp_next_scheduled( 'tc_refresh_identity_caches' ) ) {
         wp_schedule_event( time(), 'twicedaily', 'tc_refresh_identity_caches' );
@@ -49,6 +54,11 @@ function tc_plugin_activate(): void {
     update_option( 'tc_feed_reschedule', 1, false );
 }
 
+/**
+ * Add TermConnect's term meta indexes, used for reverse identifier lookups.
+ *
+ * @since 1.0.0
+ */
 function tc_add_indexes(): void {
     global $wpdb;
     $wpdb->suppress_errors();
@@ -149,6 +159,11 @@ function tc_activation_purge_stale_sv_queues(): void {
     }
 }
 
+/**
+ * Unschedule TermConnect's cron events.
+ *
+ * @since 1.0.0
+ */
 function tc_plugin_deactivate(): void {
     $timestamp = wp_next_scheduled( 'tc_refresh_identity_caches' );
     if ( $timestamp ) {

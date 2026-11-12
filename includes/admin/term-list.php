@@ -113,6 +113,11 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
 // Column registration.
 // ---------------------------------------------------------------------------
 
+/**
+ * Add the Links column to term lists, after Visibility when HyperTaxonomy is active.
+ *
+ * @since 1.0.0
+ */
 function tc_add_ext_links_column( array $columns ): array {
     // Insert after Visibility (htax_hidden) when HyperTaxonomy is active, otherwise append.
     if ( function_exists( 'htax_insert_column_after' ) ) {
@@ -122,16 +127,31 @@ function tc_add_ext_links_column( array $columns ): array {
     return $columns;
 }
 
+/**
+ * Make the External Links column sortable on term list screens.
+ *
+ * @since 1.0.0
+ */
 function tc_make_ext_links_column_sortable( array $sortable ): array {
     $sortable['tc_ext_links'] = 'tc_ext_links';
     return $sortable;
 }
 
+/**
+ * Make the Sync column sortable on term list screens.
+ *
+ * @since 1.0.0
+ */
 function tc_make_di_issues_column_sortable( array $sortable ): array {
     $sortable['tc_di_issues'] = 'tc_di_issues';
     return $sortable;
 }
 
+/**
+ * Add the Sync column, which flags delegated identity sync issues, to term lists.
+ *
+ * @since 1.0.0
+ */
 function tc_add_di_issues_column( array $columns ): array {
     if ( function_exists( 'htax_insert_column_after' ) ) {
         return htax_insert_column_after( $columns, 'tc_ext_links', 'tc_di_issues', __( 'Sync', 'termconnect' ) );
@@ -140,6 +160,11 @@ function tc_add_di_issues_column( array $columns ): array {
     return $columns;
 }
 
+/**
+ * Render a term's sync issues in the Sync column.
+ *
+ * @since 1.0.0
+ */
 function tc_render_di_issues_column( string $output, string $column, int $term_id ): string {
     if ( 'tc_di_issues' !== $column ) {
         return $output;
@@ -168,6 +193,11 @@ function tc_render_di_issues_column( string $output, string $column, int $term_i
 // Column cell render.
 // ---------------------------------------------------------------------------
 
+/**
+ * Render a term's external link count in the External Links column.
+ *
+ * @since 1.0.0
+ */
 function tc_render_ext_links_column( string $output, string $column, int $term_id ): string {
     if ( 'tc_ext_links' !== $column ) {
         return $output;
@@ -206,6 +236,11 @@ function tc_count_ext_links_for_term( int $term_id ): int {
 // Sorting.
 // ---------------------------------------------------------------------------
 
+/**
+ * Order term lists by external link count.
+ *
+ * @since 1.0.0
+ */
 function tc_sort_terms_by_ext_links( array $clauses, array $taxonomies, array $args ): array {
     if ( ! is_admin() || ( $args['orderby'] ?? '' ) !== 'tc_ext_links' ) {
         return $clauses;
@@ -229,6 +264,11 @@ function tc_sort_terms_by_ext_links( array $clauses, array $taxonomies, array $a
     return $clauses;
 }
 
+/**
+ * Order term lists by sync issues.
+ *
+ * @since 1.0.0
+ */
 function tc_sort_terms_by_di_issues( array $clauses, array $taxonomies, array $args ): array {
     if ( ! is_admin() || ( $args['orderby'] ?? '' ) !== 'tc_di_issues' ) {
         return $clauses;
@@ -258,6 +298,11 @@ function tc_sort_terms_by_di_issues( array $clauses, array $taxonomies, array $a
 // Filter application.
 // ---------------------------------------------------------------------------
 
+/**
+ * Filter term lists by whether terms have external links, or by link type.
+ *
+ * @since 1.0.0
+ */
 function tc_apply_ext_links_filter( WP_Term_Query $query ): void {
     if ( ! is_admin() ) {
         return;
@@ -299,6 +344,11 @@ function tc_apply_ext_links_filter( WP_Term_Query $query ): void {
     }
 }
 
+/**
+ * Filter term lists by sync issue.
+ *
+ * @since 1.0.0
+ */
 function tc_apply_di_issues_filter( WP_Term_Query $query ): void {
     if ( ! is_admin() ) {
         return;
@@ -328,6 +378,11 @@ function tc_apply_di_issues_filter( WP_Term_Query $query ): void {
 // Filter injection + MutationObserver sync.
 // ---------------------------------------------------------------------------
 
+/**
+ * Print the script that places the External Links filter beside the term list search form.
+ *
+ * @since 1.0.0
+ */
 function tc_ext_links_filter_sync_script(): void {
     ?>
     <script>

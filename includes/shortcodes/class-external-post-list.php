@@ -80,6 +80,11 @@ function tc_process_external_post_placeholders( string $text, array $post, array
 
 class TC_Shortcode_PeerPosts {
 
+    /**
+     * Register the [tc_peer_posts] shortcode and its load-more AJAX handlers.
+     *
+     * @since 1.0.0
+     */
     public function __construct() {
         add_shortcode( 'tc_peer_posts', array( $this, 'shortcode_handler' ) );
         add_action( 'wp_ajax_tc_external_load_more', array( $this, 'ajax_load_more' ) );

@@ -1705,6 +1705,11 @@ function tc_sv_flag_stale_relationship_rows( array $remote_terms, array $delegat
 
 add_action( 'tc_sync_shared_vocabularies', 'tc_cron_sync_shared_vocabularies' );
 
+/**
+ * Cron callback: sync each active shared vocabulary source whose interval has passed.
+ *
+ * @since 1.0.0
+ */
 function tc_cron_sync_shared_vocabularies(): void {
     $sources = tc_sv_sort_sources( get_option( 'tc_shared_vocabularies', array() ) );
     if ( empty( $sources ) ) { return; }

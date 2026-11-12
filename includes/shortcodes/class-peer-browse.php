@@ -65,6 +65,11 @@ class TC_Shortcode_PeerBrowse {
         }
     }
 
+    /**
+     * Register the [tc_peer_browse] shortcode and its AJAX handlers.
+     *
+     * @since 1.0.0
+     */
     public function __construct() {
         add_shortcode( 'tc_peer_browse', array( $this, 'shortcode_handler' ) );
         add_action( 'wp_ajax_tc_peer_browse',              array( $this, 'ajax_browse' ) );
