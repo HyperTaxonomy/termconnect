@@ -15,6 +15,15 @@
   gap: 0.6rem;
 }
 
+// Half the theme's 2rem side padding on wide screens, so longer titles fit on one line
+// beside the logo.
+@media (min-width: 50rem) {
+  .site-title {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
+
 .site-title-logo {
   flex: none;
   width: 36px;
