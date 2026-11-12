@@ -161,3 +161,15 @@ add_filter( 'htax_term_external_posts', function( array $docs, int $term_id, arr
     return $docs;
 }, 10, 3 );
 ```
+
+### `htax_peer_sites` *(HyperTaxonomy-defined)*
+
+TermConnect adds its WordPress peers and feeds to HyperTaxonomy's read-only peer-site registry, keyed by link type slug. Each entry has `slug`, `label`, `platform` (`wordpress` or `feed`) and `origin`. HyperTaxonomy stores nothing; TermConnect remains where peers are configured.
+
+### `htax_before_merge_terms` / `htax_after_merge_terms` *(HyperTaxonomy-defined actions)*
+
+When HyperTaxonomy merges terms, TermConnect snapshots each merged-away term's external links before the merge, since WordPress deletes their term meta during it. After the merge, it copies those links to the remaining term for any link type the remaining term doesn't already have. Delegated identity is not carried over.
+
+### `htax_sync_remote_relationship_types` *(HyperTaxonomy-defined)*
+
+Fired from **Terms → Term Relationship Types** when a relationship type imported from a peer is synced. TermConnect fetches the peer's relationship types and returns `{ success, message, created, synced }`.

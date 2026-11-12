@@ -24,7 +24,6 @@ Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable Wo
 
 - **[User Guide](user-guide/)** — for site admins: concepts, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
 - **[Developer Reference](developer-reference/)** — for theme and plugin developers: the Term Links API, the Peer Fetch API, the External Documents API, REST API fields, filters, and the settings reference.
-- **[HyperTaxonomy Integration](hypertaxonomy-integration.html)** — what becomes available when HyperTaxonomy is active too, for site owners and developers.
 - **[Architecture](architecture/)** — for contributors: file structure and loading, function and hook references, and the database schema.
 
 ## Getting started
