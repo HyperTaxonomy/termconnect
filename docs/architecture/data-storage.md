@@ -1,10 +1,10 @@
 ---
-title: Database Schema
+title: Data Storage
 parent: Architecture
 nav_order: 4
 ---
 
-# Database Schema
+# Data Storage
 
 TermConnect has no tables of its own. It stores data in term meta, comments, options and transients, and adds one index to the term meta table. For the keys inside `tc_settings`, see the [Settings Reference](../developer-reference/settings-reference.html). For what uninstalling removes, see [Settings, Cache & Export](../user-guide/settings-export.html#uninstalling).
 

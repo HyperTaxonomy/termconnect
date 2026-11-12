@@ -13,4 +13,4 @@ The Function Reference and Hook Reference are generated from the code and its do
 - **[File Structure & Loading](file-structure.html)** — the directory layout and the order files load in.
 - **[Function Reference](function-reference.html)** — every function and public method, by file.
 - **[Hook Reference](hook-reference.html)** — the callbacks TermConnect registers, and the hooks it fires.
-- **[Database Schema](database-schema.html)** — term meta, options, transients, cron events and the term meta index.
+- **[Data Storage](data-storage.html)** — term meta, options, transients, cron events and the term meta index.

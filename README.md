@@ -46,7 +46,7 @@ Full documentation is published at [hypertaxonomy.org/termconnect](https://hyper
 
 - [User Guide](docs/user-guide/index.md) — concepts, peer sites and feeds, HyperTaxonomy integration, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
 - [Developer Reference](docs/developer-reference/index.md) — the Term Links API, the Peer Fetch API, the External Documents API (contributing external posts via HyperTaxonomy's generic API), REST API fields, filters, and the settings reference.
-- [Architecture](docs/architecture/index.md) — file structure and loading, function and hook references, and the database schema. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
+- [Architecture](docs/architecture/index.md) — file structure and loading, function and hook references, and data storage. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
 
 ## Translations
 
