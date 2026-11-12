@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: termconnect 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 22:46-0500\n"
-"PO-Revision-Date: 2026-11-11 22:50-0500\n"
+"POT-Creation-Date: 2026-11-11 22:51-0500\n"
+"PO-Revision-Date: 2026-11-11 23:10-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -2912,11 +2912,11 @@ msgstr "обновлено"
 msgid "Sync complete: %1$d created, %2$d updated."
 msgstr "Синхронизация завершена: создано %1$d, обновлено %2$d."
 
-#: includes/shortcodes/class-external-post-list.php:658
+#: includes/shortcodes/class-external-post-list.php:660
 msgid "Invalid post."
 msgstr "Недопустимая запись."
 
-#: includes/shortcodes/class-external-post-list.php:1554
+#: includes/shortcodes/class-external-post-list.php:1556
 #: includes/shortcodes/class-peer-browse.php:317
 #: includes/shortcodes/class-peer-browse.php:705
 msgid "Load more"
@@ -3227,14 +3227,12 @@ msgstr ""
 "нового запроса к стороннему сайту."
 
 #: blocks/peer-posts/src/index.js:153
-msgid "Only peer posts near this post’s date"
-msgstr "Только записи со сторонних сайтов, близкие по дате к этой записи"
+msgid "Only posts near this post’s date"
+msgstr "Только записи, близкие по дате к этой записи"
 
 #: blocks/peer-posts/src/index.js:155
-msgid "Leave off to show peer posts of any age."
-msgstr ""
-"Оставьте выключенным, чтобы показывать записи со сторонних сайтов любой "
-"давности."
+msgid "Leave off to show posts of any age."
+msgstr "Оставьте выключенным, чтобы показывать записи любой давности."
 
 #: blocks/peer-posts/src/index.js:163
 msgid "Days before this post"
@@ -3242,13 +3240,12 @@ msgstr "Дней до этой записи"
 
 #: blocks/peer-posts/src/index.js:165
 msgid ""
-"Show peer posts published or updated no more than this many days before this "
-"post was last published or updated. 0 shows only peer posts newer than this "
-"post."
+"Show posts published or updated no more than this many days before this post "
+"was last published or updated. 0 shows only posts newer than this post."
 msgstr ""
-"Показывать записи со сторонних сайтов, опубликованные или обновлённые не "
-"более чем за указанное число дней до последней публикации или обновления "
-"этой записи. 0 — только записи новее этой записи."
+"Показывать записи, опубликованные или обновлённые не более чем за указанное "
+"число дней до последней публикации или обновления этой записи. 0 — только "
+"записи новее этой записи."
 
 #: blocks/peer-posts/src/index.js:180
 msgid "Peer Network"

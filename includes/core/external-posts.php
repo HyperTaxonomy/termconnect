@@ -826,9 +826,10 @@ function tc_local_term_expansions( array $tax_terms ): array {
  *                            matches via its expanded set so relationship-related
  *                            posts are selected, not just directly-tagged ones.
  *                            Empty = literal term IDs only (no HyperTaxonomy).
+ * @param string $modified_after ISO 8601 date: only posts modified after it (empty = no limit).
  * @return array Normalized local post records.
  */
-function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array() ): array {
+function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), string $modified_after = '' ): array {
     // Normalize the taxonomy => IDs map, dropping empties.
     $clean = array();
     foreach ( $tax_terms as $tax => $ids ) {
@@ -896,6 +897,25 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
     $exclude_ids = array_values( array_filter( array_map( 'intval', $exclude_ids ) ) );
     if ( ! empty( $exclude_ids ) ) {
         $args['post__not_in'] = $exclude_ids;
+    }
+    $after_ts = '' !== $modified_after ? strtotime( $modified_after ) : false;
+    if ( false !== $after_ts ) {
+        // Date parts against the GMT column: a date string would be read in the
+        // site's timezone.
+        $args['date_query'] = array(
+            array(
+                'column'    => 'post_modified_gmt',
+                'after'     => array(
+                    'year'   => (int) gmdate( 'Y', $after_ts ),
+                    'month'  => (int) gmdate( 'n', $after_ts ),
+                    'day'    => (int) gmdate( 'j', $after_ts ),
+                    'hour'   => (int) gmdate( 'G', $after_ts ),
+                    'minute' => (int) gmdate( 'i', $after_ts ),
+                    'second' => (int) gmdate( 's', $after_ts ),
+                ),
+                'inclusive' => false,
+            ),
+        );
     }
 
     $query = new WP_Query( $args );

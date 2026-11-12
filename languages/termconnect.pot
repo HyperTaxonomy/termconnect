@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 22:46-0500\n"
+"POT-Creation-Date: 2026-11-11 22:51-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2566,11 +2566,11 @@ msgstr ""
 msgid "Sync complete: %1$d created, %2$d updated."
 msgstr ""
 
-#: includes/shortcodes/class-external-post-list.php:658
+#: includes/shortcodes/class-external-post-list.php:660
 msgid "Invalid post."
 msgstr ""
 
-#: includes/shortcodes/class-external-post-list.php:1554
+#: includes/shortcodes/class-external-post-list.php:1556
 #: includes/shortcodes/class-peer-browse.php:317
 #: includes/shortcodes/class-peer-browse.php:705
 msgid "Load more"
@@ -2860,11 +2860,11 @@ msgid ""
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:153
-msgid "Only peer posts near this post’s date"
+msgid "Only posts near this post’s date"
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:155
-msgid "Leave off to show peer posts of any age."
+msgid "Leave off to show posts of any age."
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:163
@@ -2873,9 +2873,8 @@ msgstr ""
 
 #: blocks/peer-posts/src/index.js:165
 msgid ""
-"Show peer posts published or updated no more than this many days before this "
-"post was last published or updated. 0 shows only peer posts newer than this "
-"post."
+"Show posts published or updated no more than this many days before this post "
+"was last published or updated. 0 shows only posts newer than this post."
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:180

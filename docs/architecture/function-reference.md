@@ -92,7 +92,7 @@ External Posts Platform
 - `tc_dedupe_posts_by_url( array $records )` — Deduplicate normalized post records by URL, preserving order (first wins).
 - `tc_filter_hidden_terms( array $tax_terms )` — Drop queried terms hidden from the current user, so the local blend never surfaces posts via a restricted term.
 - `tc_local_term_expansions( array $tax_terms )` — Build the term => expanded-IDs map for local selection, using HyperTaxonomy's relationship expansion when available.
-- `tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array() )` — Collect local posts matching selected terms, normalized to the shared record shape (is_local => true). Uses a plain WP_Query — no HyperTaxonomy dependency.
+- `tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), string $modified_after = '' )` — Collect local posts matching selected terms, normalized to the shared record shape (is_local => true). Uses a plain WP_Query — no HyperTaxonomy dependency.
 - `tc_external_normalize_post( array $raw, string $origin, bool $show_thumbnail )` — Normalize a raw WordPress REST post object into the standard HT external post structure.
 - `tc_external_post_fields( bool $show_thumbnail, bool $ht_scored )` — Build the standard _fields string for a post fetch request.
 - `tc_external_request_args( int $timeout = 8 )` — Common wp_remote_get args for all peer fetches.

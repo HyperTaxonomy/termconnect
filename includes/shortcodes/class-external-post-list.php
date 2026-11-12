@@ -281,7 +281,8 @@ class TC_Shortcode_PeerPosts {
             $p['show_thumbnail'],
             $p['image_size'] ?? 'medium',
             array( $post_id ),
-            $expansions
+            $expansions,
+            $this->cutoff_modified_after( $post_id, $p['cutoff_days'] )
         );
 
         // Relevance-score local results via HyperTaxonomy when available, so a
@@ -395,7 +396,8 @@ class TC_Shortcode_PeerPosts {
 
         // Date cutoff (post context only): sent to peers as modified_after so they
         // fill max_results from posts recent enough, then enforced locally below
-        // for feeds and for peers that ignore the parameter.
+        // for feeds and for peers that ignore the parameter. Local posts blended
+        // in with scope="all" get the same cutoff in collect_local_for_post().
         $modified_after = ( null === $explicit_term_ids ) ? $this->cutoff_modified_after( $post_id, $p['cutoff_days'] ) : '';
 
         $all_posts = $this->fetch_feed_posts( $feed_tuples );
@@ -495,10 +497,10 @@ class TC_Shortcode_PeerPosts {
     }
 
     /**
-     * Convert cutoff_days into the earliest date a peer post may have.
+     * Convert cutoff_days into the earliest date a listed post may have.
      *
      * The reference is the current post's latest activity (the later of its
-     * published and modified dates), minus the given number of days. A peer post
+     * published and modified dates), minus the given number of days. A post
      * qualifies when it was published or last updated after that point; since a
      * post's modified date is never earlier than its published date, comparing
      * modified dates is enough.

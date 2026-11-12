@@ -150,9 +150,9 @@ function Edit( { attributes, setAttributes } ) {
 						onChange={ ( val ) => setAttributes( { max_results: val } ) }
 					/>
 					<ToggleControl
-						label={ __( 'Only peer posts near this post’s date', 'termconnect' ) }
+						label={ __( 'Only posts near this post’s date', 'termconnect' ) }
 						help={ __(
-							'Leave off to show peer posts of any age.',
+							'Leave off to show posts of any age.',
 							'termconnect'
 						) }
 						checked={ '' !== cutoff_days }
@@ -162,7 +162,7 @@ function Edit( { attributes, setAttributes } ) {
 						<TextControl
 							label={ __( 'Days before this post', 'termconnect' ) }
 							help={ __(
-								'Show peer posts published or updated no more than this many days before this post was last published or updated. 0 shows only peer posts newer than this post.',
+								'Show posts published or updated no more than this many days before this post was last published or updated. 0 shows only posts newer than this post.',
 								'termconnect'
 							) }
 							type="number"
