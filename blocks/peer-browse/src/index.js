@@ -73,7 +73,7 @@ function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Initial topics', 'termconnect' ) }
 						value={ terms }
 						onChange={ ( v ) => setAttributes( { terms: v } ) }
-						help={ __( 'Optional. Comma-separated term IDs or slugs to pre-select.', 'termconnect' ) }
+						help={ __( 'Optional. Comma-separated term IDs or slugs to pre-select. Empty: on an archive of this taxonomy, its term.', 'termconnect' ) }
 					/>
 					<SelectControl
 						label={ __( 'Default match', 'termconnect' ) }

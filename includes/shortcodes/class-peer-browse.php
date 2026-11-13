@@ -101,7 +101,7 @@ class TC_Shortcode_PeerBrowse {
         return array(
             // Query
             'taxonomy'           => 'post_tag',
-            'terms'              => '',          // optional seed: CSV of term IDs or slugs
+            'terms'              => '',          // optional seed: CSV of term IDs or slugs; empty = the current archive's term
             'match'              => 'any',       // any | all
             'scope'              => 'all',       // all | peers
             'orderby'            => 'modified',  // modified | date | title
@@ -148,7 +148,9 @@ class TC_Shortcode_PeerBrowse {
         $this->enqueue_assets();
 
         $taxonomy   = sanitize_key( $atts['taxonomy'] );
-        $seed_terms = $this->resolve_seed_terms( $taxonomy, (string) $atts['terms'] );
+        $seed_terms = '' !== trim( (string) $atts['terms'] )
+            ? $this->resolve_seed_terms( $taxonomy, (string) $atts['terms'] )
+            : $this->sanitize_term_ids( $taxonomy, array( $this->archive_term_id() ) );
 
         $uid = 'tcpb-' . wp_generate_uuid4();
 
@@ -611,6 +613,16 @@ class TC_Shortcode_PeerBrowse {
     // =======================================================================
     // Helpers
     // =======================================================================
+
+    /**
+     * The term whose archive is being viewed, used as the seed when `terms` is empty.
+     *
+     * @return int Term ID, or 0 outside a term archive.
+     */
+    private function archive_term_id(): int {
+        $term = ( is_tax() || is_tag() || is_category() ) ? get_queried_object() : null;
+        return $term instanceof WP_Term ? (int) $term->term_id : 0;
+    }
 
     /**
      * Resolve a CSV seed (term IDs or slugs) into validated term IDs.

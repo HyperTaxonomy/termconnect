@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 13:15-0500\n"
+"POT-Creation-Date: 2026-11-13 13:37-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1644,7 +1644,7 @@ msgstr ""
 
 #: includes/admin/shared-vocabularies.php:142
 #: includes/admin/shared-vocabularies.php:166 includes/admin/term-edit.php:646
-#: includes/shortcodes/class-peer-browse.php:708
+#: includes/shortcodes/class-peer-browse.php:720
 msgid "Loading…"
 msgstr ""
 
@@ -1882,7 +1882,7 @@ msgid "+ Add source"
 msgstr ""
 
 #: includes/admin/shared-vocabularies.php:374
-#: includes/shortcodes/class-peer-browse.php:260
+#: includes/shortcodes/class-peer-browse.php:262
 #: blocks/peer-posts/src/index.js:72 blocks/peer-posts/src/index.js:109
 msgid "Source"
 msgstr ""
@@ -2572,8 +2572,8 @@ msgid "Invalid post."
 msgstr ""
 
 #: includes/shortcodes/class-external-post-list.php:1561
-#: includes/shortcodes/class-peer-browse.php:317
-#: includes/shortcodes/class-peer-browse.php:705
+#: includes/shortcodes/class-peer-browse.php:319
+#: includes/shortcodes/class-peer-browse.php:717
 msgid "Load more"
 msgstr ""
 
@@ -2597,52 +2597,52 @@ msgstr ""
 msgid "Relevance (grouped by site)"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:208
-#: includes/shortcodes/class-peer-browse.php:706
+#: includes/shortcodes/class-peer-browse.php:210
+#: includes/shortcodes/class-peer-browse.php:718
 msgid "Choose one or more topics to see related posts."
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:233
+#: includes/shortcodes/class-peer-browse.php:235
 msgid "Topics"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:242
+#: includes/shortcodes/class-peer-browse.php:244
 msgid "Add a topic…"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:250
-#: includes/shortcodes/class-peer-browse.php:251
+#: includes/shortcodes/class-peer-browse.php:252
+#: includes/shortcodes/class-peer-browse.php:253
 msgid "Match"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:252
+#: includes/shortcodes/class-peer-browse.php:254
 msgid "Any"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:253
+#: includes/shortcodes/class-peer-browse.php:255
 msgid "All"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:262
+#: includes/shortcodes/class-peer-browse.php:264
 #: blocks/peer-browse/src/index.js:91 blocks/peer-posts/src/index.js:117
 msgid "Local + peers"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:263
+#: includes/shortcodes/class-peer-browse.php:265
 #: blocks/peer-browse/src/index.js:92 blocks/peer-posts/src/index.js:116
 msgid "Peers only"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:271
+#: includes/shortcodes/class-peer-browse.php:273
 msgid "Sort"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:295
-#: includes/shortcodes/class-peer-browse.php:704
+#: includes/shortcodes/class-peer-browse.php:297
+#: includes/shortcodes/class-peer-browse.php:716
 msgid "Remove topic"
 msgstr ""
 
-#: includes/shortcodes/class-peer-browse.php:707
+#: includes/shortcodes/class-peer-browse.php:719
 msgid "No matching posts found."
 msgstr ""
 
@@ -2665,7 +2665,9 @@ msgid "Initial topics"
 msgstr ""
 
 #: blocks/peer-browse/src/index.js:76
-msgid "Optional. Comma-separated term IDs or slugs to pre-select."
+msgid ""
+"Optional. Comma-separated term IDs or slugs to pre-select. Empty: on an "
+"archive of this taxonomy, its term."
 msgstr ""
 
 #: blocks/peer-browse/src/index.js:79

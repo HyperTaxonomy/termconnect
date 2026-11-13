@@ -92,7 +92,7 @@ Works with any WordPress site. HyperTaxonomy adds relevance scoring and synonym 
 [tc_peer_posts link_types="my-blog" taxonomy="post_tag"]
 ```
 
-**`[tc_peer_browse]`** — An interactive topic browser: visitors pick terms and see matching posts from this site and configured peers/feeds, updating live with a Load-more button. Match Any (OR) or All (AND); local site is just another source. Works on any page.
+**`[tc_peer_browse]`** — An interactive topic browser: visitors pick terms and see matching posts from this site and configured peers/feeds, updating live with a Load-more button. Match Any (OR) or All (AND); local site is just another source. Works on any page; on a term archive it starts with that term selected.
 
 ```
 [tc_peer_browse taxonomy="post_tag"]

@@ -44,6 +44,7 @@ To blend peer/feed posts together with this site's own related posts in one bloc
 
 Full documentation is published at [hypertaxonomy.org/termconnect](https://hypertaxonomy.org/termconnect) (source in [`docs/`](docs/)):
 
+- [Why TermConnect](docs/why-termconnect.md) — why terms need an identity to connect across sites, and what delegating a definition means.
 - [User Guide](docs/user-guide/index.md) — concepts and when a peer network makes sense, peer sites and feeds, every setting, the peer-post shortcodes and blocks, See Also and link suggestions, delegated identity, shared vocabularies, working with HyperTaxonomy, export and import, and deactivation and uninstall.
 - [Developer Reference](docs/developer-reference/index.md) — the Term Links API, actions and filters, REST API fields, the Peer Fetch API, the External Documents API (contributing external posts via HyperTaxonomy's generic API), and the settings reference.
 - [Architecture](docs/architecture/index.md) — file structure and loading, function and hook references, and data storage. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).

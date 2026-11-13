@@ -22,9 +22,17 @@ Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable Wo
 
 ## Documentation map
 
+- **[Why TermConnect](why-termconnect.html)** — why terms need an identity to connect across sites, and what delegating a definition means.
 - **[User Guide](user-guide/)** — for site admins: concepts, peer sites and feeds, See Also and link suggestions, delegated identity, shared vocabularies, settings, export/import, the peer-post shortcodes and blocks, and modeling decisions.
 - **[Developer Reference](developer-reference/)** — for theme and plugin developers: the Term Links API, the Peer Fetch API, the External Documents API, REST API fields, filters, and the settings reference.
 - **[Architecture](architecture/)** — for contributors: file structure and loading, function and hook references, and data storage.
+
+## Requirements
+
+| Item | Version |
+|------|---------|
+| WordPress | 6.6+ |
+| PHP | 7.4+ |
 
 ## Getting started
 
@@ -42,13 +50,6 @@ Go to **Settings → TermConnect → General** and, under **Enabled Taxonomies**
 - Turns on peer site term matching when fetching cross-site posts.
 
 Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear in the list.
-
-## Requirements
-
-| Item | Version |
-|------|---------|
-| WordPress | 6.6+ |
-| PHP | 7.4+ |
 
 ## License
 

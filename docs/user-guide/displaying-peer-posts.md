@@ -109,7 +109,7 @@ To show this site's own related posts **and** peer/feed results together in one 
 
 ## [tc_peer_browse] Shortcode — interactive topic browser
 
-The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages).
+The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages). On a term archive, with no `terms` set, it starts with the archive's term selected when that term is in its `taxonomy`, so it can go straight into an archive template, including a block theme's.
 
 ```
 [tc_peer_browse taxonomy="post_tag"]
@@ -135,7 +135,7 @@ Both modes use the same scoring pipeline as `[tc_peer_posts]`: the selected topi
 | Attribute | Description | Default |
 |-----------|-------------|---------|
 | `taxonomy` | Taxonomy the topic pills draw from. | `post_tag` |
-| `terms` | Optional seed: comma-separated term IDs or slugs to pre-select. | *(none)* |
+| `terms` | Optional seed: comma-separated term IDs or slugs to pre-select. When empty on an archive of `taxonomy`, that archive's term is pre-selected. | *(none; on a term archive, its term)* |
 | `match` | `any` (OR) or `all` (AND) — the default match mode. | `any` |
 | `scope` | `all` (local + peers) or `peers`. | `all` |
 | `orderby` | `modified`, `date`, `title`, or `peer:asc,relevance:desc` (group by source, then relevance). | `modified` |

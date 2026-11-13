@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: termconnect 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 13:15-0500\n"
+"POT-Creation-Date: 2026-11-13 13:37-0500\n"
 "PO-Revision-Date: 2026-11-11 23:10-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -1894,7 +1894,7 @@ msgstr "Сначала выберите сторонний сайт"
 
 #: includes/admin/shared-vocabularies.php:142
 #: includes/admin/shared-vocabularies.php:166 includes/admin/term-edit.php:646
-#: includes/shortcodes/class-peer-browse.php:708
+#: includes/shortcodes/class-peer-browse.php:720
 msgid "Loading…"
 msgstr "Идёт загрузка…"
 
@@ -2180,7 +2180,7 @@ msgid "+ Add source"
 msgstr "+ Добавить источник"
 
 #: includes/admin/shared-vocabularies.php:374
-#: includes/shortcodes/class-peer-browse.php:260
+#: includes/shortcodes/class-peer-browse.php:262
 #: blocks/peer-posts/src/index.js:72 blocks/peer-posts/src/index.js:109
 msgid "Source"
 msgstr "Источник"
@@ -2918,8 +2918,8 @@ msgid "Invalid post."
 msgstr "Недопустимая запись."
 
 #: includes/shortcodes/class-external-post-list.php:1561
-#: includes/shortcodes/class-peer-browse.php:317
-#: includes/shortcodes/class-peer-browse.php:705
+#: includes/shortcodes/class-peer-browse.php:319
+#: includes/shortcodes/class-peer-browse.php:717
 msgid "Load more"
 msgstr "Загрузить ещё"
 
@@ -2943,53 +2943,53 @@ msgstr "Заголовок"
 msgid "Relevance (grouped by site)"
 msgstr "Релевантность (сгруппировано по сайтам)"
 
-#: includes/shortcodes/class-peer-browse.php:208
-#: includes/shortcodes/class-peer-browse.php:706
+#: includes/shortcodes/class-peer-browse.php:210
+#: includes/shortcodes/class-peer-browse.php:718
 msgid "Choose one or more topics to see related posts."
 msgstr ""
 "Выберите одну или несколько тем, чтобы увидеть связанные с ними записи."
 
-#: includes/shortcodes/class-peer-browse.php:233
+#: includes/shortcodes/class-peer-browse.php:235
 msgid "Topics"
 msgstr "Темы"
 
-#: includes/shortcodes/class-peer-browse.php:242
+#: includes/shortcodes/class-peer-browse.php:244
 msgid "Add a topic…"
 msgstr "Добавить тему…"
 
-#: includes/shortcodes/class-peer-browse.php:250
-#: includes/shortcodes/class-peer-browse.php:251
+#: includes/shortcodes/class-peer-browse.php:252
+#: includes/shortcodes/class-peer-browse.php:253
 msgid "Match"
 msgstr "Режим совпадения"
 
-#: includes/shortcodes/class-peer-browse.php:252
+#: includes/shortcodes/class-peer-browse.php:254
 msgid "Any"
 msgstr "Любые"
 
-#: includes/shortcodes/class-peer-browse.php:253
+#: includes/shortcodes/class-peer-browse.php:255
 msgid "All"
 msgstr "Все"
 
-#: includes/shortcodes/class-peer-browse.php:262
+#: includes/shortcodes/class-peer-browse.php:264
 #: blocks/peer-browse/src/index.js:91 blocks/peer-posts/src/index.js:117
 msgid "Local + peers"
 msgstr "Локальные + сторонние сайты"
 
-#: includes/shortcodes/class-peer-browse.php:263
+#: includes/shortcodes/class-peer-browse.php:265
 #: blocks/peer-browse/src/index.js:92 blocks/peer-posts/src/index.js:116
 msgid "Peers only"
 msgstr "Только сторонние сайты"
 
-#: includes/shortcodes/class-peer-browse.php:271
+#: includes/shortcodes/class-peer-browse.php:273
 msgid "Sort"
 msgstr "Сортировка"
 
-#: includes/shortcodes/class-peer-browse.php:295
-#: includes/shortcodes/class-peer-browse.php:704
+#: includes/shortcodes/class-peer-browse.php:297
+#: includes/shortcodes/class-peer-browse.php:716
 msgid "Remove topic"
 msgstr "Удалить тему"
 
-#: includes/shortcodes/class-peer-browse.php:707
+#: includes/shortcodes/class-peer-browse.php:719
 msgid "No matching posts found."
 msgstr "Подходящих записей не найдено."
 
@@ -3014,10 +3014,10 @@ msgid "Initial topics"
 msgstr "Начальные темы"
 
 #: blocks/peer-browse/src/index.js:76
-msgid "Optional. Comma-separated term IDs or slugs to pre-select."
-msgstr ""
-"Необязательно: идентификаторы или ярлыки терминов через запятую для "
-"предварительного выбора."
+msgid ""
+"Optional. Comma-separated term IDs or slugs to pre-select. Empty: on an "
+"archive of this taxonomy, its term."
+msgstr "Необязательно: идентификаторы или ярлыки терминов через запятую для предварительного выбора. Если пусто, на странице архива этой таксономии выбирается её термин."
 
 #: blocks/peer-browse/src/index.js:79
 msgid "Default match"
