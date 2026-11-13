@@ -60,12 +60,12 @@ External Posts Platform
 - `tc_dedupe_posts_by_url( array $records )` — Deduplicate normalized post records by URL, preserving order (first wins).
 - `tc_filter_hidden_terms( array $tax_terms )` — Drop queried terms hidden from the current user, so the local blend never surfaces posts via a restricted term.
 - `tc_local_term_expansions( array $tax_terms )` — Build the term => expanded-IDs map for local selection, using HyperTaxonomy's relationship expansion when available.
-- `tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), string $modified_after = '' )` — Collect local posts matching selected terms, normalized to the shared record shape (is_local => true). Uses a plain WP_Query — no HyperTaxonomy dependency.
+- `tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), array $window = array() )` — Collect local posts matching selected terms, normalized to the shared record shape (is_local => true). Uses a plain WP_Query — no HyperTaxonomy dependency.
 - `tc_external_normalize_post( array $raw, string $origin, bool $show_thumbnail )` — Normalize a raw WordPress REST post object into the standard HT external post structure.
 - `tc_external_clear_site_cache( string $peer_site_slug )` — Invalidate all cached post lists for a link type by incrementing its version counter.
-- `tc_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', string $modified_after = '' )` — Fetch posts from a standard (non-HT) WordPress peer by taxonomy term IDs.
-- `tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id_map, string $match, array $term_weights, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', bool $expand = false, string $modified_after = '' )` — Fetch scored posts from an HT-enabled peer using htax_* query params.
-- `tc_external_fetch_relevance_posts( string $origin, string $taxonomy, array $all_term_ids, string $search_keyword, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', string $modified_after = '' )` — Fetch posts from a peer site ordered by WP text-match relevance.
+- `tc_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', array $window = array() )` — Fetch posts from a standard (non-HT) WordPress peer by taxonomy term IDs.
+- `tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id_map, string $match, array $term_weights, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', bool $expand = false, array $window = array() )` — Fetch scored posts from an HT-enabled peer using htax_* query params.
+- `tc_external_fetch_relevance_posts( string $origin, string $taxonomy, array $all_term_ids, string $search_keyword, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', array $window = array() )` — Fetch posts from a peer site ordered by WP text-match relevance.
 - `tc_external_score_posts( array $posts, array $term_id_map, array $id_to_slug, array $term_weights )` — Apply weighted relevance scores to a set of posts from a non-HT peer.
 - `tc_external_get_foaf_candidates( string $origin, array $term_taxonomy_map, array $visited )` — Collect FOAF peer candidates for a set of remote term IDs on a given origin.
 
@@ -97,6 +97,7 @@ Shared utilities: remote request arguments, JSON decoding, peer origin parsing a
 - `tc_release_mysql_lock( string $name )` — Release a lock previously acquired with tc_acquire_mysql_lock().
 - `tc_external_peer_headers( bool $hypertaxonomy = false, bool $termconnect = true )` — Headers that identify TermConnect to a peer site.
 - `tc_external_get_json( string $url, array $args )` — GET a URL and decode its JSON body.
+- `tc_normalize_date_window( array $window )` — A date window with both keys present, in a fixed order.
 
 ### Peer site health (`includes/core/peer-site-health.php`)
 

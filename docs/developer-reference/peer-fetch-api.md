@@ -71,15 +71,19 @@ This powers the term-edit author autocomplete for "people" taxonomies (see the [
 ```php
 tc_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids,
     bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '',
-    string $modified_after = '' ): array
+    array $window = array() ): array
 // Standard WordPress fetch (no HyperTaxonomy scoring). Works on any WordPress site.
 // Pass $peer_site_slug to scope the cache to a specific link type.
-// $modified_after: ISO 8601 date sent as the core REST modified_after parameter, so the
-// peer returns only posts modified after it. Empty = no limit. Same on all three functions.
+// $window: optional date window, [ 'modified_after' => ISO 8601, 'published_before' => ISO 8601 ],
+// sent as the core REST modified_after and before parameters: posts last modified after the
+// first and published no later than the second. Either key may be empty or missing for no
+// limit. Same on all three functions. With both set, the peer also returns posts published
+// before the window and modified after it; drop those yourself if you need posts published
+// or modified inside it (tc_normalize_date_window() returns both keys).
 
 tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id_map,
     string $match, array $term_weights, bool $show_thumbnail, int $fetch_size, int $ttl,
-    string $peer_site_slug = '', bool $expand = false, string $modified_after = '' ): array
+    string $peer_site_slug = '', bool $expand = false, array $window = array() ): array
 // HyperTaxonomy-scored fetch. Automatically caches htax_term_peers for FOAF discovery.
 // $term_id_map:   [ primary_id => [include_id, ...], ... ]
 // $term_weights:  [ term_id => weight, ... ] (per-term; sent as htax_term_weights, default 1.0)
@@ -87,7 +91,7 @@ tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id
 
 tc_external_fetch_relevance_posts( string $origin, string $taxonomy, array $all_term_ids,
     string $search_keyword, bool $show_thumbnail, int $fetch_size, int $ttl,
-    string $peer_site_slug = '', string $modified_after = '' ): array
+    string $peer_site_slug = '', array $window = array() ): array
 // Like tc_external_fetch_posts but sends ?search={keyword}&orderby=relevance.
 ```
 

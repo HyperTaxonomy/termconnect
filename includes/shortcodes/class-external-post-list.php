@@ -123,7 +123,8 @@ class TC_Shortcode_PeerPosts {
             'orderby'                => 'score',
             'per_page'               => '5',
             'max_results'            => '20',
-            'cutoff_days'            => '',
+            'days_before'            => '',
+            'days_after'             => '',
             'foaf_depth'             => '0',
             'require_ht'             => 'false',
             'include_synonyms'       => 'true',
@@ -282,7 +283,7 @@ class TC_Shortcode_PeerPosts {
             $p['image_size'] ?? 'medium',
             array( $post_id ),
             $expansions,
-            $this->cutoff_modified_after( $post_id, $p['cutoff_days'] )
+            $this->date_window( $post_id, $p['days_before'], $p['days_after'] )
         );
 
         // Relevance-score local results via HyperTaxonomy when available, so a
@@ -341,9 +342,12 @@ class TC_Shortcode_PeerPosts {
             'taxonomy'           => $atts['taxonomy'],
             'per_page'           => max( 1, (int) $atts['per_page'] ),
             'max_results'        => max( 0, (int) $atts['max_results'] ),
-            // -1 = no cutoff (empty or non-numeric); 0+ = days before the current post.
-            'cutoff_days'        => is_numeric( trim( (string) ( $atts['cutoff_days'] ?? '' ) ) )
-                ? max( 0, (int) $atts['cutoff_days'] )
+            // -1 = no limit (empty or non-numeric); 0+ = days before / after the current post.
+            'days_before'        => is_numeric( trim( (string) ( $atts['days_before'] ?? '' ) ) )
+                ? max( 0, (int) $atts['days_before'] )
+                : -1,
+            'days_after'         => is_numeric( trim( (string) ( $atts['days_after'] ?? '' ) ) )
+                ? max( 0, (int) $atts['days_after'] )
                 : -1,
             'match'              => in_array( $atts['match'], array( 'any', 'all' ), true ) ? $atts['match'] : 'any',
             'scope'              => in_array( $atts['scope'] ?? 'peers', array( 'peers', 'all' ), true ) ? $atts['scope'] : 'peers',
@@ -394,11 +398,11 @@ class TC_Shortcode_PeerPosts {
         $feed_tuples = array_filter( $tuples, static fn( $t ) => ( $t['platform'] ?? '' ) === 'feed' );
         $tuples      = array_filter( $tuples, static fn( $t ) => ( $t['platform'] ?? '' ) !== 'feed' );
 
-        // Date cutoff (post context only): sent to peers as modified_after so they
-        // fill max_results from posts recent enough, then enforced locally below
-        // for feeds and for peers that ignore the parameter. Local posts blended
-        // in with scope="all" get the same cutoff in collect_local_for_post().
-        $modified_after = ( null === $explicit_term_ids ) ? $this->cutoff_modified_after( $post_id, $p['cutoff_days'] ) : '';
+        // Date window (post context only): sent to peers as modified_after / before so
+        // they fill max_results from posts inside it, then enforced locally below for
+        // feeds and for peers that ignore the parameters. Local posts blended in with
+        // scope="all" get the same window in collect_local_for_post().
+        $window = ( null === $explicit_term_ids ) ? $this->date_window( $post_id, $p['days_before'], $p['days_after'] ) : array();
 
         $all_posts = $this->fetch_feed_posts( $feed_tuples );
 
@@ -456,13 +460,13 @@ class TC_Shortcode_PeerPosts {
             $is_ht       = tc_external_is_ht_enabled( $origin );
 
             if ( $is_ht ) {
-                $posts = tc_external_fetch_scored_posts( $origin, $taxonomy, $term_id_map, $p['match'], $term_weights, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $p['expand'], $modified_after );
+                $posts = tc_external_fetch_scored_posts( $origin, $taxonomy, $term_id_map, $p['match'], $term_weights, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $p['expand'], $window );
             } elseif ( ! $p['require_ht'] ) {
                 if ( 'relevance' === $this->primary_orderby_field( $p['orderby'] ) ) {
                     $keyword = (string) get_the_title( $post_id );
-                    $posts   = tc_external_fetch_relevance_posts( $origin, $taxonomy, $all_ids, $keyword, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $modified_after );
+                    $posts   = tc_external_fetch_relevance_posts( $origin, $taxonomy, $all_ids, $keyword, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $window );
                 } else {
-                    $posts = tc_external_fetch_posts( $origin, $taxonomy, $all_ids, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $modified_after );
+                    $posts = tc_external_fetch_posts( $origin, $taxonomy, $all_ids, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $window );
                 }
                 if ( 'all' === $p['match'] ) {
                     $posts = $this->filter_and_match( $posts, $and_groups );
@@ -486,66 +490,76 @@ class TC_Shortcode_PeerPosts {
                 foreach ( array_keys( $term_id_map ) as $rid ) {
                     $term_taxonomy_map[ $rid ] = $taxonomy;
                 }
-                $foaf_posts = $this->fetch_foaf( $origin, $term_taxonomy_map, $p['match'], $taxonomy, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], 1, $p['max_foaf'], $visited, $p['expand'], $modified_after );
+                $foaf_posts = $this->fetch_foaf( $origin, $term_taxonomy_map, $p['match'], $taxonomy, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], 1, $p['max_foaf'], $visited, $p['expand'], $window );
                 array_push( $all_posts, ...$foaf_posts );
             }
         }
 
         array_push( $all_posts, ...$this->combine_peer_fetches( $peer_fetches ) );
 
-        return $this->filter_by_cutoff( $all_posts, $modified_after );
+        return $this->filter_by_window( $all_posts, $window );
     }
 
     /**
-     * Convert cutoff_days into the earliest date a listed post may have.
+     * Convert days_before / days_after into a date window around the current post.
      *
-     * The reference is the current post's latest activity (the later of its
-     * published and modified dates), minus the given number of days. A post
-     * qualifies when it was published or last updated after that point; since a
-     * post's modified date is never earlier than its published date, comparing
-     * modified dates is enough.
+     * The reference date is the current post's last update, or its publication date
+     * when it hasn't been updated since. A listed post was published or last updated
+     * inside the window, from days_before before the reference to days_after after it.
      *
      * @param int $post_id     Current post ID.
-     * @param int $cutoff_days Days before the current post; -1 = no cutoff.
-     * @return string ISO 8601 UTC date, or '' when no cutoff applies.
+     * @param int $days_before Days before the reference date; -1 = no limit.
+     * @param int $days_after  Days after the reference date; -1 = no limit.
+     * @return array 'modified_after' and 'published_before' ISO 8601 UTC dates; '' = no limit.
      */
-    private function cutoff_modified_after( int $post_id, int $cutoff_days ): string {
-        if ( $cutoff_days < 0 || $post_id <= 0 ) {
-            return '';
+    private function date_window( int $post_id, int $days_before, int $days_after ): array {
+        $window = tc_normalize_date_window( array() );
+        if ( $post_id <= 0 || ( $days_before < 0 && $days_after < 0 ) ) {
+            return $window;
         }
         $post = get_post( $post_id );
         if ( ! $post ) {
-            return '';
+            return $window;
         }
         $ref = max(
             (int) strtotime( $post->post_date_gmt . ' UTC' ),
             (int) strtotime( $post->post_modified_gmt . ' UTC' )
         );
         if ( $ref <= 0 ) {
-            return '';
+            return $window;
         }
-        return gmdate( 'Y-m-d\TH:i:s', $ref - $cutoff_days * DAY_IN_SECONDS ) . '+00:00';
+        if ( $days_before >= 0 ) {
+            $window['modified_after'] = gmdate( 'Y-m-d\TH:i:s', $ref - $days_before * DAY_IN_SECONDS ) . '+00:00';
+        }
+        if ( $days_after >= 0 ) {
+            $window['published_before'] = gmdate( 'Y-m-d\TH:i:s', $ref + $days_after * DAY_IN_SECONDS ) . '+00:00';
+        }
+        return $window;
     }
 
     /**
-     * Drop posts whose latest activity (modified date, or published date when a
-     * source has none) is not after the cutoff.
+     * Keep posts published or last updated inside the date window (modified date, or
+     * published date when a source has none). Peers are queried with the looser
+     * bounds REST supports, so this also removes posts whose activity only spans it.
      *
-     * @param array  $posts          Normalized posts.
-     * @param string $modified_after ISO 8601 cutoff from cutoff_modified_after(); '' keeps all.
+     * @param array $posts  Normalized posts.
+     * @param array $window From date_window(); empty bounds keep everything on that side.
      * @return array
      */
-    private function filter_by_cutoff( array $posts, string $modified_after ): array {
-        if ( '' === $modified_after ) {
+    private function filter_by_window( array $posts, array $window ): array {
+        $window = tc_normalize_date_window( $window );
+        $start  = '' !== $window['modified_after'] ? strtotime( $window['modified_after'] ) : false;
+        $end    = '' !== $window['published_before'] ? strtotime( $window['published_before'] ) : false;
+        if ( false === $start && false === $end ) {
             return $posts;
         }
-        $cutoff = strtotime( $modified_after );
-        return array_values( array_filter( $posts, static function ( $post ) use ( $cutoff ) {
-            $latest = max(
-                (int) strtotime( (string) ( $post['date_gmt'] ?? '' ) ),
-                (int) strtotime( (string) ( $post['modified_gmt'] ?? '' ) )
-            );
-            return $latest > $cutoff;
+        return array_values( array_filter( $posts, static function ( $post ) use ( $start, $end ) {
+            $published = (int) strtotime( (string) ( $post['date_gmt'] ?? '' ) );
+            $latest    = max( $published, (int) strtotime( (string) ( $post['modified_gmt'] ?? '' ) ) );
+            $in = static function ( $ts ) use ( $start, $end ) {
+                return $ts > 0 && ( false === $start || $ts > $start ) && ( false === $end || $ts <= $end );
+            };
+            return $in( $published ) || $in( $latest );
         } ) );
     }
 
@@ -1143,7 +1157,7 @@ class TC_Shortcode_PeerPosts {
      * @param int    $max_depth
      * @param array  $visited           Origins already fetched this traversal.
      * @param bool   $expand            Pass htax_expand to discovered HT peers.
-     * @param string $modified_after    ISO 8601 date: only posts modified after it (empty = no limit).
+     * @param array  $window            Date window from date_window(); empty = no limit.
      * @return array Normalized posts with foaf=true.
      *
      * Transitively-discovered peers are scored flat (each matched term = 1.0):
@@ -1162,7 +1176,7 @@ class TC_Shortcode_PeerPosts {
         int $max_depth,
         array $visited,
         bool $expand = false,
-        string $modified_after = ''
+        array $window = array()
     ): array {
         if ( $depth > $max_depth ) {
             return array();
@@ -1191,9 +1205,9 @@ class TC_Shortcode_PeerPosts {
 
             $is_ht = tc_external_is_ht_enabled( $peer_origin );
             if ( $is_ht ) {
-                $posts = tc_external_fetch_scored_posts( $peer_origin, $taxonomy, $peer_map, $match, array(), $show_thumbnail, $fetch_size, $cache_ttl, '', $expand, $modified_after );
+                $posts = tc_external_fetch_scored_posts( $peer_origin, $taxonomy, $peer_map, $match, array(), $show_thumbnail, $fetch_size, $cache_ttl, '', $expand, $window );
             } else {
-                $posts = tc_external_fetch_posts( $peer_origin, $taxonomy, array( $peer_id ), $show_thumbnail, $fetch_size, $cache_ttl, '', $modified_after );
+                $posts = tc_external_fetch_posts( $peer_origin, $taxonomy, array( $peer_id ), $show_thumbnail, $fetch_size, $cache_ttl, '', $window );
                 $posts = tc_external_score_posts( $posts, $peer_map, $peer_id_to_slug, array() );
             }
 
@@ -1206,7 +1220,7 @@ class TC_Shortcode_PeerPosts {
 
             if ( $depth < $max_depth && $is_ht ) {
                 $next_map   = array( $peer_id => $taxonomy );
-                $foaf_posts = array_merge( $foaf_posts, $this->fetch_foaf( $peer_origin, $next_map, $match, $taxonomy, $show_thumbnail, $fetch_size, $cache_ttl, $depth + 1, $max_depth, $visited, $expand, $modified_after ) );
+                $foaf_posts = array_merge( $foaf_posts, $this->fetch_foaf( $peer_origin, $next_map, $match, $taxonomy, $show_thumbnail, $fetch_size, $cache_ttl, $depth + 1, $max_depth, $visited, $expand, $window ) );
             }
         }
 

@@ -146,3 +146,23 @@ function tc_external_get_json( string $url, array $args ): ?array {
     $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
     return is_array( $body ) ? $body : null;
 }
+
+/**
+ * A date window with both keys present, in a fixed order.
+ *
+ * A post is in the window when it was published or last modified inside it:
+ * after `modified_after` and no later than `published_before`. Either may be ''
+ * for no limit on that side. The key names are the bounds peers are queried with:
+ * modified after the start, published by the end; with both set, callers also drop
+ * posts published before the start and modified after the end.
+ *
+ * @since 1.0.0
+ * @param array $window 'modified_after' and 'published_before' ISO 8601 dates, each optional.
+ * @return array{modified_after: string, published_before: string}
+ */
+function tc_normalize_date_window( array $window ): array {
+    return array(
+        'modified_after'   => (string) ( $window['modified_after'] ?? '' ),
+        'published_before' => (string) ( $window['published_before'] ?? '' ),
+    );
+}

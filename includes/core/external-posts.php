@@ -764,10 +764,11 @@ function tc_local_term_expansions( array $tax_terms ): array {
  *                            matches via its expanded set so relationship-related
  *                            posts are selected, not just directly-tagged ones.
  *                            Empty = literal term IDs only (no HyperTaxonomy).
- * @param string $modified_after ISO 8601 date: only posts modified after it (empty = no limit).
+ * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
+ *                       'modified_after' and published before 'published_before' (each optional).
  * @return array Normalized local post records.
  */
-function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), string $modified_after = '' ): array {
+function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), array $window = array() ): array {
     // Normalize the taxonomy => IDs map, dropping empties.
     $clean = array();
     foreach ( $tax_terms as $tax => $ids ) {
@@ -836,24 +837,44 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
     if ( ! empty( $exclude_ids ) ) {
         $args['post__not_in'] = $exclude_ids;
     }
-    $after_ts = '' !== $modified_after ? strtotime( $modified_after ) : false;
-    if ( false !== $after_ts ) {
+    $date_query = array();
+    $window     = tc_normalize_date_window( $window );
+    foreach ( array( 'modified_after' => array( 'post_modified_gmt', 'after' ), 'published_before' => array( 'post_date_gmt', 'before' ) ) as $key => $spec ) {
+        $ts = '' !== $window[ $key ] ? strtotime( $window[ $key ] ) : false;
+        if ( false === $ts ) {
+            continue;
+        }
         // Date parts against the GMT column: a date string would be read in the
         // site's timezone.
-        $args['date_query'] = array(
+        $date_query[] = array(
+            'column'    => $spec[0],
+            $spec[1]    => array(
+                'year'   => (int) gmdate( 'Y', $ts ),
+                'month'  => (int) gmdate( 'n', $ts ),
+                'day'    => (int) gmdate( 'j', $ts ),
+                'hour'   => (int) gmdate( 'G', $ts ),
+                'minute' => (int) gmdate( 'i', $ts ),
+                'second' => (int) gmdate( 's', $ts ),
+            ),
+            'inclusive' => 'before' === $spec[1],
+        );
+    }
+    if ( 2 === count( $date_query ) ) {
+        // Published or last modified inside the window: drop posts published before the
+        // start and modified after the end, whose activity only spans it.
+        $date_query = array(
+            'relation' => 'AND',
+            $date_query[0],
+            $date_query[1],
             array(
-                'column'    => 'post_modified_gmt',
-                'after'     => array(
-                    'year'   => (int) gmdate( 'Y', $after_ts ),
-                    'month'  => (int) gmdate( 'n', $after_ts ),
-                    'day'    => (int) gmdate( 'j', $after_ts ),
-                    'hour'   => (int) gmdate( 'G', $after_ts ),
-                    'minute' => (int) gmdate( 'i', $after_ts ),
-                    'second' => (int) gmdate( 's', $after_ts ),
-                ),
-                'inclusive' => false,
+                'relation' => 'OR',
+                array( 'column' => 'post_date_gmt', 'after' => $date_query[0]['after'], 'inclusive' => false ),
+                array( 'column' => 'post_modified_gmt', 'before' => $date_query[1]['before'], 'inclusive' => true ),
             ),
         );
+    }
+    if ( $date_query ) {
+        $args['date_query'] = $date_query;
     }
 
     $query = new WP_Query( $args );
@@ -1058,14 +1079,15 @@ function tc_external_record_fetch( string $peer_site_slug, int $count ): void {
  * @param string $origin         Peer site origin.
  * @param string $peer_site_slug Link type slug, for health tracking and fetch stats.
  * @param string $cache_key      Transient key for this request.
- * @param array  $params         Query parameters; _fields, _embed and modified_after are added here.
+ * @param array  $params         Query parameters; _fields, _embed and the date window are added here.
  * @param bool   $show_thumbnail Whether to request the featured image.
  * @param bool   $ht_scored      Request HyperTaxonomy scores, and read them when the peer runs HyperTaxonomy.
  * @param int    $ttl            Cache TTL in seconds.
- * @param string $modified_after Only posts modified after this ISO 8601 date, or ''.
+ * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
+ *                       'modified_after' and published before 'published_before' (each optional).
  * @return array Normalized posts.
  */
-function tc_external_fetch_post_list( string $origin, string $peer_site_slug, string $cache_key, array $params, bool $show_thumbnail, bool $ht_scored, int $ttl, string $modified_after ): array {
+function tc_external_fetch_post_list( string $origin, string $peer_site_slug, string $cache_key, array $params, bool $show_thumbnail, bool $ht_scored, int $ttl, array $window ): array {
     $cached = get_transient( $cache_key );
     if ( false !== $cached ) {
         return (array) $cached;
@@ -1075,8 +1097,13 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
         return array();
     }
 
-    if ( '' !== $modified_after ) {
-        $params['modified_after'] = $modified_after;
+    // Core REST: modified_after bounds the last-modified date, before the published date.
+    $window = tc_normalize_date_window( $window );
+    if ( '' !== $window['modified_after'] ) {
+        $params['modified_after'] = $window['modified_after'];
+    }
+    if ( '' !== $window['published_before'] ) {
+        $params['before'] = $window['published_before'];
     }
     $fields_str = tc_external_post_fields( $show_thumbnail, $ht_scored );
     if ( '' !== $fields_str ) {
@@ -1146,7 +1173,8 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
  * @param int    $fetch_size     Number of posts to request from the remote site.
  * @param int    $ttl            Cache TTL in seconds.
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
- * @param string $modified_after ISO 8601 date: only posts modified after it (empty = no limit).
+ * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
+ *                       'modified_after' and published before 'published_before' (each optional).
  * @return array Normalized posts (score=0.0, ht_scored=false).
  */
 function tc_external_fetch_posts(
@@ -1157,7 +1185,7 @@ function tc_external_fetch_posts(
     int $fetch_size,
     int $ttl,
     string $peer_site_slug = '',
-    string $modified_after = ''
+    array $window = array()
 ): array {
     if ( empty( $all_term_ids ) ) {
         return array();
@@ -1168,7 +1196,7 @@ function tc_external_fetch_posts(
 
     $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
     $cache_key = 'tc_ext_posts_' . md5(
-        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . "|$modified_after"
+        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . implode( '~', tc_normalize_date_window( $window ) )
     );
 
     $params = array(
@@ -1177,7 +1205,7 @@ function tc_external_fetch_posts(
         'orderby'  => 'date',
         'order'    => 'desc',
     );
-    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $modified_after );
+    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $window );
 }
 
 /**
@@ -1198,7 +1226,8 @@ function tc_external_fetch_posts(
  * @param int    $ttl            Cache TTL in seconds.
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
  * @param bool   $expand         Ask the peer to re-expand primaries via its own relationships (htax_expand).
- * @param string $modified_after ISO 8601 date: only posts modified after it (empty = no limit).
+ * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
+ *                       'modified_after' and published before 'published_before' (each optional).
  * @return array Normalized posts with score and matched_term_slugs from HT.
  */
 function tc_external_fetch_scored_posts(
@@ -1212,7 +1241,7 @@ function tc_external_fetch_scored_posts(
     int $ttl,
     string $peer_site_slug = '',
     bool $expand = false,
-    string $modified_after = ''
+    array $window = array()
 ): array {
     if ( empty( $term_id_map ) ) {
         return array();
@@ -1220,7 +1249,7 @@ function tc_external_fetch_scored_posts(
 
     $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
     $cache_key = 'tc_ext_scored_' . md5(
-        "$peer_site_slug|$version|$origin|$taxonomy|" . tc_external_serialize_term_id_map( $term_id_map ) . "|$match|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . wp_json_encode( $term_weights ) . '|' . ( $expand ? '1' : '0' ) . "|$modified_after"
+        "$peer_site_slug|$version|$origin|$taxonomy|" . tc_external_serialize_term_id_map( $term_id_map ) . "|$match|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . wp_json_encode( $term_weights ) . '|' . ( $expand ? '1' : '0' ) . '|' . implode( '~', tc_normalize_date_window( $window ) )
     );
 
     // Collect all IDs for the standard taxonomy filter param.
@@ -1256,7 +1285,7 @@ function tc_external_fetch_scored_posts(
         $params['htax_expand'] = '1';
     }
 
-    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, true, $ttl, $modified_after );
+    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, true, $ttl, $window );
 }
 
 /**
@@ -1286,7 +1315,7 @@ function tc_external_fetch_relevance_posts(
     int $fetch_size,
     int $ttl,
     string $peer_site_slug = '',
-    string $modified_after = ''
+    array $window = array()
 ): array {
     if ( empty( $all_term_ids ) || '' === $search_keyword ) {
         return array();
@@ -1297,7 +1326,7 @@ function tc_external_fetch_relevance_posts(
 
     $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
     $cache_key = 'tc_ext_rel_' . md5(
-        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . '|' . md5( $search_keyword ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . "|$modified_after"
+        "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . '|' . md5( $search_keyword ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . implode( '~', tc_normalize_date_window( $window ) )
     );
 
     $params = array(
@@ -1306,7 +1335,7 @@ function tc_external_fetch_relevance_posts(
         'per_page' => $fetch_size,
         'orderby'  => 'relevance',
     );
-    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $modified_after );
+    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $window );
 }
 
 // ==============================================================================

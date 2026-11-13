@@ -27,7 +27,8 @@ function Edit( { attributes, setAttributes } ) {
 		orderby,
 		per_page,
 		max_results,
-		cutoff_days,
+		days_before,
+		days_after,
 		foaf_depth,
 		require_ht,
 		include_synonyms,
@@ -152,26 +153,43 @@ function Edit( { attributes, setAttributes } ) {
 					<ToggleControl
 						label={ __( 'Only posts near this post’s date', 'termconnect' ) }
 						help={ __(
-							'Leave off to show posts of any age.',
+							'Measured from this post’s last update, or its publication date if it hasn’t been updated. Leave off to show posts of any age.',
 							'termconnect'
 						) }
-						checked={ '' !== cutoff_days }
-						onChange={ ( on ) => setAttributes( { cutoff_days: on ? '0' : '' } ) }
+						checked={ '' !== days_before || '' !== days_after }
+						onChange={ ( on ) => setAttributes( on
+							? { days_before: '7', days_after: '' }
+							: { days_before: '', days_after: '' } ) }
 					/>
-					{ '' !== cutoff_days && (
-						<TextControl
-							label={ __( 'Days before this post', 'termconnect' ) }
-							help={ __(
-								'Show posts published or updated no more than this many days before this post was last published or updated. 0 shows only posts newer than this post.',
-								'termconnect'
-							) }
-							type="number"
-							min="0"
-							value={ cutoff_days }
-							onChange={ ( val ) => setAttributes( {
-								cutoff_days: String( Math.max( 0, parseInt( val, 10 ) || 0 ) ),
-							} ) }
-						/>
+					{ ( '' !== days_before || '' !== days_after ) && (
+						<>
+							<TextControl
+								label={ __( 'Days before this post', 'termconnect' ) }
+								help={ __(
+									'Leave out posts last published or updated more than this many days before this post. Empty: no limit.',
+									'termconnect'
+								) }
+								type="number"
+								min="0"
+								value={ days_before }
+								onChange={ ( val ) => setAttributes( {
+									days_before: '' === val ? '' : String( Math.max( 0, parseInt( val, 10 ) || 0 ) ),
+								} ) }
+							/>
+							<TextControl
+								label={ __( 'Days after this post', 'termconnect' ) }
+								help={ __(
+									'Leave out posts published more than this many days after this post. Empty: no limit.',
+									'termconnect'
+								) }
+								type="number"
+								min="0"
+								value={ days_after }
+								onChange={ ( val ) => setAttributes( {
+									days_after: '' === val ? '' : String( Math.max( 0, parseInt( val, 10 ) || 0 ) ),
+								} ) }
+							/>
+						</>
 					) }
 				</PanelBody>
 
