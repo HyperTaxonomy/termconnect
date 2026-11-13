@@ -455,21 +455,6 @@ function tc_get_platform_link_types( string $platform ): array {
 }
 
 /**
- * Extracts the site origin (scheme + host) from a link type uri_prefix.
- *
- * @since 1.0.0
- * @param string $uri_prefix URI prefix, e.g. 'https://example.com/tag/'.
- * @return string scheme://host, or empty string on failure.
- */
-function tc_external_get_site_origin( string $uri_prefix ): string {
-    $parsed = wp_parse_url( $uri_prefix );
-    if ( empty( $parsed['scheme'] ) || empty( $parsed['host'] ) ) {
-        return '';
-    }
-    return $parsed['scheme'] . '://' . $parsed['host'];
-}
-
-/**
  * Returns a single link type definition, or null if not found.
  *
  * @since 1.0.0
@@ -521,7 +506,7 @@ function tc_set_link_types( array $types ): bool {
  * @return bool
  */
 function tc_is_companion_taxonomy( string $taxonomy ): bool {
-	if ( '' === $taxonomy || ! class_exists( 'TC_Settings' ) ) {
+	if ( '' === $taxonomy ) {
 		return false;
 	}
 	$stored = (array) get_option( 'tc_enabled_taxonomies', array() );
@@ -993,6 +978,21 @@ case 'lcsh':
 // ==============================================================================
 // TERM META API
 // ==============================================================================
+
+/**
+ * The identifier stored for one link type on a term, whether or not the type is enabled.
+ *
+ * Link meta is stored as { id, label, fetched_at }, or as a bare string by older imports.
+ *
+ * @since 1.0.0
+ * @param int    $term_id Term ID.
+ * @param string $slug    Link type slug.
+ * @return string The identifier, or '' when none is stored.
+ */
+function tc_get_term_link_id( int $term_id, string $slug ): string {
+    $meta = get_term_meta( $term_id, '_tc_link_' . $slug, true );
+    return is_array( $meta ) ? (string) ( $meta['id'] ?? '' ) : (string) $meta;
+}
 
 /**
  * Returns all external link values set on a term, keyed by slug.

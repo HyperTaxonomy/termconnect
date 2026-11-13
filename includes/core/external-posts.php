@@ -22,24 +22,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 // HELPERS
 // ==============================================================================
 
-/**
- * JSON-decode a REST API response body, stripping any UTF-8 BOM first.
- *
- * Some WordPress installations output a UTF-8 BOM (EF BB BF) at the start
- * of PHP output files. json_decode() rejects input that starts with a BOM,
- * returning null. This wrapper strips the BOM before decoding.
- *
- * @since 1.0.0
- * @param string $body Raw HTTP response body.
- * @return mixed Decoded value or null on failure.
- */
-function tc_external_json_decode( string $body ) {
-    if ( 0 === strpos( $body, "\xef\xbb\xbf" ) ) {
-        $body = substr( $body, 3 );
-    }
-    return json_decode( $body, true );
-}
-
 // ==============================================================================
 // VALIDATION AND BLACKLIST
 // ==============================================================================
@@ -169,11 +151,7 @@ function tc_external_detect_plugin_header( string $origin, string $cache_prefix,
 
     $response = wp_remote_head(
         $origin . '/wp-json/',
-        array(
-            'timeout'    => 3,
-            'user-agent' => 'TermConnect/' . TC_VERSION,
-            'sslverify'  => true,
-        )
+        tc_external_request_args( 3 )
     );
 
     if ( is_wp_error( $response ) ) {
@@ -240,13 +218,8 @@ function tc_external_resolve_term_id( string $origin, string $taxonomy, string $
         '_fields' => 'id',
     ) );
 
-    $headers  = $is_ht ? array( 'X-HyperTaxonomy' => defined( 'HTAX_VERSION' ) ? HTAX_VERSION : '1.0.0' ) : array();
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 5,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'headers'    => $headers,
-        'sslverify'  => true,
-    ) );
+    $headers  = tc_external_peer_headers( $is_ht, false );
+    $response = wp_remote_get( $url, tc_external_request_args( 5, $headers ) );
 
     if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
         set_transient( $cache_key, -1, 300 );
@@ -303,19 +276,8 @@ function tc_external_search_terms( string $origin, string $taxonomy, string $sea
         '_fields'  => 'id,name,slug',
     ) );
 
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 5,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'sslverify'  => true,
-    ) );
-
-    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
-    if ( ! is_array( $body ) ) {
+    $body = tc_external_get_json( $url, tc_external_request_args( 5 ) );
+    if ( null === $body ) {
         set_transient( $cache_key, array(), 300 );
         return array();
     }
@@ -367,19 +329,8 @@ function tc_external_search_users( string $origin, string $search, int $per_page
         '_fields'  => 'id,name,slug,link',
     ) );
 
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 5,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'sslverify'  => true,
-    ) );
-
-    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
-    if ( ! is_array( $body ) ) {
+    $body = tc_external_get_json( $url, tc_external_request_args( 5 ) );
+    if ( null === $body ) {
         set_transient( $cache_key, array(), 300 );
         return array();
     }
@@ -426,12 +377,7 @@ function tc_external_get_term_data( string $origin, string $taxonomy, int $term_
         '_fields' => 'htax_includes,tc_links',
     ) );
 
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 5,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'headers'    => array( 'X-TermConnect' => TC_VERSION ),
-        'sslverify'  => true,
-    ) );
+    $response = wp_remote_get( $url, tc_external_request_args( 5, tc_external_peer_headers() ) );
 
     $empty = array( 'htax_includes' => array(), 'tc_links' => array() );
 
@@ -505,16 +451,8 @@ function tc_external_get_term_data_batch( string $origin, string $taxonomy, arra
             'per_page' => count( $chunk ),
         ) );
 
-        $response = wp_remote_get( $url, array(
-            'timeout'    => 5,
-            'user-agent' => 'TermConnect/' . TC_VERSION,
-            // HyperTaxonomy omits htax_includes from collection responses without its own header.
-            'headers'    => array(
-                'X-TermConnect'   => TC_VERSION,
-                'X-HyperTaxonomy' => TC_VERSION,
-            ),
-            'sslverify'  => true,
-        ) );
+        // HyperTaxonomy omits htax_includes from collection responses without its own header.
+        $response = wp_remote_get( $url, tc_external_request_args( 5, tc_external_peer_headers( true ) ) );
 
         $by_id = array();
         if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
@@ -1043,21 +981,6 @@ function tc_external_post_fields( bool $show_thumbnail, bool $ht_scored ): strin
     return $fields;
 }
 
-/**
- * Common wp_remote_get args for all peer fetches.
- *
- * @since 1.0.0
- * @param int $timeout Request timeout in seconds.
- * @return array
- */
-function tc_external_request_args( int $timeout = 8 ): array {
-    return array(
-        'timeout'    => $timeout,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'sslverify'  => true,
-    );
-}
-
 // ==============================================================================
 // CACHE VERSIONING FOR PER-LINK-TYPE CACHE CLEARING
 // ==============================================================================
@@ -1124,6 +1047,92 @@ function tc_external_record_fetch( string $peer_site_slug, int $count ): void {
 // ==============================================================================
 
 /**
+ * Fetch a list of posts from a peer site's /wp/v2/posts endpoint, with caching.
+ *
+ * Shared by the date-ordered, HyperTaxonomy-scored and relevance-ordered fetchers:
+ * each builds its own cache key and query parameters. Skips peers the health
+ * tracker has blocked, records each fetch's success or failure, and caches a
+ * failure as an empty list for five minutes.
+ *
+ * @since 1.0.0
+ * @param string $origin         Peer site origin.
+ * @param string $peer_site_slug Link type slug, for health tracking and fetch stats.
+ * @param string $cache_key      Transient key for this request.
+ * @param array  $params         Query parameters; _fields, _embed and modified_after are added here.
+ * @param bool   $show_thumbnail Whether to request the featured image.
+ * @param bool   $ht_scored      Request HyperTaxonomy scores, and read them when the peer runs HyperTaxonomy.
+ * @param int    $ttl            Cache TTL in seconds.
+ * @param string $modified_after Only posts modified after this ISO 8601 date, or ''.
+ * @return array Normalized posts.
+ */
+function tc_external_fetch_post_list( string $origin, string $peer_site_slug, string $cache_key, array $params, bool $show_thumbnail, bool $ht_scored, int $ttl, string $modified_after ): array {
+    $cached = get_transient( $cache_key );
+    if ( false !== $cached ) {
+        return (array) $cached;
+    }
+
+    if ( tc_peer_site_health_is_blocked( $peer_site_slug ) ) {
+        return array();
+    }
+
+    if ( '' !== $modified_after ) {
+        $params['modified_after'] = $modified_after;
+    }
+    $fields_str = tc_external_post_fields( $show_thumbnail, $ht_scored );
+    if ( '' !== $fields_str ) {
+        $params['_fields'] = $fields_str;
+    }
+    if ( $show_thumbnail ) {
+        $params['_embed'] = 'wp:featuredmedia';
+    }
+
+    $url      = $origin . '/wp-json/wp/v2/posts?' . http_build_query( $params );
+    $response = wp_remote_get( $url, tc_external_request_args( $ht_scored ? 10 : 8 ) );
+
+    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+        $error = is_wp_error( $response )
+            ? $response->get_error_message()
+            : 'HTTP ' . wp_remote_retrieve_response_code( $response );
+        tc_peer_site_health_record_failure( $peer_site_slug, $error, $ttl );
+        set_transient( $cache_key, array(), 300 );
+        return array();
+    }
+
+    $is_ht = $ht_scored && '' !== wp_remote_retrieve_header( $response, 'X-HyperTaxonomy' );
+    $body  = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+    if ( ! is_array( $body ) ) {
+        tc_peer_site_health_record_failure( $peer_site_slug, 'invalid JSON', $ttl );
+        set_transient( $cache_key, array(), 300 );
+        return array();
+    }
+
+    tc_peer_site_health_record_success( $peer_site_slug );
+
+    // Cache peer discovery data from htax_term_peers before normalizing.
+    if ( $is_ht ) {
+        tc_external_cache_term_peers( $origin, $body );
+    }
+
+    $posts = array();
+    foreach ( $body as $raw ) {
+        if ( ! is_array( $raw ) || empty( $raw['id'] ) ) {
+            continue;
+        }
+        $post = tc_external_normalize_post( $raw, $origin, $show_thumbnail );
+        if ( $is_ht && isset( $raw['htax_score'] ) && null !== $raw['htax_score'] ) {
+            $post['score']              = (float) $raw['htax_score'];
+            $post['matched_term_slugs'] = (array) ( $raw['htax_matched_term_slugs'] ?? array() );
+            $post['ht_scored']          = true;
+        }
+        $posts[] = $post;
+    }
+
+    tc_external_record_fetch( $peer_site_slug, count( $posts ) );
+    set_transient( $cache_key, $posts, $ttl );
+    return $posts;
+}
+
+/**
  * Fetch posts from a standard (non-HT) WordPress peer by taxonomy term IDs.
  *
  * Always fetches date-ordered; the caller sorts from the cached set. Does not
@@ -1162,64 +1171,13 @@ function tc_external_fetch_posts(
         "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . "|$modified_after"
     );
 
-    $cached = get_transient( $cache_key );
-    if ( false !== $cached ) {
-        return (array) $cached;
-    }
-
-    if ( tc_peer_site_health_is_blocked( $peer_site_slug ) ) {
-        return array();
-    }
-
-    $rest_base   = tc_external_get_taxonomy_rest_base( $taxonomy );
-    $fields_str  = tc_external_post_fields( $show_thumbnail, false );
-    $params      = array(
-        $rest_base => implode( ',', $sorted_ids ),
+    $params = array(
+        tc_external_get_taxonomy_rest_base( $taxonomy ) => implode( ',', $sorted_ids ),
         'per_page' => $fetch_size,
         'orderby'  => 'date',
         'order'    => 'desc',
     );
-    if ( '' !== $modified_after ) {
-        $params['modified_after'] = $modified_after;
-    }
-    if ( '' !== $fields_str ) {
-        $params['_fields'] = $fields_str;
-    }
-    if ( $show_thumbnail ) {
-        $params['_embed'] = 'wp:featuredmedia';
-    }
-
-    $url      = $origin . '/wp-json/wp/v2/posts?' . http_build_query( $params );
-    $response = wp_remote_get( $url, tc_external_request_args() );
-
-    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-        $error = is_wp_error( $response )
-            ? $response->get_error_message()
-            : 'HTTP ' . wp_remote_retrieve_response_code( $response );
-        tc_peer_site_health_record_failure( $peer_site_slug, $error, $ttl );
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
-    if ( ! is_array( $body ) ) {
-        tc_peer_site_health_record_failure( $peer_site_slug, 'invalid JSON', $ttl );
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    tc_peer_site_health_record_success( $peer_site_slug );
-
-    $posts = array();
-    foreach ( $body as $raw ) {
-        if ( is_array( $raw ) && ! empty( $raw['id'] ) ) {
-            $posts[] = tc_external_normalize_post( $raw, $origin, $show_thumbnail );
-        }
-    }
-
-    tc_external_record_fetch( $peer_site_slug, count( $posts ) );
-    set_transient( $cache_key, $posts, $ttl );
-    return $posts;
+    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $modified_after );
 }
 
 /**
@@ -1265,17 +1223,6 @@ function tc_external_fetch_scored_posts(
         "$peer_site_slug|$version|$origin|$taxonomy|" . tc_external_serialize_term_id_map( $term_id_map ) . "|$match|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . wp_json_encode( $term_weights ) . '|' . ( $expand ? '1' : '0' ) . "|$modified_after"
     );
 
-    $cached = get_transient( $cache_key );
-    if ( false !== $cached ) {
-        return (array) $cached;
-    }
-
-    if ( tc_peer_site_health_is_blocked( $peer_site_slug ) ) {
-        return array();
-    }
-
-    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
-
     // Collect all IDs for the standard taxonomy filter param.
     $all_ids = array();
     foreach ( $term_id_map as $primary_id => $include_ids ) {
@@ -1286,19 +1233,12 @@ function tc_external_fetch_scored_posts(
     }
     $all_ids = array_unique( $all_ids );
 
-    $fields_str = tc_external_post_fields( $show_thumbnail, true );
-    $params     = array(
-        $rest_base   => implode( ',', $all_ids ),
+    $params = array(
+        tc_external_get_taxonomy_rest_base( $taxonomy ) => implode( ',', $all_ids ),
         'htax_match' => $match,
         'per_page'   => $fetch_size,
         'orderby'    => 'score',
     );
-    if ( '' !== $modified_after ) {
-        $params['modified_after'] = $modified_after;
-    }
-    if ( '' !== $fields_str ) {
-        $params['_fields'] = $fields_str;
-    }
 
     // htax_includes: primary_id => csv of include_ids.
     foreach ( $term_id_map as $primary_id => $include_ids ) {
@@ -1315,55 +1255,8 @@ function tc_external_fetch_scored_posts(
     if ( $expand ) {
         $params['htax_expand'] = '1';
     }
-    if ( $show_thumbnail ) {
-        $params['_embed'] = 'wp:featuredmedia';
-    }
 
-    $url      = $origin . '/wp-json/wp/v2/posts?' . http_build_query( $params );
-    $response = wp_remote_get( $url, tc_external_request_args( 10 ) );
-
-    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-        $error = is_wp_error( $response )
-            ? $response->get_error_message()
-            : 'HTTP ' . wp_remote_retrieve_response_code( $response );
-        tc_peer_site_health_record_failure( $peer_site_slug, $error, $ttl );
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    $is_ht = '' !== wp_remote_retrieve_header( $response, 'X-HyperTaxonomy' );
-    $body  = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
-
-    if ( ! is_array( $body ) ) {
-        tc_peer_site_health_record_failure( $peer_site_slug, 'invalid JSON', $ttl );
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    tc_peer_site_health_record_success( $peer_site_slug );
-
-    // Cache peer discovery data from htax_term_peers before normalizing.
-    if ( $is_ht ) {
-        tc_external_cache_term_peers( $origin, $body );
-    }
-
-    $posts = array();
-    foreach ( $body as $raw ) {
-        if ( ! is_array( $raw ) || empty( $raw['id'] ) ) {
-            continue;
-        }
-        $post = tc_external_normalize_post( $raw, $origin, $show_thumbnail );
-        if ( $is_ht && isset( $raw['htax_score'] ) && null !== $raw['htax_score'] ) {
-            $post['score']              = (float) $raw['htax_score'];
-            $post['matched_term_slugs'] = (array) ( $raw['htax_matched_term_slugs'] ?? array() );
-            $post['ht_scored']          = true;
-        }
-        $posts[] = $post;
-    }
-
-    tc_external_record_fetch( $peer_site_slug, count( $posts ) );
-    set_transient( $cache_key, $posts, $ttl );
-    return $posts;
+    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, true, $ttl, $modified_after );
 }
 
 /**
@@ -1407,64 +1300,13 @@ function tc_external_fetch_relevance_posts(
         "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids ) . '|' . md5( $search_keyword ) . "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . "|$modified_after"
     );
 
-    $cached = get_transient( $cache_key );
-    if ( false !== $cached ) {
-        return (array) $cached;
-    }
-
-    if ( tc_peer_site_health_is_blocked( $peer_site_slug ) ) {
-        return array();
-    }
-
-    $rest_base  = tc_external_get_taxonomy_rest_base( $taxonomy );
-    $fields_str = tc_external_post_fields( $show_thumbnail, false );
-    $params     = array(
-        $rest_base => implode( ',', $sorted_ids ),
+    $params = array(
+        tc_external_get_taxonomy_rest_base( $taxonomy ) => implode( ',', $sorted_ids ),
         'search'   => $search_keyword,
         'per_page' => $fetch_size,
         'orderby'  => 'relevance',
     );
-    if ( '' !== $modified_after ) {
-        $params['modified_after'] = $modified_after;
-    }
-    if ( '' !== $fields_str ) {
-        $params['_fields'] = $fields_str;
-    }
-    if ( $show_thumbnail ) {
-        $params['_embed'] = 'wp:featuredmedia';
-    }
-
-    $url      = $origin . '/wp-json/wp/v2/posts?' . http_build_query( $params );
-    $response = wp_remote_get( $url, tc_external_request_args() );
-
-    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-        $error = is_wp_error( $response )
-            ? $response->get_error_message()
-            : 'HTTP ' . wp_remote_retrieve_response_code( $response );
-        tc_peer_site_health_record_failure( $peer_site_slug, $error, $ttl );
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
-    if ( ! is_array( $body ) ) {
-        tc_peer_site_health_record_failure( $peer_site_slug, 'invalid JSON', $ttl );
-        set_transient( $cache_key, array(), 300 );
-        return array();
-    }
-
-    tc_peer_site_health_record_success( $peer_site_slug );
-
-    $posts = array();
-    foreach ( $body as $raw ) {
-        if ( is_array( $raw ) && ! empty( $raw['id'] ) ) {
-            $posts[] = tc_external_normalize_post( $raw, $origin, $show_thumbnail );
-        }
-    }
-
-    tc_external_record_fetch( $peer_site_slug, count( $posts ) );
-    set_transient( $cache_key, $posts, $ttl );
-    return $posts;
+    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $modified_after );
 }
 
 // ==============================================================================

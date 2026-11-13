@@ -10,33 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class TC_Settings {
-
-    /** @return string[] */
-    /**
-     * Taxonomies TermConnect is enabled for, after the tc_enabled_taxonomies filter.
-     *
-     * @since 1.0.0
-     */
-    public static function get_enabled_taxonomies(): array {
-        $taxonomies = (array) get_option( 'tc_enabled_taxonomies', array() );
-
-        /**
-         * Filters the list of TermConnect-enabled taxonomies.
-         *
-         * Lets a companion plugin opt its taxonomies into TermConnect behavior
-         * (the tc_links REST field, the htax_term_uri matching parameter, peer
-         * term resolution by shared identifier, and "See also") without writing
-         * to the tc_enabled_taxonomies option. The result is normalized to a
-         * unique list of taxonomy slug strings.
-         *
-         * @since 1.0.0
-         * @param string[] $taxonomies Enabled taxonomy slugs.
-         */
-        $taxonomies = (array) apply_filters( 'tc_enabled_taxonomies', $taxonomies );
-
-        return array_values( array_unique( array_filter( array_map( 'strval', $taxonomies ) ) ) );
-    }
+class TC_Settings_Page {
 
     /** Registered on admin_init so wp_safe_redirect() fires before any page output. */
     public static function handle_save(): void {
@@ -163,7 +137,7 @@ class TC_Settings {
     // =========================================================================
 
     private static function render_general_tab( array $options ): void {
-        $enabled  = self::get_enabled_taxonomies();
+        $enabled  = TC_Settings::get_enabled_taxonomies();
         $all_taxa = get_taxonomies( array( 'public' => true, 'show_ui' => true ), 'objects' );
 
         // Taxonomies forced on by a companion plugin via the tc_enabled_taxonomies
@@ -710,4 +684,4 @@ class TC_Settings {
 }
 
 // Process settings form submissions before any output.
-add_action( 'admin_init', array( 'TC_Settings', 'handle_save' ) );
+add_action( 'admin_init', array( 'TC_Settings_Page', 'handle_save' ) );

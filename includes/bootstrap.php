@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Core
+require_once TC_PLUGIN_DIR . 'includes/core/helpers.php';
+require_once TC_PLUGIN_DIR . 'includes/core/settings.php';
 require_once TC_PLUGIN_DIR . 'includes/core/term-links.php';
 require_once TC_PLUGIN_DIR . 'includes/core/feed-platform.php';
 require_once TC_PLUGIN_DIR . 'includes/core/peer-site-health.php';
@@ -19,9 +21,6 @@ require_once TC_PLUGIN_DIR . 'includes/core/rest-api.php';
 require_once TC_PLUGIN_DIR . 'includes/core/delegated-identity.php';
 require_once TC_PLUGIN_DIR . 'includes/core/suggested-links.php';
 
-// Settings class needed in all contexts (frontend, cron, REST) for get_enabled_taxonomies().
-require_once TC_PLUGIN_DIR . 'includes/admin/settings.php';
-
 // Vocabulary sync — needed in admin, AJAX, and cron contexts (not on frontend page requests).
 if ( is_admin() || wp_doing_ajax() || ( defined( 'DOING_CRON' ) && DOING_CRON ) ) {
     require_once TC_PLUGIN_DIR . 'includes/admin/shared-vocabulary-sync.php';
@@ -29,6 +28,7 @@ if ( is_admin() || wp_doing_ajax() || ( defined( 'DOING_CRON' ) && DOING_CRON ) 
 
 // Admin
 if ( is_admin() || wp_doing_ajax() ) {
+    require_once TC_PLUGIN_DIR . 'includes/admin/settings.php';
     require_once TC_PLUGIN_DIR . 'includes/admin/class-admin.php';
     require_once TC_PLUGIN_DIR . 'includes/admin/peer-sites-admin.php';
     require_once TC_PLUGIN_DIR . 'includes/admin/term-edit.php';

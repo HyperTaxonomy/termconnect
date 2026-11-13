@@ -271,3 +271,25 @@ function tc_rest_group_members( WP_REST_Request $request ) {
         'members'    => $members,
     ) );
 }
+
+/**
+ * Build tc_links REST field data for a term.
+ *
+ * Returns a flat array of { url, platform, label, fetched_at } objects covering local
+ * and delegated links with override logic applied, or null when the term has no links.
+ * Used by the tc_term_peers and tc_term_data REST fields on post endpoints.
+ *
+ * @since 1.0.0
+ * @param WP_Term $term Term object.
+ * @return array[]|null
+ */
+function tc_rest_build_links_data( WP_Term $term ): ?array {
+    $options = get_option( 'tc_settings', array() );
+    if ( isset( $options['expose_links_api'] ) && ! $options['expose_links_api'] ) {
+        return null;
+    }
+
+    $links = tc_build_merged_links( $term->term_id );
+
+    return empty( $links ) ? null : $links;
+}

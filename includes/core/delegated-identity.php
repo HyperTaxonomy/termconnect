@@ -562,14 +562,7 @@ function tc_fetch_remote_identity( string $peer_site_slug, string $taxonomy, str
     // _fields) for requests that identify themselves as a peer via this header — plain
     // _fields filtering isn't enough on its own. Without it, a remote term that redirects
     // is silently reported as a normal term, and this function can never detect a move.
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 10,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'headers'    => array(
-            'X-TermConnect'   => TC_VERSION,
-            'X-HyperTaxonomy' => defined( 'HTAX_VERSION' ) ? HTAX_VERSION : '1.0.0',
-        ),
-    ) );
+    $response = wp_remote_get( $url, tc_external_request_args( 10, tc_external_peer_headers( true ) ) );
 
     if ( is_wp_error( $response ) ) {
         return new WP_Error( 'tc_unreachable', $response->get_error_message() );
@@ -790,44 +783,6 @@ function tc_refresh_identity_cache( int $term_id ) {
 // ==============================================================================
 
 /**
- * Acquire a cross-process/cross-request mutex using a MySQL advisory lock
- * (GET_LOCK). Unlike a get-then-set transient check, this is atomic: MySQL
- * itself serializes concurrent GET_LOCK() calls for the same name, so two
- * overlapping requests (e.g. a cron sync racing a manual AJAX sync) cannot
- * both believe they hold the lock. The lock is also automatically released
- * if the holding connection dies, so a crashed request can never leave it
- * stuck (unlike a transient, which only expires after its TTL).
- *
- * Requires MySQL 5.7.5+ / MariaDB 10.0+ for multiple simultaneous named locks
- * per connection; earlier versions silently release any lock already held by
- * the same connection when a second is acquired. None of this plugin's lock
- * sections nest, so that constraint does not apply here.
- *
- * The default timeout is short on purpose: these critical sections are all
- * brief, so failing fast (and, in AJAX contexts, letting the user retry) is
- * better than blocking a cron tick or page load on a long wait.
- *
- * @param string $name    Lock name — must match exactly between every caller
- *                         sharing the same critical section.
- * @param int    $timeout Seconds to wait for the lock before giving up.
- * @return bool True if the lock was acquired.
- */
-function tc_acquire_mysql_lock( string $name, int $timeout = 2 ): bool {
-    global $wpdb;
-    return '1' === $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', tc_mysql_lock_name( $name ), $timeout ) );
-}
-
-/**
- * Release a lock previously acquired with tc_acquire_mysql_lock().
- *
- * @param string $name Lock name passed to tc_acquire_mysql_lock().
- */
-function tc_release_mysql_lock( string $name ): void {
-    global $wpdb;
-    $wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', tc_mysql_lock_name( $name ) ) );
-}
-
-/**
  * Scope an advisory lock name to this site.
  *
  * GET_LOCK() names are global to the whole MySQL server, not per database, so
@@ -949,11 +904,7 @@ function tc_fetch_remote_term_by_id( string $peer_site_slug, string $taxonomy, i
     $url       = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base . '/' . $remote_term_id
                . '?' . http_build_query( array( '_fields' => 'id,slug,name,link' ) );
 
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 10,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'headers'    => array( 'X-TermConnect' => TC_VERSION ),
-    ) );
+    $response = wp_remote_get( $url, tc_external_request_args( 10, tc_external_peer_headers() ) );
 
     if ( is_wp_error( $response ) ) {
         return new WP_Error( 'tc_unreachable', $response->get_error_message() );

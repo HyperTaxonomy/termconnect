@@ -101,7 +101,7 @@ class TC_Admin {
             __( 'TermConnect', 'termconnect' ),
             'manage_options',
             'termconnect-settings',
-            array( 'TC_Settings', 'render' )
+            array( 'TC_Settings_Page', 'render' )
         );
     }
 }

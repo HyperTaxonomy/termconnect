@@ -30,8 +30,7 @@ Delegated Identity
 - `tc_sv_remove_delegations_by_source( string $sv_source_id )` — Remove all delegation meta for every term managed by a given shared vocabulary source, restoring original names and descriptions where they were backed up before syncing.
 - `tc_fetch_remote_identity( string $peer_site_slug, string $taxonomy, string $remote_slug )` — Fetch identity data for a term from a peer WordPress site via WP REST API.
 - `tc_refresh_identity_cache( int $term_id )` — Refresh cached identity data for one term. Called by cron and inline from term edit AJAX.
-- `tc_acquire_mysql_lock( string $name, int $timeout = 2 )` — Acquire a cross-process/cross-request mutex using a MySQL advisory lock (GET_LOCK). Unlike a get-then-set transient check, this is atomic: MySQL itself serializes concurrent GET_LOCK() calls for the same name, so two overlapping requests (e.g. a cron sync racing a manual AJAX sync) cannot both believe they hold the lock. The lock is also automatically released if the holding connection dies, so a crashed request can never leave it stuck (unlike a transient, which only expires after its TTL).
-- `tc_release_mysql_lock( string $name )` — Release a lock previously acquired with tc_acquire_mysql_lock().
+- `tc_mysql_lock_name( string $name )` — Scope an advisory lock name to this site.
 - `tc_sv_update_root_slug( string $sv_source_id, string $old_slug, string $new_slug )` — Update remote_slug on a shared vocabulary roots entry (and clear any stale remote_name).
 - `tc_fetch_remote_term_by_id( string $peer_site_slug, string $taxonomy, int $remote_term_id )` — Fetch a single remote term by its ID via the WP REST API single-resource endpoint.
 - `tc_identity_redirect_queue_get()` — Return all pending redirect review items.
@@ -42,17 +41,10 @@ Delegated Identity
 - `tc_get_stale_rel_term_ids()` — Return all term IDs that have at least one stale relationship sync issue.
 - `tc_flush_stale_rel_term_ids()` — Invalidate the stale relationship term IDs cache. Call after any run of tc_sv_flag_stale_relationship_rows().
 
-### "See also" and block rendering (`includes/core/display.php`)
-
-Frontend display — "See also" section on term archives and Gutenberg block render callbacks.
-
-- `tc_rest_build_links_data( WP_Term $term )` — Build tc_links REST field data for a term.
-
 ### Peer post fetching (`includes/core/external-posts.php`)
 
 External Posts Platform
 
-- `tc_external_json_decode( string $body )` — JSON-decode a REST API response body, stripping any UTF-8 BOM first.
 - `tc_external_validate_origin( string $origin )` — Validate that an origin URL is safe to request.
 - `tc_is_self_origin( string $origin )` — Return true when the origin matches the current site's own URL.
 - `tc_external_is_blacklisted( string $origin )` — Return true when the origin's host is a blocked domain or one of its subdomains.
@@ -70,7 +62,6 @@ External Posts Platform
 - `tc_local_term_expansions( array $tax_terms )` — Build the term => expanded-IDs map for local selection, using HyperTaxonomy's relationship expansion when available.
 - `tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), string $modified_after = '' )` — Collect local posts matching selected terms, normalized to the shared record shape (is_local => true). Uses a plain WP_Query — no HyperTaxonomy dependency.
 - `tc_external_normalize_post( array $raw, string $origin, bool $show_thumbnail )` — Normalize a raw WordPress REST post object into the standard HT external post structure.
-- `tc_external_request_args( int $timeout = 8 )` — Common wp_remote_get args for all peer fetches.
 - `tc_external_clear_site_cache( string $peer_site_slug )` — Invalidate all cached post lists for a link type by incrementing its version counter.
 - `tc_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', string $modified_after = '' )` — Fetch posts from a standard (non-HT) WordPress peer by taxonomy term IDs.
 - `tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id_map, string $match, array $term_weights, bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '', bool $expand = false, string $modified_after = '' )` — Fetch scored posts from an HT-enabled peer using htax_* query params.
@@ -95,6 +86,18 @@ Feed Platform
 - `tc_feed_reschedule_after_activation()` — Schedule every enabled feed on the first load after the plugin is activated.
 - `tc_feed_unschedule( string $peer_site_slug )` — Remove the cron event for a feed link type.
 
+### `includes/core/helpers.php`
+
+Shared utilities: remote request arguments, JSON decoding, peer origin parsing and named MySQL locks.
+
+- `tc_external_request_args( int $timeout = 8, array $headers = array() )` — Common wp_remote_get args for all requests TermConnect sends to other sites.
+- `tc_external_json_decode( string $body )` — JSON-decode a REST API response body, stripping any UTF-8 BOM first.
+- `tc_external_get_site_origin( string $uri_prefix )` — Extracts the site origin (scheme + host) from a link type uri_prefix.
+- `tc_acquire_mysql_lock( string $name, int $timeout = 2 )` — Acquire a cross-process/cross-request mutex using a MySQL advisory lock (GET_LOCK). Unlike a get-then-set transient check, this is atomic: MySQL itself serializes concurrent GET_LOCK() calls for the same name, so two overlapping requests (e.g. a cron sync racing a manual AJAX sync) cannot both believe they hold the lock. The lock is also automatically released if the holding connection dies, so a crashed request can never leave it stuck (unlike a transient, which only expires after its TTL).
+- `tc_release_mysql_lock( string $name )` — Release a lock previously acquired with tc_acquire_mysql_lock().
+- `tc_external_peer_headers( bool $hypertaxonomy = false, bool $termconnect = true )` — Headers that identify TermConnect to a peer site.
+- `tc_external_get_json( string $url, array $args )` — GET a URL and decode its JSON body.
+
 ### Peer site health (`includes/core/peer-site-health.php`)
 
 Peer Site Health Tracking
@@ -111,6 +114,16 @@ TermConnect REST API.
 
 - `tc_rest_field_object_type( string $taxonomy )` — Map a taxonomy slug to the REST "object type" WP_REST_Terms_Controller actually advertises for register_rest_field() purposes.
 - `tc_register_tc_links_field()` — Register a tc_links field on all TermConnect-enabled taxonomy term REST endpoints.
+- `tc_rest_build_links_data( WP_Term $term )` — Build tc_links REST field data for a term.
+
+### `includes/core/settings.php`
+
+TermConnect settings needed in every context (front end, cron, REST).
+
+
+**`TC_Settings`** — Read access to TermConnect settings.
+
+- `TC_Settings::get_enabled_taxonomies()` — Taxonomies TermConnect is enabled for, after the tc_enabled_taxonomies filter.
 
 ### Identifier suggestions (`includes/core/suggested-links.php`)
 
@@ -118,6 +131,7 @@ External Identifier Suggested Links
 
 - `tc_suggested_link_term_id( $comment )` — Term a link suggestion was made for.
 - `tc_pending_suggested_link_ids( int $term_id, string $url = '' )` — IDs of pending link suggestions for a term, optionally only those for one URL.
+- `tc_suggested_link_match_url( string $url )` — Match a URL against configured link type URI prefixes. Returns [ peer_site_slug, label, value, enabled ] or null.
 
 ### Term links (`includes/core/term-links.php`)
 
@@ -129,7 +143,6 @@ Term Links
 - `tc_get_enabled_link_types()` — Returns all enabled link type definitions, keyed by slug.
 - `tc_get_enabled_link_types_for_taxonomy( string $taxonomy )` — Returns enabled link type definitions allowed for a specific taxonomy, keyed by slug.
 - `tc_get_platform_link_types( string $platform )` — Returns all enabled link type definitions with the given platform value, keyed by slug.
-- `tc_external_get_site_origin( string $uri_prefix )` — Extracts the site origin (scheme + host) from a link type uri_prefix.
 - `tc_get_link_type( string $slug )` — Returns a single link type definition, or null if not found.
 - `tc_set_link_types( array $types )` — Persists the tc_link_types option from the keyed-by-slug array.
 - `tc_wp_peer_remote_taxonomy( array $type, string $local_taxonomy )` — The peer taxonomy a WordPress peer link type maps to for a given local taxonomy.
@@ -138,6 +151,7 @@ Term Links
 - `tc_link_type_display_prefix( array $type, string $taxonomy = '' )` — Return the URL prefix used for URI preview and pill links in the term-edit screen.
 - `tc_get_suggest_config( string $slug, string $taxonomy = '' )` — Returns the suggest configuration for a known external identifier type slug.
 - `tc_parse_suggest_response( string $body, string $parser )` — Parse a raw JSON response body from an external suggest API.
+- `tc_get_term_link_id( int $term_id, string $slug )` — The identifier stored for one link type on a term, whether or not the type is enabled.
 - `tc_get_term_links( int $term_id, bool $include_redirect_data = false )` — Returns all external link values set on a term, keyed by slug.
 - `tc_get_term_links_data( int $term_id, bool $reset = false )` — Returns full structured link data for enabled types on a term, keyed by slug.
 - `tc_flush_term_link_cache( int $term_id )` — Invalidate the external link cache for a single term. Call whenever any _tc_link_* meta changes for this term.
@@ -157,15 +171,6 @@ Peer Sites Admin — Terms → Peer Sites
 
 - `tc_handle_peer_site_add()` — Add a link type (peer site, feed or other namespace) from the Peer Sites form.
 
-### Settings page (`includes/admin/settings.php`)
-
-TermConnect Settings page — Settings → TermConnect.
-
-
-**`TC_Settings`**
-
-- `TC_Settings::get_enabled_taxonomies()` — Taxonomies TermConnect is enabled for, after the tc_enabled_taxonomies filter.
-
 ### Shared vocabulary sync (`includes/admin/shared-vocabulary-sync.php`)
 
 Shared Vocabulary Sync — sync a remote WordPress taxonomy into the local site.
@@ -184,7 +189,6 @@ Shared Vocabulary Sync — sync a remote WordPress taxonomy into the local site.
 
 Suggested Links — admin UI
 
-- `tc_suggested_link_match_url( string $url )` — Match a URL against configured link type URI prefixes. Returns [ peer_site_slug, label, value, enabled ] or null.
 - `tc_suggested_link_exists( int $term_id, string $peer_site_slug, string $value )` — Check whether a specific link already exists for a term.
 
 ## Integrations

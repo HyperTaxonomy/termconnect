@@ -245,11 +245,7 @@ function tc_ajax_peer_site_identifier_suggest(): void {
     $url      = str_replace( '{query}', rawurlencode( $query ), $config['url'] );
     $response = wp_remote_get(
         $url,
-        array(
-            'timeout'    => 5,
-            'user-agent' => 'TermConnect/' . TC_VERSION,
-            'sslverify'  => true,
-        )
+        tc_external_request_args( 5 )
     );
 
     if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
@@ -1153,7 +1149,7 @@ function tc_render_peer_sites_page(): void {
         </table>
         <script>
         (function() {
-            document.querySelectorAll('.tc-clear-peer-cache').forEach(function( btn ) {
+            document.querySelectorAll('.tc-clear-peer-cache, .tc-clear-feed-cache').forEach(function( btn ) {
                 btn.addEventListener('click', function() {
                     btn.disabled = true;
                     var status = btn.nextElementSibling;
@@ -1169,8 +1165,10 @@ function tc_render_peer_sites_page(): void {
                                 if ( status ) { status.style.display = 'inline'; setTimeout(function() { status.style.display = 'none'; }, 4000); }
                                 var cell = document.querySelector('.tc-peer-site-status-cell[data-peer-site-slug="' + btn.dataset.peerSiteSlug + '"]');
                                 if ( cell ) {
-                                    var counts = cell.querySelector('.tc-peer-stats-counts');
-                                    if ( counts ) { counts.innerHTML = '<small style="color:#888">0 posts cached</small>'; }
+                                    var cachedEl = cell.querySelector('.tc-peer-stats-count');
+                                    if ( cachedEl ) { cachedEl.textContent = '<?php /* translators: %d: number of cached posts */ echo esc_js( sprintf( _n( '%d post cached', '%d posts cached', 0, 'termconnect' ), 0 ) ); ?>'; }
+                                    var postsEl = cell.querySelector('.tc-feed-stat-posts small');
+                                    if ( postsEl ) { postsEl.textContent = '0 <?php echo esc_js( __( 'posts', 'termconnect' ) ); ?>, 0 <?php echo esc_js( __( 'categories', 'termconnect' ) ); ?>'; }
                                 }
                             }
                         })
@@ -1202,31 +1200,6 @@ function tc_render_peer_sites_page(): void {
                             }
                         })
                         .catch(function() { btn.disabled = false; btn.textContent = '<?php echo esc_js( __( 'Poll Now', 'termconnect' ) ); ?>'; });
-                });
-            });
-
-            document.querySelectorAll('.tc-clear-feed-cache').forEach(function( btn ) {
-                btn.addEventListener('click', function() {
-                    btn.disabled = true;
-                    var status = btn.nextElementSibling;
-                    var data   = new FormData();
-                    data.append('action', 'tc_clear_peer_cache');
-                    data.append('nonce', btn.dataset.nonce);
-                    data.append('peer_site_slug', btn.dataset.peerSiteSlug);
-                    fetch(ajaxurl, { method: 'POST', body: data, credentials: 'same-origin' })
-                        .then(function( r ) { return r.json(); })
-                        .then(function( json ) {
-                            btn.disabled = false;
-                            if ( json.success ) {
-                                if ( status ) { status.style.display = 'inline'; setTimeout(function() { status.style.display = 'none'; }, 4000); }
-                                var cell = document.querySelector('.tc-peer-site-status-cell[data-peer-site-slug="' + btn.dataset.peerSiteSlug + '"]');
-                                if ( cell ) {
-                                    var postsEl = cell.querySelector('.tc-feed-stat-posts small');
-                                    if ( postsEl ) { postsEl.textContent = '0 <?php echo esc_js( __( 'posts', 'termconnect' ) ); ?>, 0 <?php echo esc_js( __( 'categories', 'termconnect' ) ); ?>'; }
-                                }
-                            }
-                        })
-                        .catch(function() { btn.disabled = false; });
                 });
             });
         })();

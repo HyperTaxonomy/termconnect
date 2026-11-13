@@ -64,7 +64,7 @@ termconnect/
 │   │   ├── delegated-identity-health.php       # Delegated Identity — WordPress Site Health integration.
 │   │   ├── export-import.php                   # TermConnect Export / Import handlers.
 │   │   ├── peer-sites-admin.php                # Peer Sites Admin — Terms → Peer Sites
-│   │   ├── settings.php                        # TermConnect Settings page — Settings → TermConnect.
+│   │   ├── settings.php                        # TermConnect Settings page (TC_Settings_Page) — Settings → TermConnect.
 │   │   ├── shared-vocabularies-ajax.php        # Shared Vocabularies — AJAX handlers.
 │   │   ├── shared-vocabularies.php             # Shared Vocabularies — admin page (Terms → Shared Vocabularies).
 │   │   ├── shared-vocabulary-sync.php          # Shared Vocabulary Sync — sync a remote WordPress taxonomy into the local site.
@@ -76,8 +76,10 @@ termconnect/
 │   │   ├── display.php                         # Frontend display — "See also" section on term archives and Gutenberg block render callbacks.
 │   │   ├── external-posts.php                  # External Posts Platform
 │   │   ├── feed-platform.php                   # Feed Platform
+│   │   ├── helpers.php                         # Shared utilities: request arguments and peer headers, JSON GET, origin parsing, MySQL locks
 │   │   ├── peer-site-health.php                # Peer Site Health Tracking
 │   │   ├── rest-api.php                        # TermConnect REST API.
+│   │   ├── settings.php                        # TC_Settings: enabled taxonomies, needed in every context
 │   │   ├── suggested-links.php                 # External Identifier Suggested Links
 │   │   └── term-links.php                      # Term Links
 │   ├── integration/                            
@@ -100,12 +102,12 @@ termconnect/
 
 ### 2. Bootstrap (`includes/bootstrap.php`)
 
-1. **Core, always:** `term-links.php`, `feed-platform.php`, `peer-site-health.php`, `external-posts.php`, `display.php`, `rest-api.php`, `delegated-identity.php` and `suggested-links.php`, from `includes/core/`.
-2. **`includes/admin/settings.php`, always:** `TC_Settings::get_enabled_taxonomies()` is needed on the front end, in cron and in REST requests.
-3. **`includes/admin/shared-vocabulary-sync.php`:** in admin, AJAX and cron requests only.
-4. **The other admin files:** in admin and AJAX requests only, followed by `TC_Admin::register()`.
-5. **`includes/integration/class-hypertaxonomy-integration.php`, always.** It hooks HyperTaxonomy's filters and actions, which do nothing while HyperTaxonomy is inactive.
-6. **The shortcode classes:** `[tc_peer_posts]` and `[tc_peer_browse]`.
+1. **Core, always:** `helpers.php`, `settings.php`, `term-links.php`, `feed-platform.php`, `peer-site-health.php`, `external-posts.php`, `display.php`, `rest-api.php`, `delegated-identity.php` and `suggested-links.php`, from `includes/core/`.
+   `core/settings.php` holds `TC_Settings::get_enabled_taxonomies()`, needed on the front end, in cron and in REST requests; the settings screen is `TC_Settings_Page` in `admin/settings.php`.
+2. **`includes/admin/shared-vocabulary-sync.php`:** in admin, AJAX and cron requests only.
+3. **The admin files:** in admin and AJAX requests only, followed by `TC_Admin::register()`.
+4. **`includes/integration/class-hypertaxonomy-integration.php`, always.** It hooks HyperTaxonomy's filters and actions, which do nothing while HyperTaxonomy is inactive.
+5. **The shortcode classes:** `[tc_peer_posts]` and `[tc_peer_browse]`.
 
 ### Activation and deactivation
 

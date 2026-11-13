@@ -236,8 +236,7 @@ class TC_HT_Integration {
         $peers = array();
         foreach ( $term_ids as $term_id ) {
             foreach ( $peer_types as $slug => $type ) {
-                $raw_meta   = get_term_meta( $term_id, '_tc_link_' . $slug, true );
-                $identifier = is_array( $raw_meta ) ? (string) ( $raw_meta['id'] ?? '' ) : (string) $raw_meta;
+                $identifier = tc_get_term_link_id( (int) $term_id, $slug );
                 if ( '' === $identifier ) {
                     continue;
                 }

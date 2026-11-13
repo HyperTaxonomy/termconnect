@@ -485,10 +485,7 @@ function tc_sv_ajax_fetch_remote_taxonomies(): void {
 
     $url = trailingslashit( $origin ) . 'wp-json/wp/v2/taxonomies';
 
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 10,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-    ) );
+    $response = wp_remote_get( $url, tc_external_request_args( 10 ) );
 
     if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
         wp_send_json_error( array( 'message' => __( 'Could not fetch taxonomies from peer.', 'termconnect' ) ) );
@@ -541,11 +538,7 @@ function tc_sv_ajax_fetch_remote_groups(): void {
         '_fields'  => 'id,slug,name,parent',
     ) );
 
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 10,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'headers'    => array( 'X-TermConnect' => TC_VERSION ),
-    ) );
+    $response = wp_remote_get( $url, tc_external_request_args( 10, tc_external_peer_headers() ) );
 
     if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
         wp_send_json_error( array( 'message' => __( 'Could not fetch groups from peer.', 'termconnect' ) ) );
@@ -602,17 +595,8 @@ function tc_sv_ajax_search_remote_terms(): void {
         '_fields'  => 'id,slug,name',
     ) );
 
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 10,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-    ) );
-
-    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-        wp_send_json_success( array() );
-    }
-
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
-    if ( ! is_array( $body ) ) {
+    $body = tc_external_get_json( $url, tc_external_request_args( 10 ) );
+    if ( null === $body ) {
         wp_send_json_success( array() );
     }
 

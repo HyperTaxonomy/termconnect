@@ -781,18 +781,10 @@ class TC_Shortcode_PeerPosts {
                 continue;
             }
 
-            $taxes = ! empty( $link_type['taxonomies'] ) ? $link_type['taxonomies'] : TC_Settings::get_enabled_taxonomies();
-            if ( '' !== $tax_filter ) {
-                $taxes = in_array( $tax_filter, $taxes, true ) ? array( $tax_filter ) : array();
-            }
-
-            foreach ( $taxes as $taxonomy ) {
+            foreach ( $this->link_type_taxonomies( $link_type, $tax_filter ) as $taxonomy ) {
                 $post_terms = $this->terms_in_taxonomy( $post_id, $taxonomy, $explicit_term_ids );
                 foreach ( $post_terms as $term_id ) {
-                    $raw_peer_meta = get_term_meta( $term_id, '_tc_link_' . $peer_site_slug, true );
-                    $remote_slug   = is_array( $raw_peer_meta )
-                        ? (string) ( $raw_peer_meta['id'] ?? '' )
-                        : (string) $raw_peer_meta;
+                    $remote_slug = tc_get_term_link_id( (int) $term_id, $peer_site_slug );
                     if ( '' === $remote_slug ) {
                         continue;
                     }
@@ -817,18 +809,10 @@ class TC_Shortcode_PeerPosts {
                 continue;
             }
 
-            $taxes = ! empty( $link_type['taxonomies'] ) ? $link_type['taxonomies'] : TC_Settings::get_enabled_taxonomies();
-            if ( '' !== $tax_filter ) {
-                $taxes = in_array( $tax_filter, $taxes, true ) ? array( $tax_filter ) : array();
-            }
-
-            foreach ( $taxes as $taxonomy ) {
+            foreach ( $this->link_type_taxonomies( $link_type, $tax_filter ) as $taxonomy ) {
                 $post_terms = $this->terms_in_taxonomy( $post_id, $taxonomy, $explicit_term_ids );
                 foreach ( $post_terms as $term_id ) {
-                    $raw_feed_meta = get_term_meta( $term_id, '_tc_link_' . $peer_site_slug, true );
-                    $raw_id        = is_array( $raw_feed_meta )
-                        ? (string) ( $raw_feed_meta['id'] ?? '' )
-                        : (string) $raw_feed_meta;
+                    $raw_id = tc_get_term_link_id( (int) $term_id, $peer_site_slug );
                     if ( '' === $raw_id ) {
                         continue;
                     }
@@ -836,7 +820,7 @@ class TC_Shortcode_PeerPosts {
                         'origin'          => $feed_url,
                         'taxonomy'        => $taxonomy,
                         'remote_taxonomy' => '',
-                        'peer_site_slug'         => $peer_site_slug,
+                        'peer_site_slug'  => $peer_site_slug,
                         'term_id'         => (int) $term_id,
                         'remote_slug'     => (string) $raw_id,
                         'platform'        => 'feed',
@@ -855,17 +839,11 @@ class TC_Shortcode_PeerPosts {
                 continue;
             }
 
-            $taxes = ! empty( $link_type['taxonomies'] ) ? $link_type['taxonomies'] : TC_Settings::get_enabled_taxonomies();
-            if ( '' !== $tax_filter ) {
-                $taxes = in_array( $tax_filter, $taxes, true ) ? array( $tax_filter ) : array();
-            }
-
-            foreach ( $taxes as $taxonomy ) {
+            foreach ( $this->link_type_taxonomies( $link_type, $tax_filter ) as $taxonomy ) {
                 $post_terms = $this->terms_in_taxonomy( $post_id, $taxonomy, $explicit_term_ids );
                 foreach ( $post_terms as $term_id ) {
                     // Skip if this term already has an explicit remote slug for this peer.
-                    $remote_slug = get_term_meta( $term_id, '_tc_link_' . $peer_site_slug, true );
-                    if ( '' !== $remote_slug && false !== $remote_slug ) {
+                    if ( '' !== tc_get_term_link_id( (int) $term_id, $peer_site_slug ) ) {
                         continue;
                     }
                     // Collect URI index for this term (covers local and delegated links).
@@ -891,6 +869,22 @@ class TC_Shortcode_PeerPosts {
         }
 
         return $tuples;
+    }
+
+    /**
+     * Taxonomies a link type applies to, narrowed to the shortcode's taxonomy filter.
+     *
+     * @since 1.0.0
+     * @param array  $link_type  Link type definition.
+     * @param string $tax_filter Taxonomy slug from the shortcode, or ''.
+     * @return string[]
+     */
+    private function link_type_taxonomies( array $link_type, string $tax_filter ): array {
+        $taxes = ! empty( $link_type['taxonomies'] ) ? $link_type['taxonomies'] : TC_Settings::get_enabled_taxonomies();
+        if ( '' !== $tax_filter ) {
+            $taxes = in_array( $tax_filter, $taxes, true ) ? array( $tax_filter ) : array();
+        }
+        return $taxes;
     }
 
     /**
@@ -1091,10 +1085,7 @@ class TC_Shortcode_PeerPosts {
                 '_fields'       => 'id',
                 'per_page'      => 1,
             ) );
-            $args = tc_external_request_args( 5 );
-            if ( tc_external_is_ht_enabled( $origin ) ) {
-                $args['headers']['X-HyperTaxonomy'] = defined( 'HTAX_VERSION' ) ? HTAX_VERSION : '1.0.0';
-            }
+            $args = tc_external_request_args( 5, tc_external_peer_headers( tc_external_is_ht_enabled( $origin ), false ) );
             $response = wp_remote_get( $url, $args );
             if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
                 continue;

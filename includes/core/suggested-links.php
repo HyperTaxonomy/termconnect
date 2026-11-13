@@ -523,3 +523,30 @@ function tc_build_suggested_link_append_html( string $description, WP_Term $term
         . '</div>'
         . $pane_html;
 }
+
+/**
+ * Match a URL against configured link type URI prefixes.
+ * Returns [ peer_site_slug, label, value, enabled ] or null.
+ *
+ * @since 1.0.0
+ * @param string $url
+ * @return array{peer_site_slug:string,label:string,value:string,enabled:bool}|null
+ */
+function tc_suggested_link_match_url( string $url ): ?array {
+    $types = tc_get_all_link_types();
+    foreach ( $types as $peer_site_slug => $type ) {
+        $prefix = $type['uri_prefix'] ?? '';
+        if ( $prefix && strpos( $url, $prefix ) === 0 ) {
+            $value = substr( $url, strlen( $prefix ) );
+            if ( '' !== $value ) {
+                return array(
+                    'peer_site_slug' => $peer_site_slug,
+                    'label'          => $type['label'] ?? $peer_site_slug,
+                    'value'          => $value,
+                    'enabled'        => ! empty( $type['enabled'] ),
+                );
+            }
+        }
+    }
+    return null;
+}

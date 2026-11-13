@@ -580,11 +580,7 @@ function tc_sv_sync_remote_group_source( array $source, array $result ): array {
 
     // 1. Fetch remote group members via tc/v1/group-members endpoint.
     $url = trailingslashit( $origin ) . 'wp-json/tc/v1/group-members?' . http_build_query( array( 'group_slug' => $remote_group_slug ) );
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 20,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'headers'    => array( 'X-TermConnect' => TC_VERSION ),
-    ) );
+    $response = wp_remote_get( $url, tc_external_request_args( 20, tc_external_peer_headers() ) );
 
     if ( is_wp_error( $response ) ) {
         $result['errors'][] = $response->get_error_message();
@@ -1065,10 +1061,7 @@ function tc_sv_fetch_taxonomy( string $origin, string $taxonomy, array $extra_fi
     // HT's collection endpoint only includes htax_includes/htax_relationships (even when
     // requested via _fields) for requests that identify themselves as a peer via this
     // header — plain _fields filtering isn't enough on its own.
-    $headers = array( 'X-TermConnect' => TC_VERSION );
-    if ( ! empty( $extra_fields ) ) {
-        $headers['X-HyperTaxonomy'] = defined( 'HTAX_VERSION' ) ? HTAX_VERSION : '1.0.0';
-    }
+    $headers = tc_external_peer_headers( ! empty( $extra_fields ) );
 
     $max_pages = 500;
     do {
@@ -1078,11 +1071,7 @@ function tc_sv_fetch_taxonomy( string $origin, string $taxonomy, array $extra_fi
             'page'     => $page,
         ) );
 
-        $response = wp_remote_get( $url, array(
-            'timeout'    => 15,
-            'user-agent' => 'TermConnect/' . TC_VERSION,
-            'headers'    => $headers,
-        ) );
+        $response = wp_remote_get( $url, tc_external_request_args( 15, $headers ) );
 
         if ( is_wp_error( $response ) ) {
             return new WP_Error( 'tc_unreachable', $response->get_error_message() );
@@ -1385,11 +1374,7 @@ function tc_sv_sync_relationship_types( string $origin ): array {
     }
 
     $url = trailingslashit( $origin ) . 'wp-json/htax/v1/relationship-types';
-    $response = wp_remote_get( $url, array(
-        'timeout'    => 15,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
-        'headers'    => array( 'X-TermConnect' => TC_VERSION ),
-    ) );
+    $response = wp_remote_get( $url, tc_external_request_args( 15, tc_external_peer_headers() ) );
 
     if ( is_wp_error( $response ) ) {
         $result['errors'][] = $response->get_error_message();
