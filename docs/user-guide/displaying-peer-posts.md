@@ -111,6 +111,8 @@ To show this site's own related posts **and** peer/feed results together in one 
 
 The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages). On a term archive, with no `terms` set, it starts with the archive's term selected when that term is in its `taxonomy`, so it can go straight into an archive template, including a block theme's.
 
+![The topic browser with three topics selected, Match, Source and Sort controls, and posts from this site and a peer site](../assets/images/screenshots/peer-browse.png)
+
 ```
 [tc_peer_browse taxonomy="post_tag"]
 
@@ -165,6 +167,8 @@ By default only the topic pills and the Match toggle are shown; enable `show_sco
 |-------|---------------------|-------------|
 | `termconnect/peer-posts` | `[tc_peer_posts]` | Peer site and feed posts for the current post (singular pages only) |
 | `termconnect/peer-browse` | `[tc_peer_browse]` | Interactive topic browser across local + peers |
+
+![The Peer Posts block in the editor: TermConnect's blocks in the inserter, a live preview with a peer site's post, and the block's Source settings](../assets/images/screenshots/peer-posts-block.png)
 
 Find them in the block inserter under **TermConnect**.
 

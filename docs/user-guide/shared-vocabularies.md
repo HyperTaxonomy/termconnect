@@ -37,6 +37,8 @@ The active tab is preserved in the URL (`?scope=<tab>`), so the page returns to 
 
 ## Scope tabs
 
+![The Shared Vocabularies screen on its Individual Terms tab, with one source mirroring three tags from a peer site](../assets/images/screenshots/shared-vocabularies.png)
+
 The page is divided into five tabs (four without HyperTaxonomy) processed in a fixed priority order:
 
 | Tab | Taxonomy | Term selection | Descendants |

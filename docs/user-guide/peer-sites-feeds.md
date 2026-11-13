@@ -10,6 +10,8 @@ nav_order: 2
 
 **Terms → Peer Sites** is where you manage external sites, feeds and services where your terms can have identifiers. A namespace defines what kind of identifier it holds and how to construct a URL from it: Wikidata Q-numbers, GeoNames IDs, Wikipedia article slugs, a peer WordPress site, an RSS feed, or any custom service. Once a namespace is enabled, editors can attach identifiers to individual terms from the **External Links** panel on each term's edit screen.
 
+![The Peer Sites screen: enabled peer sites, feeds and namespaces with their status, and built-in namespaces available to enable](../assets/images/screenshots/peer-sites.png)
+
 > **Namespaces vs. link types.** A *namespace* is the identifier space plus its URL-construction rule (e.g. Wikidata Q-numbers → `wikidata.org/wiki/`). A *link type* — the configured entries shown on the **Peer Sites** screen — is an entry that uses a namespace. Peer sites and feeds are link types whose namespace is a remote WordPress or feed endpoint.
 >
 > **Namespaces of relationship types.** HyperTaxonomy's custom relationship types also have a namespace, and TermConnect can sync those types to other sites. For a relationship type, the namespace is part of the type's identity: it says whose definition this is. It's distinct from a peer site, and doesn't have to be a working URL.
@@ -23,6 +25,8 @@ TermConnect also uses shared identifiers to auto-match equivalent terms on peer 
 1. Go to **Terms → Peer Sites**. Twenty-one built-in namespaces are available: **General reference** (Wikidata, Wikipedia, Grokipedia, Wikiquote); **Language** (Wiktionary, Merriam-Webster); **Geography** (GeoNames, OpenStreetMap, Wikivoyage); **Biology/Nature** (Wikispecies, iNaturalist, GBIF); **People/Organizations** (VIAF, ORCID); **Library/Subject headings** (LCSH, MeSH, Getty AAT, Getty TGN); **Academic/Structured data** (OpenAlex, schema.org, GS1).
 2. Built-in namespaces start disabled — enable the ones relevant to your content by clicking **Enable**. Custom namespaces you add are enabled automatically. Built-in namespaces also start with **Show on Archives** off, so check it in the namespace's edit form if you want their links in "See also". Drag rows up or down to change their display order; enabled namespaces appear in this order in the "See also" section on term archive pages (if that feature is enabled in Settings and the namespace has **Show on Archives** checked).
 3. Once a namespace is enabled, edit any term and fill in its identifier in the **External Links** panel. Enter just the identifier, not the full URL — `Q42` for Wikidata, `Douglas_Adams` for Wikipedia. TermConnect constructs the full URL from the namespace's URI prefix. A preview link appears once saved.
+
+![A tag's edit screen with its External Links circled: a peer site, Wikidata and Wikipedia](../assets/images/screenshots/term-external-links.png)
 
 **Restricting a namespace to specific taxonomies:**
 
@@ -47,6 +51,8 @@ At **Terms → Peer Sites**, fill in the **Add Peer Site** form:
 Deleting a custom namespace also removes all stored identifiers for that namespace.
 
 **Term list columns:** The term list table gains a **Links** column (number of external links per term, sortable) and a **Sync** column (delegated-identity sync status). Both are hidden by default; enable them via **Screen Options** (top-right of the term list screen). Their filter dropdowns are also hidden while the columns are off.
+
+![The Tags list with TermConnect's Links and Sync columns circled, and their filters above the table](../assets/images/screenshots/tags-list-columns.png)
 
 ---
 

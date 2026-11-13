@@ -174,13 +174,15 @@ Yes. Create a feed link type (Platform = RSS / Atom feed), map your terms to fee
 
 == Screenshots ==
 
-1. Term edit screen — the External Links panel with knowledge-base identifiers (Wikidata, GeoNames, LCSH, etc.)
-2. Terms → Peer Sites — configuring WordPress peers, RSS/Atom feeds, and link types
-3. Terms → Shared Vocabularies — mirroring terms from a peer, with coverage warnings
-4. Related content from peer sites shown under a term archive ("See also")
-5. [tc_peer_browse] in action on the frontend — picking terms and browsing matching posts from this site and configured peers/feeds
-6. Comments → Link Suggestions — reviewing and accepting external-link suggestions
-7. Settings → General tab, showing per-taxonomy feature toggles
+1. Term edit screen — the External Links panel with knowledge-base and peer-site identifiers
+2. Tags list — the Links and Sync columns TermConnect adds, with External Links and Sync Status filters
+3. Terms → Peer Sites — configuring WordPress peers, RSS/Atom feeds, and link types
+4. Terms → Shared Vocabularies — mirroring terms from a peer site
+5. "See also" links and the link-suggestion button on a term archive
+6. TermConnect blocks in the post editor — a Peer Posts block with its settings and a live preview of a peer site's post
+7. [tc_peer_browse] in action on the frontend — picking terms and browsing matching posts from this site and configured peers/feeds
+8. Comments → Link Suggestions — reviewing and accepting external-link suggestions
+9. Settings → General tab, showing per-taxonomy feature toggles
 
 == Changelog ==
 

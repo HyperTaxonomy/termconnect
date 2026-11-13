@@ -10,6 +10,8 @@ nav_order: 5
 
 When a term has identifiers set and the link type has **Show on Archives** enabled, a "See also" section appears on the term's archive page.
 
+![A tag archive's description with See also links to a peer site, Wikidata and Wikipedia, and the Suggest a related concept button](../assets/images/screenshots/see-also.png)
+
 **Controls:**
 
 - **Global toggle:** Settings → TermConnect → General, under **See Also** — "Show 'See also' section on term archive pages"
@@ -26,6 +28,8 @@ When HyperTaxonomy's **Show Description** feature is enabled for a term, the "Se
 ## Link Suggestions
 
 When enabled, a short form appears on term archive pages (below "See also") inviting visitors to suggest an external link for that term. Suggestions are stored for admin review and are never applied automatically.
+
+![Link Suggestions listed under Comments, each with the proposed URL, the visitor's note and the tag](../assets/images/screenshots/link-suggestions.png)
 
 **Enabling:**
 

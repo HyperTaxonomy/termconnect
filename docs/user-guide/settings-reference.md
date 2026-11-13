@@ -8,6 +8,8 @@ nav_order: 3
 
 Every setting at **Settings → TermConnect**, and the cache tools on its Cache tab. Peer sites and feeds themselves are set up at **Terms → Peer Sites**; see [Peer Sites & Feeds](peer-sites-feeds.html).
 
+![TermConnect's General settings: enabled taxonomies, See Also and identifier suggestions](../assets/images/screenshots/settings-general.png)
+
 **General**
 
 - **Enabled Taxonomies** — see [Getting started](../#enabled-taxonomies).
