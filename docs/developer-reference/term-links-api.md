@@ -47,7 +47,7 @@ TermConnect adds one index to `wp_termmeta` at activation:
 
 ### Link Suggestions
 
-Visitor link suggestions (see the user guide's *Archives & Suggestions*) are WordPress comments with `comment_type = 'tc_suggested_link'` and `comment_approved = '0'` while pending. A suggestion belongs to a term, not a post: `comment_post_ID` is `0` and the term ID is in comment meta `_tc_term_id` (`TC_META_SUGGESTION_TERM_ID`). Term and post IDs are separate sequences, so storing the term ID in `comment_post_ID` would attach the suggestion to whichever post happens to have that ID — showing in that post's pending-comments bubble and being deleted along with it. `comment_author_url` holds the submitted URL.
+Visitor link suggestions (see [Archives & Suggestions](../user-guide/archives-suggestions.html) in the User Guide) are WordPress comments with `comment_type = 'tc_suggested_link'` and `comment_approved = '0'` while pending. A suggestion belongs to a term, not a post: `comment_post_ID` is `0` and the term ID is in comment meta `_tc_term_id` (`TC_META_SUGGESTION_TERM_ID`). Term and post IDs are separate sequences, so storing the term ID in `comment_post_ID` would attach the suggestion to whichever post happens to have that ID — showing in that post's pending-comments bubble and being deleted along with it. `comment_author_url` holds the submitted URL.
 
 | Function | Returns | Description |
 |----------|---------|-------------|
