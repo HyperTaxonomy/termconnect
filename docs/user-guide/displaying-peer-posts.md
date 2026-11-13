@@ -111,7 +111,7 @@ To show this site's own related posts **and** peer/feed results together in one 
 
 The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages). On a term archive, with no `terms` set, it starts with the archive's term selected when that term is in its `taxonomy`, so it can go straight into an archive template, including a block theme's.
 
-![The topic browser with three topics selected, Match, Source and Sort controls, and posts from this site and a peer site](../assets/images/screenshots/peer-browse.png)
+[![The topic browser with three topics selected, Match, Source and Sort controls, and posts from this site and a peer site](../assets/images/screenshots/peer-browse.png){: .screenshot-small}](../assets/images/screenshots/peer-browse.png)
 
 ```
 [tc_peer_browse taxonomy="post_tag"]

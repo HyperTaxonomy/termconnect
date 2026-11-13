@@ -10,7 +10,7 @@ nav_order: 5
 
 When a term has identifiers set and the link type has **Show on Archives** enabled, a "See also" section appears on the term's archive page.
 
-![A tag archive's description with See also links to a peer site, Wikidata and Wikipedia, and the Suggest a related concept button](../assets/images/screenshots/see-also.png)
+[![A tag archive's description with See also links to a peer site, Wikidata and Wikipedia, and the Suggest a related concept button](../assets/images/screenshots/see-also.png){: .screenshot-small}](../assets/images/screenshots/see-also.png)
 
 **Controls:**
 

@@ -37,8 +37,6 @@ The active tab is preserved in the URL (`?scope=<tab>`), so the page returns to 
 
 ## Scope tabs
 
-![The Shared Vocabularies screen on its Individual Terms tab, with one source mirroring three tags from a peer site](../assets/images/screenshots/shared-vocabularies.png)
-
 The page is divided into five tabs (four without HyperTaxonomy) processed in a fixed priority order:
 
 | Tab | Taxonomy | Term selection | Descendants |
@@ -48,6 +46,8 @@ The page is divided into five tabs (four without HyperTaxonomy) processed in a f
 | **Local Groups** *(HT only)* | — | Local group dropdown (hierarchical, with tree indentation) | Optional checkbox |
 | **Term Hierarchies** | Dropdown — hierarchical only | Keyword search autocomplete (add multiple roots) | Always synced |
 | **Individual Terms** | Dropdown — all taxonomies on peer | Keyword search autocomplete (add individual terms) | Never |
+
+![The Shared Vocabularies screen on its Individual Terms tab, with one source mirroring three tags from a peer site](../assets/images/screenshots/shared-vocabularies.png)
 
 **Taxonomies tab** — mirrors an entire remote taxonomy. The taxonomy is selected from a dropdown populated from the peer; available taxonomies are fetched when a peer is selected.
 

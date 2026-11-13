@@ -42,3 +42,16 @@
   -webkit-font-smoothing: antialiased;
   line-height: 1.1;
 }
+
+// Screenshots: a frame sets them apart from the page's own content.
+.main-content img[src*="screenshots/"] {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Front-end screenshots show a theme's page, so they are shown small and open full size.
+.main-content img.screenshot-small {
+  width: 100%;
+  max-width: 380px;
+}

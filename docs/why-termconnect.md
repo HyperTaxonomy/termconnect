@@ -27,7 +27,7 @@ Sometimes another site knows a concept better than you do: a breed club knows it
 
 Delegation works at larger scale too. A [Shared Vocabulary](user-guide/shared-vocabularies.html) mirrors a whole branch or taxonomy from a peer, and, when both sites run HyperTaxonomy, the relationships between its terms. The source only needs to be a standard WordPress site.
 
-## No center
+## No central authority
 
 There is no registry, crawler or central server. Each site decides which peers to trust and which sources to delegate to, and keeps full control of its own terms. For the ideas behind this, see "What a concept means" and "Authority without a center" in [A web of concepts](https://hypertaxonomy.org/vision.html).
 
