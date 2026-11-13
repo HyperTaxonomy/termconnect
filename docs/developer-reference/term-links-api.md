@@ -69,6 +69,8 @@ To list a term's suggestions with `get_comments()`, query by meta: `'type' => 't
 
 ### Term Meta Keys
 
+The keys this API reads and writes. Everything TermConnect stores, including options, transients and scheduled events, is listed in [Data Storage](../architecture/data-storage.html).
+
 | Key | Contents |
 |-----|----------|
 | `_tc_link_{slug}` | A term's identifier for a link type: `{id, label, fetched_at}`. |

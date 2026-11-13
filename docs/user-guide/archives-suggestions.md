@@ -65,6 +65,8 @@ Settings → TermConnect → General, under **Identifier Suggestions** → **Not
 
 **Settings reference:**
 
+These keys are in the `tc_settings` option; the [Settings Reference](../developer-reference/settings-reference.html) lists every key.
+
 | Key | Default | Description |
 |---|---|---|
 | `allow_suggested_links` | `false` | Show suggestion form on term archives |

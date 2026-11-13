@@ -122,7 +122,7 @@ add_filter( 'tc_taxonomy_peer_authors', function( bool $is_author, string $taxon
 
 `tc_link_value`
 
-Normalize or validate a link identifier before it is stored (`tc_set_term_link()`). Useful for cleaning up free-form input — stripping an `@`, reducing a pasted profile URL to a handle, etc. Return an empty string to reject the value (the link is removed rather than stored).
+Normalize or validate a link identifier before it is stored ([`tc_set_term_link()`](term-links-api.html#per-term)). Useful for cleaning up free-form input — stripping an `@`, reducing a pasted profile URL to a handle, etc. Return an empty string to reject the value (the link is removed rather than stored).
 
 ```php
 add_filter( 'tc_link_value', function( string $id, string $slug, array $type ): string {

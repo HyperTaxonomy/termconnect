@@ -6,7 +6,7 @@ nav_order: 4
 
 # Data Storage
 
-TermConnect has no tables of its own. It stores data in term meta, comments, options and transients, and adds one index to the term meta table. For the keys inside `tc_settings`, see the [Settings Reference](../developer-reference/settings-reference.html). For what uninstalling removes, see [Settings, Cache & Export](../user-guide/settings-export.html#uninstalling).
+TermConnect has no tables of its own; the functions that read and write its term meta are in the [Term Links API](../developer-reference/term-links-api.html). It stores data in term meta, comments, options and transients, and adds one index to the term meta table. For the keys inside `tc_settings`, see the [Settings Reference](../developer-reference/settings-reference.html). For what uninstalling removes, see [Settings, Cache & Export](../user-guide/settings-export.html#uninstalling).
 
 ## Term meta
 
