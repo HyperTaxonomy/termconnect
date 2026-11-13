@@ -11,6 +11,8 @@ Delegated identity lets a term defer its authoritative definition to a matching 
 
 The remote site only needs to run standard WordPress (REST API). No TermConnect installation is required on the remote. If the remote site runs TermConnect with **Share external links** on, external links are also pulled in and cached locally.
 
+![A tag's edit screen with its Delegated Identity circled: the tag follows the same tag on a peer site, with its sync status and its slug locked](../assets/images/screenshots/delegated-identity.png)
+
 ## Table of contents
 {: .no_toc .text-delta }
 
