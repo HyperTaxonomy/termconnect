@@ -64,7 +64,7 @@ add_action( 'admin_enqueue_scripts', 'tc_enqueue_term_edit_css' );
 
 // Register Delegated Identity and External Links fields on term add/edit screens.
 // Priority 9 fires before HyperTaxonomy's collapsible start (also priority 9) because
-// TC's init:15 runs before HT's admin_init:999 — same-priority hooks execute FIFO.
+// TC's init:15 runs before HT's init:999 — same-priority hooks execute FIFO.
 // This places both panels after Term Groups (HT priority 8) and before the collapsible.
 add_action( 'init', static function () {
     foreach ( TC_Settings::get_enabled_taxonomies() as $taxonomy ) {

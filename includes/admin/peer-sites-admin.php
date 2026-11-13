@@ -39,7 +39,7 @@ function tc_render_taxonomy_checkboxes( string $name, array $selected, array $op
 // MENU REGISTRATION
 // ==============================================================================
 
-// Menu registration is handled by TC_HT_Integration::register_menu() — no duplicate add_action here.
+// Menu registration is handled by TC_Admin::register_menus() — no duplicate add_action here.
 // parent_file / submenu_file / current_screen are handled automatically since the page is
 // registered under the detected Terms parent menu slug.
 
