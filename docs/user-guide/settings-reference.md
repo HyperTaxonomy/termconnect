@@ -28,6 +28,8 @@ Every setting at **Settings → TermConnect**, and the cache tools on its Cache 
 | **Auto-follow chain redirects** | Also follow a redirect whose target is itself a redirect. | Off |
 | **Max chain depth** | How many redirects to follow in a chain, from 1 to 5. | `3` |
 
+The tab also links to the **redirect review queue** in **Site Health**, where redirects that weren't accepted automatically wait for review. See [Delegated Identity](delegated-identity.html).
+
 **Cache**
 
 | Setting | Description | Default |
