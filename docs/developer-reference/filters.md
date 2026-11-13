@@ -15,7 +15,9 @@ nav_order: 5
 
 ---
 
-### `tc_link_types`
+### Register link types
+
+`tc_link_types`
 
 Register additional link types programmatically. Receives and returns an associative array keyed by slug.
 
@@ -36,7 +38,9 @@ add_filter( 'tc_link_types', function( array $types ): array {
 
 A registered type may include a **`provider`** key (your plugin slug). Types with a non-empty `provider` are **hidden from the Peer Sites admin screen** (managed by your own plugin instead) and are never written to the `tc_link_types` option — but they remain fully active for term editing, REST, and peer matching.
 
-### `tc_link_uri`
+### Link URL
+
+`tc_link_uri`
 
 Filter the final URL built for a link-type + identifier pair (`tc_get_link_uri()`). Lets a plugin produce per-network, per-taxonomy, or transformed URLs the default `uri_prefix . id` concatenation can't express.
 
@@ -49,7 +53,9 @@ add_filter( 'tc_link_uri', function( ?string $url, string $slug, string $id, arr
 }, 10, 5 );
 ```
 
-### `tc_suggest_config` / `tc_parse_suggest_response`
+### Identifier autocomplete
+
+`tc_suggest_config` / `tc_parse_suggest_response`
 
 Add live autocomplete to the term-edit identifier field for a link type you registered. `tc_suggest_config` is consulted (after TermConnect's own built-in identifier types and the `mediawiki` platform fallback) for a type with no built-in config; return `[ 'url' => <template>, 'parser' => <id> ]` to enable suggestions. `{query}` in the URL template is replaced with the URL-encoded search term and the request is made **server-side to that fixed endpoint only** — the term is the sole interpolated value, so arbitrary-URL SSRF is not possible. Pair with `tc_parse_suggest_response` to turn the response body into `{ value, label }` suggestions for your `parser` id.
 
@@ -85,7 +91,9 @@ add_filter( 'tc_parse_suggest_response', function( array $results, string $body,
 }, 10, 3 );
 ```
 
-### `tc_enabled_taxonomies`
+### Enabled taxonomies
+
+`tc_enabled_taxonomies`
 
 Filter the list of TermConnect-enabled taxonomies (`TC_Settings::get_enabled_taxonomies()`). Lets a companion plugin opt its taxonomies into TermConnect behavior — the `tc_links` REST field, the `htax_term_uri` matching parameter, peer term resolution by shared identifier, and "See also" — without writing them into the `tc_enabled_taxonomies` option. The result is normalized to a unique list of taxonomy slug strings.
 
@@ -98,7 +106,9 @@ add_filter( 'tc_enabled_taxonomies', function( array $taxonomies ): array {
 } );
 ```
 
-### `tc_taxonomy_peer_authors`
+### People taxonomies
+
+`tc_taxonomy_peer_authors`
 
 Declare that a taxonomy's WordPress-peer links map to **authors** (WP users) rather than to peer terms. A "people" taxonomy (e.g. Social Hashtags & Mentions' `mention`) represents a person, who on a peer site is an author. When `true`, the term-edit identifier field autocompletes the peer's authors (via the SSRF-safe users proxy; the special non-configurable "Local site" peer lists local authors instead) and the link resolves to the peer's `/author/{nicename}/` archive.
 
@@ -108,7 +118,9 @@ add_filter( 'tc_taxonomy_peer_authors', function( bool $is_author, string $taxon
 }, 10, 2 );
 ```
 
-### `tc_link_value`
+### Normalize identifiers before saving
+
+`tc_link_value`
 
 Normalize or validate a link identifier before it is stored (`tc_set_term_link()`). Useful for cleaning up free-form input — stripping an `@`, reducing a pasted profile URL to a handle, etc. Return an empty string to reject the value (the link is removed rather than stored).
 
@@ -122,7 +134,9 @@ add_filter( 'tc_link_value', function( string $id, string $slug, array $type ): 
 }, 10, 3 );
 ```
 
-### `tc_term_links_see_also_html`
+### "See also" HTML
+
+`tc_term_links_see_also_html`
 
 Override the full "See also" HTML before it is appended to the archive description. Return an empty string to suppress.
 
@@ -136,7 +150,9 @@ add_filter( 'tc_term_links_see_also_html', function(
 }, 10, 3 );
 ```
 
-### `tc_index_extra_uris`
+### Extra URIs for cross-site matching
+
+`tc_index_extra_uris`
 
 Contribute extra URIs to a term's `_tc_uris` index — the index TermConnect matches against for cross-site term resolution (`?htax_term_uri=`) — without owning a TermConnect link type. Fired inside `tc_rebuild_uri_index()` after the local and delegated link URIs are collected.
 
@@ -149,7 +165,9 @@ add_filter( 'tc_index_extra_uris', function( array $uris, int $term_id ): array 
 }, 10, 2 );
 ```
 
-### `htax_term_uris` *(HyperTaxonomy-defined)*
+### Term URIs for other plugins
+
+`htax_term_uris` *(HyperTaxonomy-defined)*
 
 TermConnect populates this HyperTaxonomy filter with URIs from all enabled link types that have a value set on the term. Hook into it to add your own URIs alongside TermConnect's.
 
@@ -160,7 +178,9 @@ add_filter( 'htax_term_uris', function( array $uris, int $term_id ): array {
 }, 10, 2 );
 ```
 
-### `htax_term_external_posts` *(HyperTaxonomy-defined)*
+### Peer posts for other plugins
+
+`htax_term_external_posts` *(HyperTaxonomy-defined)*
 
 TermConnect populates this HyperTaxonomy filter with related posts fetched from the term's configured WordPress peer sites, as plain normalized post arrays. Consumers read them (visibility-gated) via `htax_get_term_external_posts()` — see [External Documents API](external-documents.html). Hook into it to contribute documents from your own source.
 
@@ -171,14 +191,20 @@ add_filter( 'htax_term_external_posts', function( array $docs, int $term_id, arr
 }, 10, 3 );
 ```
 
-### `htax_peer_sites` *(HyperTaxonomy-defined)*
+### Peer-site registry
+
+`htax_peer_sites` *(HyperTaxonomy-defined)*
 
 TermConnect adds its WordPress peers and feeds to HyperTaxonomy's read-only peer-site registry, keyed by link type slug. Each entry has `slug`, `label`, `platform` (`wordpress` or `feed`) and `origin`. HyperTaxonomy stores nothing; TermConnect remains where peers are configured.
 
-### `htax_before_merge_terms` / `htax_after_merge_terms` *(HyperTaxonomy-defined actions)*
+### Keeping links when terms merge
+
+`htax_before_merge_terms` / `htax_after_merge_terms` *(HyperTaxonomy-defined actions)*
 
 When HyperTaxonomy merges terms, TermConnect snapshots each merged-away term's external links before the merge, since WordPress deletes their term meta during it. After the merge, it copies those links to the remaining term for any link type the remaining term doesn't already have. Delegated identity is not carried over.
 
-### `htax_sync_remote_relationship_types` *(HyperTaxonomy-defined)*
+### Syncing remote relationship types
+
+`htax_sync_remote_relationship_types` *(HyperTaxonomy-defined)*
 
 Fired from **Terms → Term Relationship Types** when a relationship type imported from a peer is synced. TermConnect fetches the peer's relationship types and returns `{ success, message, created, synced }`.

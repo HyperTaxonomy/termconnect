@@ -19,7 +19,7 @@ TermConnect's functions and public and protected methods, by file, with each one
 
 ## Plugin root
 
-### `termconnect.php`
+### Main plugin file (`termconnect.php`)
 
 Main plugin file.
 
@@ -28,7 +28,7 @@ Main plugin file.
 - `tc_activation_purge_stale_sv_queues()` — Remove stale entries from SV-related option queues on plugin activation.
 - `tc_plugin_deactivate()` — Unschedule TermConnect's cron events.
 
-### `uninstall.php`
+### Uninstall (`uninstall.php`)
 
 Uninstall script for TermConnect.
 
@@ -36,7 +36,7 @@ Uninstall script for TermConnect.
 
 ## Core
 
-### `includes/core/delegated-identity.php`
+### Delegated identity (`includes/core/delegated-identity.php`)
 
 Delegated Identity
 
@@ -67,7 +67,7 @@ Delegated Identity
 - `tc_flush_stale_rel_term_ids()` — Invalidate the stale relationship term IDs cache. Call after any run of tc_sv_flag_stale_relationship_rows().
 - `tc_cron_refresh_identity_caches()` — Cron callback: refresh all stale delegated identity caches.
 
-### `includes/core/display.php`
+### "See also" and block rendering (`includes/core/display.php`)
 
 Frontend display — "See also" section on term archives and Gutenberg block render callbacks.
 
@@ -76,7 +76,7 @@ Frontend display — "See also" section on term archives and Gutenberg block ren
 - `tc_render_peer_posts_block( $attributes, $content, $block )` — Block render callback for termconnect/peer-posts.
 - `tc_render_peer_browse_block( $attributes )` — Block render callback for termconnect/peer-browse.
 
-### `includes/core/external-posts.php`
+### Peer post fetching (`includes/core/external-posts.php`)
 
 External Posts Platform
 
@@ -115,7 +115,7 @@ External Posts Platform
 - `tc_external_cache_term_peers( string $remote_origin, array $raw_posts )` — Extract and cache WordPress peer connections from htax_term_peers in post responses.
 - `tc_external_get_foaf_candidates( string $origin, array $term_taxonomy_map, array $visited )` — Collect FOAF peer candidates for a set of remote term IDs on a given origin.
 
-### `includes/core/feed-platform.php`
+### RSS and Atom feeds (`includes/core/feed-platform.php`)
 
 Feed Platform
 
@@ -134,7 +134,7 @@ Feed Platform
 - `tc_feed_unschedule( string $peer_site_slug )` — Remove the cron event for a feed link type.
 - `tc_feed_cron_schedules( array $schedules )` — Register custom cron schedules for all configured feed intervals.
 
-### `includes/core/peer-site-health.php`
+### Peer site health (`includes/core/peer-site-health.php`)
 
 Peer Site Health Tracking
 
@@ -149,7 +149,7 @@ Peer Site Health Tracking
 - `tc_peer_site_health_get_unhealthy()` — Return health state for all peer sites that are not fully healthy.
 - `tc_peer_site_health_check()` — WordPress Site Health test callback for peer site reachability.
 
-### `includes/core/rest-api.php`
+### REST API (`includes/core/rest-api.php`)
 
 TermConnect REST API.
 
@@ -160,7 +160,7 @@ TermConnect REST API.
 - `tc_rest_link_filter_query( array $args, WP_REST_Request $request )` — Apply htax_term_uri filter to term queries via the _tc_uris index.
 - `tc_rest_group_members( WP_REST_Request $request )` — Return the member terms of a local HyperTaxonomy group, for use by subscribing TC peers.
 
-### `includes/core/suggested-links.php`
+### Identifier suggestions (`includes/core/suggested-links.php`)
 
 External Identifier Suggested Links
 
@@ -171,7 +171,7 @@ External Identifier Suggested Links
 - `tc_append_suggested_link_form( string $description )` — Inject the "Suggest a related concept" trigger into the term archive description.
 - `tc_build_suggested_link_append_html( string $description, WP_Term $term )` — Build the trigger button, floating pane, and (if present) wrap an existing See Also block into a side-by-side flex row.
 
-### `includes/core/term-links.php`
+### Term links (`includes/core/term-links.php`)
 
 Term Links
 
@@ -208,7 +208,7 @@ Term Links
 
 ## Admin
 
-### `includes/admin/class-admin.php`
+### Admin menu (`includes/admin/class-admin.php`)
 
 TermConnect admin — menu registration and admin-level hooks.
 
@@ -220,7 +220,7 @@ TermConnect admin — menu registration and admin-level hooks.
 - `TC_Admin::get_terms_menu_parent()` — Detect the existing Terms top-level menu (from HyperTaxonomy or ATCF) or create one. Safe to call only during admin_menu at priority ≥ 15.
 - `TC_Admin::register_menus()` — Add the Peer Sites and Shared Vocabularies pages under the Terms menu, and Settings → TermConnect.
 
-### `includes/admin/delegated-identity-ajax.php`
+### Delegated identity requests (`includes/admin/delegated-identity-ajax.php`)
 
 Delegated Identity — AJAX handlers.
 
@@ -237,7 +237,7 @@ Delegated Identity — AJAX handlers.
 - `tc_ajax_di_follow_redirect()` — AJAX: follow a pending redirect — point the delegation at the remote term the old source now redirects to (Site Health review action).
 - `tc_ajax_di_decline_redirect()` — AJAX: keep the current delegation despite a pending redirect (Site Health review action).
 
-### `includes/admin/delegated-identity-edit.php`
+### Delegated identity term field (`includes/admin/delegated-identity-edit.php`)
 
 Delegated Identity — term edit/add screen field.
 
@@ -246,14 +246,14 @@ Delegated Identity — term edit/add screen field.
 - `tc_render_delegated_identity_active( int $term_id, array $source )` — Render the field when an identity source IS set.
 - `tc_render_di_panels_once()` — Output the remove-confirmation and sync-settings floating panels once per page.
 
-### `includes/admin/delegated-identity-health.php`
+### Delegated identity in Site Health (`includes/admin/delegated-identity-health.php`)
 
 Delegated Identity — WordPress Site Health integration.
 
 - `tc_health_check_delegated_identity()` — WordPress Site Health test callback for delegated identity status.
 - `tc_health_check_shared_vocabularies()` — WordPress Site Health test callback for shared vocabulary mirror issues.
 
-### `includes/admin/export-import.php`
+### Export and import (`includes/admin/export-import.php`)
 
 TermConnect Export / Import handlers.
 
@@ -261,7 +261,7 @@ TermConnect Export / Import handlers.
 - `tc_import_sanitize_link_type( $type )` — Sanitize a single imported link type definition.
 - `tc_handle_import_links()` — Import a TermConnect export file uploaded on the settings page.
 
-### `includes/admin/peer-sites-admin.php`
+### Peer Sites page (`includes/admin/peer-sites-admin.php`)
 
 Peer Sites Admin — Terms → Peer Sites
 
@@ -285,7 +285,7 @@ Peer Sites Admin — Terms → Peer Sites
 - `tc_handle_peer_site_toggle_archives()` — Turn a link type's "See also" display on term archives on or off.
 - `tc_render_peer_sites_page()` — Render the Terms → Peer Sites admin page.
 
-### `includes/admin/settings.php`
+### Settings page (`includes/admin/settings.php`)
 
 TermConnect Settings page — Settings → TermConnect.
 
@@ -296,7 +296,7 @@ TermConnect Settings page — Settings → TermConnect.
 - `TC_Settings::handle_save()` — Registered on admin_init so wp_safe_redirect() fires before any page output. */
 - `TC_Settings::render()` — Render the Settings → TermConnect page.
 
-### `includes/admin/shared-vocabularies-ajax.php`
+### Shared vocabulary requests (`includes/admin/shared-vocabularies-ajax.php`)
 
 Shared Vocabularies — AJAX handlers.
 
@@ -311,13 +311,13 @@ Shared Vocabularies — AJAX handlers.
 - `tc_sv_ajax_search_remote_terms()` — Search terms on a peer site by keyword (for root/individual term autocomplete).
 - `tc_sv_ajax_dismiss_merge()` — Dismiss a merge proposal without merging.
 
-### `includes/admin/shared-vocabularies.php`
+### Shared Vocabularies page (`includes/admin/shared-vocabularies.php`)
 
 Shared Vocabularies — admin page (Terms → Shared Vocabularies).
 
 - `tc_sv_render_page()` — Render the Shared Vocabularies admin page.
 
-### `includes/admin/shared-vocabulary-sync.php`
+### Shared vocabulary sync (`includes/admin/shared-vocabulary-sync.php`)
 
 Shared Vocabulary Sync — sync a remote WordPress taxonomy into the local site.
 
@@ -344,7 +344,7 @@ Shared Vocabulary Sync — sync a remote WordPress taxonomy into the local site.
 - `tc_sv_flag_stale_relationship_rows( array $remote_terms, array $delegations, string $peer_site_slug, string $origin, string $taxonomy )` — Detect local relationship rows (using origin-owned custom types) that no longer appear in the remote htax_relationships data for this sync run, and record them in _tc_rel_sync_issues term meta.
 - `tc_cron_sync_shared_vocabularies()` — Cron callback: sync each active shared vocabulary source whose interval has passed.
 
-### `includes/admin/suggested-links-admin.php`
+### Suggested Links page (`includes/admin/suggested-links-admin.php`)
 
 Suggested Links — admin UI
 
@@ -352,7 +352,7 @@ Suggested Links — admin UI
 - `tc_suggested_link_exists( int $term_id, string $peer_site_slug, string $value )` — Check whether a specific link already exists for a term.
 - `tc_suggested_link_resolve_local_term( string $url )` — Attempt to resolve a local URL to a WP_Term by extracting the slug from the path.
 
-### `includes/admin/term-edit.php`
+### External Links term field (`includes/admin/term-edit.php`)
 
 Term edit screen — External Links field.
 
@@ -361,7 +361,7 @@ Term edit screen — External Links field.
 - `tc_add_external_links_field( $term )` — Render the "External Links" section on HT-enabled term edit screens.
 - `tc_render_suggested_links_panel( WP_Term $term )` — Render the collapsible "Suggested identifiers" panel on the term edit screen.
 
-### `includes/admin/term-list.php`
+### External Links term column (`includes/admin/term-list.php`)
 
 Term list column, sortable, and filter for External Links.
 
@@ -380,7 +380,7 @@ Term list column, sortable, and filter for External Links.
 
 ## Integrations
 
-### `includes/integration/class-hypertaxonomy-integration.php`
+### HyperTaxonomy integration (`includes/integration/class-hypertaxonomy-integration.php`)
 
 HyperTaxonomy integration for TermConnect.
 
@@ -404,7 +404,7 @@ HyperTaxonomy integration for TermConnect.
 
 ## Shortcodes
 
-### `includes/shortcodes/class-external-post-list.php`
+### Peer Posts shortcode and block (`includes/shortcodes/class-external-post-list.php`)
 
 External Post List Shortcodes
 
@@ -430,7 +430,7 @@ External Post List Shortcodes
 - `TC_Shortcode_PeerPosts->render_items( array $posts, bool $show_thumbnail, bool $show_excerpt, string $meta_tpl = '{date} · {label}', string $prepend_tpl = '', string $append_tpl = '', string $format = 'div', string $template = 'default' )` — Render individual post items as HTML article elements (no wrapper).
 - `TC_Shortcode_PeerPosts->render( array $posts, string $extra_class, bool $show_thumbnail, bool $show_excerpt, string $meta_tpl = '{date} · {label}', string $prepend_tpl = '', string $append_tpl = '', int $next_offset = -1, int $post_id = 0, array $atts = array() )` — Render the full post list wrapper, items, and optional load-more button.
 
-### `includes/shortcodes/class-peer-browse.php`
+### Peer topic browser (`includes/shortcodes/class-peer-browse.php`)
 
 Interactive cross-network topic browser.
 
