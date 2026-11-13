@@ -1,7 +1,7 @@
 ---
 title: Peer Fetch API
 parent: Developer Reference
-nav_order: 2
+nav_order: 4
 ---
 
 # Peer Fetch API
@@ -64,7 +64,7 @@ tc_external_search_users( string $origin, string $search, int $per_page = 8 ): a
 // REST, and a peer may disable the endpoint.
 ```
 
-This powers the term-edit author autocomplete for "people" taxonomies (see the [`tc_taxonomy_peer_authors`](filters.html) filter): on such a taxonomy a WordPress-peer link searches the peer's authors instead of its terms, and the built-in non-configurable **"Local site"** peer (which points at this site's own origin) lists **local** authors via `get_users()`. The peer is always identified by a configured link-type slug, never a raw URL, so it is SSRF-safe.
+This powers the term-edit author autocomplete for "people" taxonomies (see the [`tc_taxonomy_peer_authors`](actions-filters.html) filter): on such a taxonomy a WordPress-peer link searches the peer's authors instead of its terms, and the built-in non-configurable **"Local site"** peer (which points at this site's own origin) lists **local** authors via `get_users()`. The peer is always identified by a configured link-type slug, never a raw URL, so it is SSRF-safe.
 
 ### Post Fetching
 

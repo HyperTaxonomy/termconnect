@@ -1,10 +1,10 @@
 ---
-title: Filters
+title: Actions & Filters
 parent: Developer Reference
-nav_order: 5
+nav_order: 2
 ---
 
-# Filters
+# Actions & Filters
 {: .no_toc }
 
 ## Table of contents
@@ -14,6 +14,24 @@ nav_order: 5
 {:toc}
 
 ---
+
+## Actions
+
+### External links changed
+
+`tc_term_uris_changed`
+
+Fired by `tc_flush_term_link_cache()` whenever any external link for a term is saved or deleted. Use it to invalidate caches that depend on a term's external URI set.
+
+```php
+add_action( 'tc_term_uris_changed', function( int $term_id ) {
+    // Rebuild anything derived from the term's identifiers.
+} );
+```
+
+HyperTaxonomy hooks this action and fires it again as `htax_term_uris_changed`. Plugins that integrate through HyperTaxonomy should hook the HyperTaxonomy action instead.
+
+## Filters
 
 ### Register link types
 

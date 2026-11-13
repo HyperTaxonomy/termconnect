@@ -9,7 +9,7 @@ nav_order: 3
 
 The hook registrations in TermConnect that you can't guess from a callback's name: load order, priorities chosen to run before or after other code, hooks registered per taxonomy, and the HyperTaxonomy hooks TermConnect uses. Routine registrations (menus, scripts, AJAX and REST handlers, shortcodes, notices) are left out; search the code for `add_action( 'hook_name'` to find any of them.
 
-The hooks TermConnect fires for other code, and the HyperTaxonomy hooks it answers, are documented in the Developer Reference: [Filters](../developer-reference/filters.html) and the actions in the [Term Links API](../developer-reference/term-links-api.html#actions). Cron events are listed in [Data Storage](data-storage.html).
+The hooks TermConnect fires for other code, and the HyperTaxonomy hooks it answers, are documented in the Developer Reference's [Actions & Filters](../developer-reference/actions-filters.html). Cron events are listed in [Data Storage](data-storage.html).
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -82,7 +82,7 @@ Suggested links are stored as comments of type `tc_suggested_link`.
 
 ## HyperTaxonomy hooks used
 
-Registered by `TC_HT_Integration::init()`. Each is described in the Developer Reference [Filters](../developer-reference/filters.html) page.
+Registered by `TC_HT_Integration::init()`. Each is described in the Developer Reference [Actions & Filters](../developer-reference/actions-filters.html) page.
 
 | Hook | What TermConnect does |
 |---|---|

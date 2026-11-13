@@ -33,11 +33,7 @@ nav_order: 1
 
 ### Actions
 
-| Action | Arguments | Fired when |
-|--------|-----------|------------|
-| `tc_term_uris_changed` | `int $term_id` | Fired by `tc_flush_term_link_cache()` whenever any external link for a term is saved or deleted. Use this to invalidate caches that depend on a term's external URI set. |
-
-HyperTaxonomy hooks this action and re-fires it as `htax_term_uris_changed`. Plugins that integrate through HyperTaxonomy should hook the HT-namespaced action instead of this one.
+`tc_term_uris_changed` fires whenever a term's external links change; see [Actions & Filters](actions-filters.html#external-links-changed).
 
 ### Database Index
 

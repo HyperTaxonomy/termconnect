@@ -1,10 +1,10 @@
 ---
-title: HyperTaxonomy Integration
+title: Working with HyperTaxonomy
 parent: User Guide
 nav_order: 7
 ---
 
-# HyperTaxonomy Integration
+# Working with HyperTaxonomy
 
 TermConnect works on any WordPress site. When HyperTaxonomy is active too, the features below become available.
 
@@ -15,4 +15,4 @@ TermConnect works on any WordPress site. When HyperTaxonomy is active too, the f
 - **"See also" inside descriptions.** When HyperTaxonomy shows a term's description on its archive, the "See also" section appears at the end of it. See [Archives & Suggestions](archives-suggestions.html#see-also-on-archives).
 - **Merges keep external links.** When HyperTaxonomy merges terms, the remaining term gets each merged-away term's external links for link types it doesn't already have. Delegated identity isn't carried over.
 
-For developers, the HyperTaxonomy hooks TermConnect uses are described in the Developer Reference: [Filters](../developer-reference/filters.html#term-uris-for-other-plugins) covers `htax_term_uris`, `htax_term_external_posts`, `htax_peer_sites`, the merge actions and `htax_sync_remote_relationship_types`; the [External Documents API](../developer-reference/external-documents.html) covers how peer posts reach other plugins; and the [Peer Fetch API](../developer-reference/peer-fetch-api.html) and [REST API](../developer-reference/rest-api.html) cover the `X-HyperTaxonomy` header and the `htax_term_peers` field.
+For developers, the HyperTaxonomy hooks TermConnect uses are described in the Developer Reference: [Actions & Filters](../developer-reference/actions-filters.html#term-uris-for-other-plugins) covers `htax_term_uris`, `htax_term_external_posts`, `htax_peer_sites`, the merge actions and `htax_sync_remote_relationship_types`; the [External Documents API](../developer-reference/external-documents.html) covers how peer posts reach other plugins; and the [Peer Fetch API](../developer-reference/peer-fetch-api.html) and [REST API](../developer-reference/rest-api.html) cover the `X-HyperTaxonomy` header and the `htax_term_peers` field.
