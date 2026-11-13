@@ -2,7 +2,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
-import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import { InspectorAdvancedControls, InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import {
 	Disabled,
 	PanelBody,
@@ -332,25 +332,22 @@ function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				{ /* ── Advanced ─────────────────────────────────────────── */ }
-				<PanelBody
-					title={ __( 'Advanced', 'termconnect' ) }
-					initialOpen={ false }
-				>
-					<TextControl
-						label={ __( 'Cache TTL (seconds)', 'termconnect' ) }
-						help={ __(
-							'Leave empty to use the global External Posts Cache TTL from Settings → External Posts.',
-							'termconnect'
-						) }
-						type="number"
-						min="60"
-						value={ cache_ttl }
-						onChange={ ( val ) => setAttributes( { cache_ttl: val } ) }
-					/>
-				</PanelBody>
-
 			</InspectorControls>
+
+			{ /* Core's Advanced panel, so the sidebar has one "Advanced" section. */ }
+			<InspectorAdvancedControls>
+				<TextControl
+					label={ __( 'Cache TTL (seconds)', 'termconnect' ) }
+					help={ __(
+						'Leave empty to use the External Post Lists setting under Settings → TermConnect → Cache.',
+						'termconnect'
+					) }
+					type="number"
+					min="60"
+					value={ cache_ttl }
+					onChange={ ( val ) => setAttributes( { cache_ttl: val } ) }
+				/>
+			</InspectorAdvancedControls>
 
 			<div { ...blockProps }>
 				<Disabled>

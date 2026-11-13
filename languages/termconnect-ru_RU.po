@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: termconnect 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 13:37-0500\n"
+"POT-Creation-Date: 2026-11-13 14:22-0500\n"
 "PO-Revision-Date: 2026-11-11 23:10-0500\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -1277,7 +1277,7 @@ msgstr "Кэширование"
 msgid "Export / Import"
 msgstr "Экспорт / Импорт"
 
-#: includes/admin/settings.php:83 blocks/peer-posts/src/index.js:337
+#: includes/admin/settings.php:83
 msgid "Advanced"
 msgstr "Расширенные настройки"
 
@@ -3017,7 +3017,10 @@ msgstr "Начальные темы"
 msgid ""
 "Optional. Comma-separated term IDs or slugs to pre-select. Empty: on an "
 "archive of this taxonomy, its term."
-msgstr "Необязательно: идентификаторы или ярлыки терминов через запятую для предварительного выбора. Если пусто, на странице архива этой таксономии выбирается её термин."
+msgstr ""
+"Необязательно: идентификаторы или ярлыки терминов через запятую для "
+"предварительного выбора. Если пусто, на странице архива этой таксономии "
+"выбирается её термин."
 
 #: blocks/peer-browse/src/index.js:79
 msgid "Default match"
@@ -3403,17 +3406,15 @@ msgstr ""
 msgid "Additional CSS class"
 msgstr "Дополнительный CSS-класс"
 
-#: blocks/peer-posts/src/index.js:341
+#: blocks/peer-posts/src/index.js:340
 msgid "Cache TTL (seconds)"
 msgstr "TTL кэширования (в секундах)"
 
-#: blocks/peer-posts/src/index.js:343
+#: blocks/peer-posts/src/index.js:342
 msgid ""
-"Leave empty to use the global External Posts Cache TTL from Settings → "
-"External Posts."
-msgstr ""
-"Оставьте пустым, чтобы использовать общий TTL кэширования внешних записей из "
-"раздела «Настройки → Внешние записи»."
+"Leave empty to use the External Post Lists setting under Settings → "
+"TermConnect → Cache."
+msgstr "Оставьте пустым, чтобы использовать значение «Списки внешних записей» в разделе «Настройки → TermConnect → Кэширование»."
 
 #: blocks/shared/peer-checklist.js:49
 msgid "No peers configured yet."

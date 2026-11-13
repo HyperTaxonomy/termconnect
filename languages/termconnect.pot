@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 13:37-0500\n"
+"POT-Creation-Date: 2026-11-13 14:22-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1128,7 +1128,7 @@ msgstr ""
 msgid "Export / Import"
 msgstr ""
 
-#: includes/admin/settings.php:83 blocks/peer-posts/src/index.js:337
+#: includes/admin/settings.php:83
 msgid "Advanced"
 msgstr ""
 
@@ -3005,14 +3005,14 @@ msgstr ""
 msgid "Additional CSS class"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:341
+#: blocks/peer-posts/src/index.js:340
 msgid "Cache TTL (seconds)"
 msgstr ""
 
-#: blocks/peer-posts/src/index.js:343
+#: blocks/peer-posts/src/index.js:342
 msgid ""
-"Leave empty to use the global External Posts Cache TTL from Settings → "
-"External Posts."
+"Leave empty to use the External Post Lists setting under Settings → "
+"TermConnect → Cache."
 msgstr ""
 
 #: blocks/shared/peer-checklist.js:49

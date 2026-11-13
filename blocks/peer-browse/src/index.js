@@ -13,6 +13,7 @@ import {
 import ServerSideRender from '@wordpress/server-side-render';
 import metadata from '../block.json';
 import { PeerChecklist } from '../../shared/peer-checklist.js';
+import '../../shared/editor.css';
 
 const toBool   = ( str ) => 'true' === str;
 const fromBool = ( b )   => ( b ? 'true' : 'false' );

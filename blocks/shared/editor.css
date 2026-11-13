@@ -1,1 +1,6 @@
 /* TermConnect shared block editor styles */
+
+/* Space the peer checklist from the control below it. */
+.tc-peer-checklist {
+	margin-bottom: 16px;
+}

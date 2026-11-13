@@ -87,14 +87,14 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
     add_action( 'admin_head', static function () use ( $filter_config, $di_filter_config ): void {
         ?>
         <style>
-        .column-tc_ext_links { width: 60px; text-align: center; }
+        .column-tc_ext_links { width: 72px; text-align: center; }
         .wp-list-table th.column-tc_ext_links { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .wp-list-table th.column-tc_ext_links a { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; }
         .wp-list-table th.column-tc_ext_links a > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
         .tc-add-link { color: #a7aaad; text-decoration: none; font-size: 18px; line-height: 1; }
         .tc-add-link:hover { color: #2271b1; }
         .tc-ext-links-filter select { height: 32px !important; min-height: 0 !important; line-height: 30px !important; }
-        .column-tc_di_issues { width: 32px; text-align: center; }
+        .column-tc_di_issues { width: 70px; text-align: center; }
         .wp-list-table th.column-tc_di_issues { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .wp-list-table th.column-tc_di_issues a { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; }
         .wp-list-table th.column-tc_di_issues a > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
