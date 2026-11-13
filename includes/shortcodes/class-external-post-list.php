@@ -398,7 +398,7 @@ class TC_Shortcode_PeerPosts {
         $feed_tuples = array_filter( $tuples, static fn( $t ) => ( $t['platform'] ?? '' ) === 'feed' );
         $tuples      = array_filter( $tuples, static fn( $t ) => ( $t['platform'] ?? '' ) !== 'feed' );
 
-        // Date window (post context only): sent to peers as modified_after / before so
+        // Date window (post context only): sent to peers as modified_after / modified_before so
         // they fill max_results from posts inside it, then enforced locally below for
         // feeds and for peers that ignore the parameters. Local posts blended in with
         // scope="all" get the same window in collect_local_for_post().
@@ -504,13 +504,14 @@ class TC_Shortcode_PeerPosts {
      * Convert days_before / days_after into a date window around the current post.
      *
      * The reference date is the current post's last update, or its publication date
-     * when it hasn't been updated since. A listed post was published or last updated
-     * inside the window, from days_before before the reference to days_after after it.
+     * when it hasn't been updated since. A listed post's last update (its publication
+     * date if never updated) falls inside the window, from days_before before the
+     * reference to days_after after it.
      *
      * @param int $post_id     Current post ID.
      * @param int $days_before Days before the reference date; -1 = no limit.
      * @param int $days_after  Days after the reference date; -1 = no limit.
-     * @return array 'modified_after' and 'published_before' ISO 8601 UTC dates; '' = no limit.
+     * @return array 'modified_after' and 'modified_before' ISO 8601 UTC dates; '' = no limit.
      */
     private function date_window( int $post_id, int $days_before, int $days_after ): array {
         $window = tc_normalize_date_window( array() );
@@ -532,15 +533,15 @@ class TC_Shortcode_PeerPosts {
             $window['modified_after'] = gmdate( 'Y-m-d\TH:i:s', $ref - $days_before * DAY_IN_SECONDS ) . '+00:00';
         }
         if ( $days_after >= 0 ) {
-            $window['published_before'] = gmdate( 'Y-m-d\TH:i:s', $ref + $days_after * DAY_IN_SECONDS ) . '+00:00';
+            $window['modified_before'] = gmdate( 'Y-m-d\TH:i:s', $ref + $days_after * DAY_IN_SECONDS ) . '+00:00';
         }
         return $window;
     }
 
     /**
-     * Keep posts published or last updated inside the date window (modified date, or
-     * published date when a source has none). Peers are queried with the looser
-     * bounds REST supports, so this also removes posts whose activity only spans it.
+     * Keep posts whose last update (modified date, or published date when a source has
+     * none) falls inside the date window. Enforced here for feeds and for peers that
+     * ignore the modified_after / modified_before parameters.
      *
      * @param array $posts  Normalized posts.
      * @param array $window From date_window(); empty bounds keep everything on that side.
@@ -549,17 +550,16 @@ class TC_Shortcode_PeerPosts {
     private function filter_by_window( array $posts, array $window ): array {
         $window = tc_normalize_date_window( $window );
         $start  = '' !== $window['modified_after'] ? strtotime( $window['modified_after'] ) : false;
-        $end    = '' !== $window['published_before'] ? strtotime( $window['published_before'] ) : false;
+        $end    = '' !== $window['modified_before'] ? strtotime( $window['modified_before'] ) : false;
         if ( false === $start && false === $end ) {
             return $posts;
         }
         return array_values( array_filter( $posts, static function ( $post ) use ( $start, $end ) {
-            $published = (int) strtotime( (string) ( $post['date_gmt'] ?? '' ) );
-            $latest    = max( $published, (int) strtotime( (string) ( $post['modified_gmt'] ?? '' ) ) );
-            $in = static function ( $ts ) use ( $start, $end ) {
-                return $ts > 0 && ( false === $start || $ts > $start ) && ( false === $end || $ts <= $end );
-            };
-            return $in( $published ) || $in( $latest );
+            $latest = max(
+                (int) strtotime( (string) ( $post['date_gmt'] ?? '' ) ),
+                (int) strtotime( (string) ( $post['modified_gmt'] ?? '' ) )
+            );
+            return $latest > 0 && ( false === $start || $latest > $start ) && ( false === $end || $latest <= $end );
         } ) );
     }
 

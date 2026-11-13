@@ -765,7 +765,7 @@ function tc_local_term_expansions( array $tax_terms ): array {
  *                            posts are selected, not just directly-tagged ones.
  *                            Empty = literal term IDs only (no HyperTaxonomy).
  * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
- *                       'modified_after' and published before 'published_before' (each optional).
+ *                       'modified_after' and no later than 'modified_before' (each optional).
  * @return array Normalized local post records.
  */
 function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), array $window = array() ): array {
@@ -839,7 +839,7 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
     }
     $date_query = array();
     $window     = tc_normalize_date_window( $window );
-    foreach ( array( 'modified_after' => array( 'post_modified_gmt', 'after' ), 'published_before' => array( 'post_date_gmt', 'before' ) ) as $key => $spec ) {
+    foreach ( array( 'modified_after' => array( 'post_modified_gmt', 'after' ), 'modified_before' => array( 'post_modified_gmt', 'before' ) ) as $key => $spec ) {
         $ts = '' !== $window[ $key ] ? strtotime( $window[ $key ] ) : false;
         if ( false === $ts ) {
             continue;
@@ -857,20 +857,6 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
                 'second' => (int) gmdate( 's', $ts ),
             ),
             'inclusive' => 'before' === $spec[1],
-        );
-    }
-    if ( 2 === count( $date_query ) ) {
-        // Published or last modified inside the window: drop posts published before the
-        // start and modified after the end, whose activity only spans it.
-        $date_query = array(
-            'relation' => 'AND',
-            $date_query[0],
-            $date_query[1],
-            array(
-                'relation' => 'OR',
-                array( 'column' => 'post_date_gmt', 'after' => $date_query[0]['after'], 'inclusive' => false ),
-                array( 'column' => 'post_modified_gmt', 'before' => $date_query[1]['before'], 'inclusive' => true ),
-            ),
         );
     }
     if ( $date_query ) {
@@ -1084,7 +1070,7 @@ function tc_external_record_fetch( string $peer_site_slug, int $count ): void {
  * @param bool   $ht_scored      Request HyperTaxonomy scores, and read them when the peer runs HyperTaxonomy.
  * @param int    $ttl            Cache TTL in seconds.
  * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
- *                       'modified_after' and published before 'published_before' (each optional).
+ *                       'modified_after' and no later than 'modified_before' (each optional).
  * @return array Normalized posts.
  */
 function tc_external_fetch_post_list( string $origin, string $peer_site_slug, string $cache_key, array $params, bool $show_thumbnail, bool $ht_scored, int $ttl, array $window ): array {
@@ -1097,13 +1083,13 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
         return array();
     }
 
-    // Core REST: modified_after bounds the last-modified date, before the published date.
+    // Core REST: modified_after and modified_before bound the last-modified date.
     $window = tc_normalize_date_window( $window );
     if ( '' !== $window['modified_after'] ) {
         $params['modified_after'] = $window['modified_after'];
     }
-    if ( '' !== $window['published_before'] ) {
-        $params['before'] = $window['published_before'];
+    if ( '' !== $window['modified_before'] ) {
+        $params['modified_before'] = $window['modified_before'];
     }
     $fields_str = tc_external_post_fields( $show_thumbnail, $ht_scored );
     if ( '' !== $fields_str ) {
@@ -1174,7 +1160,7 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
  * @param int    $ttl            Cache TTL in seconds.
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
  * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
- *                       'modified_after' and published before 'published_before' (each optional).
+ *                       'modified_after' and no later than 'modified_before' (each optional).
  * @return array Normalized posts (score=0.0, ht_scored=false).
  */
 function tc_external_fetch_posts(
@@ -1227,7 +1213,7 @@ function tc_external_fetch_posts(
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
  * @param bool   $expand         Ask the peer to re-expand primaries via its own relationships (htax_expand).
  * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
- *                       'modified_after' and published before 'published_before' (each optional).
+ *                       'modified_after' and no later than 'modified_before' (each optional).
  * @return array Normalized posts with score and matched_term_slugs from HT.
  */
 function tc_external_fetch_scored_posts(

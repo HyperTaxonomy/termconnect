@@ -179,7 +179,7 @@ function Edit( { attributes, setAttributes } ) {
 							<TextControl
 								label={ __( 'Days after this post', 'termconnect' ) }
 								help={ __(
-									'Leave out posts published more than this many days after this post. Empty: no limit.',
+									'Leave out posts published or updated more than this many days after this post. Empty: no limit.',
 									'termconnect'
 								) }
 								type="number"

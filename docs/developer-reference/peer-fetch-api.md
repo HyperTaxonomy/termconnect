@@ -74,12 +74,10 @@ tc_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids,
     array $window = array() ): array
 // Standard WordPress fetch (no HyperTaxonomy scoring). Works on any WordPress site.
 // Pass $peer_site_slug to scope the cache to a specific link type.
-// $window: optional date window, [ 'modified_after' => ISO 8601, 'published_before' => ISO 8601 ],
-// sent as the core REST modified_after and before parameters: posts last modified after the
-// first and published no later than the second. Either key may be empty or missing for no
-// limit. Same on all three functions. With both set, the peer also returns posts published
-// before the window and modified after it; drop those yourself if you need posts published
-// or modified inside it (tc_normalize_date_window() returns both keys).
+// $window: optional date window, [ 'modified_after' => ISO 8601, 'modified_before' => ISO 8601 ],
+// sent as the core REST modified_after and modified_before parameters, so the peer returns
+// only posts last modified inside it. Either key may be empty or missing for no limit.
+// Same on all three functions.
 
 tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id_map,
     string $match, array $term_weights, bool $show_thumbnail, int $fetch_size, int $ttl,
