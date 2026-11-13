@@ -1,10 +1,10 @@
 ---
-title: Settings Reference
+title: Stored Settings
 parent: Developer Reference
 nav_order: 6
 ---
 
-# Settings Reference
+# Stored Settings
 
 TermConnect stores its settings in the `tc_settings` WordPress option.
 

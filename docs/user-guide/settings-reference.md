@@ -1,14 +1,12 @@
 ---
-title: Settings, Cache & Export
+title: Settings Reference
 parent: User Guide
-nav_order: 8
+nav_order: 3
 ---
 
-# Settings, Cache & Export
+# Settings Reference
 
-## Settings
-
-Go to **Settings → TermConnect** to configure global peer site behavior.
+Every setting at **Settings → TermConnect**, and the cache tools on its Cache tab. Peer sites and feeds themselves are set up at **Terms → Peer Sites**; see [Peer Sites & Feeds](peer-sites-feeds.html).
 
 **General**
 
@@ -49,22 +47,4 @@ The Cache tab also has these tools:
 | Setting | Description | Default |
 |---------|-------------|---------|
 | **Share external links** | Include each term's external identifiers and peer site links in REST responses for requests from other TermConnect sites. | On |
-| **Delete all data** | See [Uninstalling](#uninstalling). | Off |
-
----
-
-## Export / Import
-
-Go to **Settings → TermConnect → Export / Import** to back up and restore configuration.
-
-**Export** downloads a JSON file with all link type definitions, every external link stored across all terms and taxonomies, delegated identity sources with each term's original name and description, and Shared Vocabulary sources. Cached delegated links aren't included, and are refreshed automatically after import. Settings and enabled taxonomies aren't included either, so set those up again when restoring to a new site.
-
-**Import** accepts a previously exported file. Link type definitions are merged (existing slugs updated; new slugs added). Shared Vocabulary sources are merged by source ID (existing IDs updated; new IDs added). Term links and identity sources are restored for any terms whose slugs match between the export and the current site.
-
----
-
-## Uninstalling
-
-Deactivating the plugin never deletes data. Deleting it from the **Plugins** screen always removes TermConnect's settings, scheduled tasks, cached data, review queues and its database index.
-
-Everything else stays, so a reinstall works as before, unless **Delete all data** is on (**Settings → TermConnect → Advanced**). With it on, deleting the plugin also removes link types, enabled taxonomies, Shared Vocabulary sources, per-term identifiers, delegated identity, and visitor link suggestions.
+| **Delete all data** | See [Deactivation & Uninstall](deactivation-uninstall.html#deleting-the-plugin). | Off |

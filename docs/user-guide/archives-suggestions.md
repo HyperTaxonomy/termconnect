@@ -1,7 +1,7 @@
 ---
 title: Archives & Suggestions
 parent: User Guide
-nav_order: 4
+nav_order: 5
 ---
 
 # Archives & Suggestions

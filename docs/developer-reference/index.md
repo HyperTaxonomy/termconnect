@@ -18,4 +18,4 @@ This reference is split into the following pages:
 - **[REST API](rest-api.html)** — the `X-TermConnect` header, term endpoint fields, and the `htax_term_uri` query filter.
 - **[Peer Fetch API](peer-fetch-api.html)** — validation, term resolution, post fetching, scoring, and FOAF discovery.
 - **[External Documents API](external-documents.html)** — contributing peer-site posts to consumers via HyperTaxonomy's `htax_term_external_posts` hub.
-- **[Settings Reference](settings-reference.html)** — every key in the `tc_settings` option.
+- **[Stored Settings](settings-reference.html)** — every key in the `tc_settings` option.

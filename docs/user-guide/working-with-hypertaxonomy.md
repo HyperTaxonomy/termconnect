@@ -1,7 +1,7 @@
 ---
 title: Working with HyperTaxonomy
 parent: User Guide
-nav_order: 7
+nav_order: 8
 ---
 
 # Working with HyperTaxonomy

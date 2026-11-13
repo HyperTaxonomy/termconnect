@@ -1,7 +1,7 @@
 ---
 title: Delegated Identity
 parent: User Guide
-nav_order: 5
+nav_order: 6
 ---
 
 # Delegated Identity
