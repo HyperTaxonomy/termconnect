@@ -5,6 +5,15 @@ nav_order: 5
 ---
 
 # Filters
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### `tc_link_types`
 

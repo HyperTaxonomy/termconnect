@@ -5,10 +5,19 @@ nav_order: 5
 ---
 
 # Delegated Identity
+{: .no_toc }
 
 Delegated identity lets a term defer its authoritative definition to a matching term on a peer WordPress site. The peer becomes the canonical source for the term's slug, name, description, and external links; changes on the remote are reflected locally on the next sync.
 
 The remote site only needs to run standard WordPress (REST API). No TermConnect installation is required on the remote. If the remote site runs TermConnect with **Share external links** on, external links are also pulled in and cached locally.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ## Setting up from term edit
 

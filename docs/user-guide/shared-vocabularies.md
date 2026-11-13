@@ -5,6 +5,7 @@ nav_order: 6
 ---
 
 # Shared Vocabularies
+{: .no_toc }
 
 Shared Vocabularies lets you mirror a remote site's term structure into your local taxonomy — creating local terms that stay in sync with a peer, so your editors work with the same vocabulary as the wider community. Each mirrored term gets per-term delegated identity set up automatically, so descriptions and external links sync on the same schedule.
 
@@ -13,6 +14,14 @@ The remote site only needs to be a standard WordPress site for most of this feat
 - **Remote Groups** needs HyperTaxonomy and TermConnect.
 - **Relationship delegation** needs HyperTaxonomy.
 - **External links** need TermConnect, with **Share external links** on.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ## Setting up a vocabulary source
 

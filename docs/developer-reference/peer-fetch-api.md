@@ -5,8 +5,17 @@ nav_order: 2
 ---
 
 # Peer Fetch API
+{: .no_toc }
 
 Public functions for fetching and scoring posts from peer sites and feeds. All caching uses WordPress transients.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Validation
 

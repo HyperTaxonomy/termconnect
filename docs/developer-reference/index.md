@@ -2,6 +2,7 @@
 title: Developer Reference
 nav_order: 3
 has_children: true
+has_toc: false
 ---
 
 # TermConnect Developer Reference

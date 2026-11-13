@@ -5,8 +5,17 @@ nav_order: 3
 ---
 
 # Hook Reference
+{: .no_toc }
 
 Where TermConnect registers its callbacks, and the hooks it fires for other code. This page is generated from the code. Hook names that are built at runtime are shown as the PHP expression that builds them. For how to use the hooks TermConnect fires, see the [Developer Reference](../developer-reference/).
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ## Callbacks registered
 

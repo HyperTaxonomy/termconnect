@@ -5,8 +5,17 @@ nav_order: 2
 ---
 
 # Function Reference
+{: .no_toc }
 
 TermConnect's functions and public and protected methods, by file, with each one's docblock summary. Private methods aren't listed. This page is generated from the code. For what other plugins and themes should call, see the [Developer Reference](../developer-reference/); for hook registrations, see the [Hook Reference](hook-reference.html).
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ## Plugin root
 
