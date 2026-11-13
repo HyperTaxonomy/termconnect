@@ -333,25 +333,7 @@ function tc_sv_sync_source( array $source ): array {
     }
 
     // 12. Update last_sync timestamp and result summary.
-    $lock_acquired = tc_acquire_mysql_lock( 'tc_sv_write_lock' );
-    if ( $lock_acquired ) {
-        try {
-            $sources = get_option( 'tc_shared_vocabularies', array() );
-            foreach ( $sources as &$s ) {
-                if ( ( $s['id'] ?? '' ) === ( $source['id'] ?? '' ) ) {
-                    $s['last_sync']        = time();
-                    $s['last_sync_result'] = tc_sv_format_sync_result( $result );
-                    break;
-                }
-            }
-            unset( $s );
-            update_option( 'tc_shared_vocabularies', $sources );
-        } finally {
-            tc_release_mysql_lock( 'tc_sv_write_lock' );
-        }
-    } else {
-        error_log( 'TermConnect: could not acquire write lock to save sync result for source ' . ( $source['id'] ?? '' ) );
-    }
+    tc_sv_save_sync_result( (string) ( $source['id'] ?? '' ), $result );
 
     return $result;
 }
@@ -726,28 +708,11 @@ function tc_sv_sync_remote_group_source( array $source, array $result ): array {
     }
 
     // 7. Update last_sync timestamp and cache local_group_id + remote metadata.
-    $lock_acquired = tc_acquire_mysql_lock( 'tc_sv_write_lock' );
-    if ( $lock_acquired ) {
-        try {
-            $sources = get_option( 'tc_shared_vocabularies', array() );
-            foreach ( $sources as &$s ) {
-                if ( ( $s['id'] ?? '' ) === $source_id ) {
-                    $s['local_group_id']    = $local_group_id;
-                    $s['remote_group_id']   = $remote_group_id;
-                    $s['remote_group_name'] = $remote_group_name;
-                    $s['last_sync']         = time();
-                    $s['last_sync_result']  = tc_sv_format_sync_result( $result );
-                    break;
-                }
-            }
-            unset( $s );
-            update_option( 'tc_shared_vocabularies', $sources );
-        } finally {
-            tc_release_mysql_lock( 'tc_sv_write_lock' );
-        }
-    } else {
-        error_log( 'TermConnect: could not acquire write lock to save sync result for source ' . $source_id );
-    }
+    tc_sv_save_sync_result( (string) $source_id, $result, array(
+        'local_group_id'    => $local_group_id,
+        'remote_group_id'   => $remote_group_id,
+        'remote_group_name' => $remote_group_name,
+    ) );
 
     return $result;
 }
@@ -940,25 +905,7 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
     }
 
     // Update last_sync timestamp and result summary.
-    $lock_acquired = tc_acquire_mysql_lock( 'tc_sv_write_lock' );
-    if ( $lock_acquired ) {
-        try {
-            $sources = get_option( 'tc_shared_vocabularies', array() );
-            foreach ( $sources as &$s ) {
-                if ( ( $s['id'] ?? '' ) === ( $source['id'] ?? '' ) ) {
-                    $s['last_sync']        = time();
-                    $s['last_sync_result'] = tc_sv_format_sync_result( $result );
-                    break;
-                }
-            }
-            unset( $s );
-            update_option( 'tc_shared_vocabularies', $sources );
-        } finally {
-            tc_release_mysql_lock( 'tc_sv_write_lock' );
-        }
-    } else {
-        error_log( 'TermConnect: could not acquire write lock to save sync result for source ' . ( $source['id'] ?? '' ) );
-    }
+    tc_sv_save_sync_result( (string) ( $source['id'] ?? '' ), $result );
 
     return $result;
 }
@@ -966,6 +913,38 @@ function tc_sv_sync_local_group_source( array $source, array $result ): array {
 // ==============================================================================
 // HELPERS
 // ==============================================================================
+
+/**
+ * Save a sync's time and result summary on its vocabulary source, under the write lock.
+ *
+ * @since 1.0.0
+ * @param string $source_id Vocabulary source ID.
+ * @param array  $result    Sync result counters, as returned by the sync functions.
+ * @param array  $extra     Other source fields to save with it (e.g. the resolved group IDs).
+ * @return void
+ */
+function tc_sv_save_sync_result( string $source_id, array $result, array $extra = array() ): void {
+    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
+        error_log( 'TermConnect: could not acquire write lock to save sync result for source ' . $source_id );
+        return;
+    }
+    try {
+        $sources = get_option( 'tc_shared_vocabularies', array() );
+        foreach ( $sources as &$s ) {
+            if ( ( $s['id'] ?? '' ) === $source_id ) {
+                $s = array_merge( $s, $extra, array(
+                    'last_sync'        => time(),
+                    'last_sync_result' => tc_sv_format_sync_result( $result ),
+                ) );
+                break;
+            }
+        }
+        unset( $s );
+        update_option( 'tc_shared_vocabularies', $sources );
+    } finally {
+        tc_release_mysql_lock( 'tc_sv_write_lock' );
+    }
+}
 
 /**
  * Apply the configured action to a delegated term confirmed missing on its remote site.
