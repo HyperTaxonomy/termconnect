@@ -1,0 +1,88 @@
+/**
+ * "See also" row and "Suggest a related concept" form on term archives.
+ *
+ * Kept out of inline style attributes: HyperTaxonomy prints this markup through
+ * wp_kses(), which drops CSS properties it doesn't allow (gap, box-shadow, …).
+ *
+ * @package TermConnect
+ * @since   1.0.0
+ */
+
+.tc-term-links-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5em;
+    margin-top: 1em;
+}
+
+.tc-term-links-see-also-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.tc-term-links-suggest-col {
+    flex-shrink: 0;
+}
+
+.tc-term-links-suggest-col .dashicons {
+    vertical-align: middle;
+    margin-right: 4px;
+    font-size: 1em;
+    width: 1em;
+    height: 1em;
+}
+
+/* The trigger is a <button> styled as a link. */
+.tc-suggest-trigger {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.tc-suggest-thankyou {
+    color: #3a7c3a;
+    margin-top: 4px;
+}
+
+.tc-suggest-pane {
+    position: fixed;
+    z-index: 99999;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    padding: 12px;
+    max-width: 380px;
+    box-sizing: border-box;
+}
+
+.tc-suggested-link-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tc-suggested-link-url {
+    width: 100%;
+    height: 28px;
+    padding: 3px 8px;
+    box-sizing: border-box;
+}
+
+.tc-suggested-link-actions {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.tc-suggested-link-comment {
+    flex: 1;
+    font-size: 0.82em;
+    padding: 3px 8px;
+    box-sizing: border-box;
+    resize: vertical;
+}

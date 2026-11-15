@@ -1,0 +1,181 @@
+---
+title: Displaying Peer Posts
+parent: User Guide
+nav_order: 4
+---
+
+# Displaying Peer Posts
+{: .no_toc }
+
+Two shortcodes, each with a block, that show related posts from your peer sites and feeds, optionally blended with this site's own posts: `[tc_peer_posts]` for the current post, and the interactive `[tc_peer_browse]` topic browser.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## [tc_peer_posts] Shortcode
+
+Fetches and displays related posts from configured [WordPress peer sites and RSS/Atom feeds](peer-sites-feeds.html). Only renders on singular pages.
+
+**Prerequisites:** At least one peer or feed link type must be enabled, and one or more of the current post's terms must have an identifier set for that link type on their term edit screen.
+
+**How it works:**
+
+1. Reads the current post's terms and their peer identifiers.
+2. Finds the matching term on each peer site by its slug. If no remote slug is configured but the term has an external identifier (such as a Wikidata ID) and the peer runs TermConnect, it looks for the peer's term with the same identifier, so no manual mapping is needed. Matches are cached for 24 hours. If `include_synonyms="true"` and HyperTaxonomy is active, synonym terms are matched too and count the same as the original terms. If `include_related="true"`, locally included terms are matched and count for less.
+3. **HyperTaxonomy peers** score posts with their own search index, using term weights that TermConnect derives from your local relevance settings. When `peer_expand="true"`, the peer also matches through its own relationships.
+4. **Standard WordPress peers** return posts with the matching terms, and TermConnect scores them with the same weights.
+5. **Feed types** — cached posts scored by category match.
+6. **Local posts** (when `scope="all"`) — matched by shared terms and, when HyperTaxonomy is active, relevance-ranked via its search index (normalized 0–1 within the local set), summed across taxonomies. With HyperTaxonomy active the local match also follows its [relationship expansion](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html) (inclusions, term groups, hierarchy, and terms that redirect to the queried term), so a post related to the topic only through a relationship — not directly tagged — is included, matching the recall of [`[ht_related_posts]`](https://hypertaxonomy.org/hypertaxonomy/user-guide/post-lists.html#ht_related_posts) and the [WP-SKOS document endpoint](https://hypertaxonomy.org/wp-skos/developer-reference/document-search.html). Without HyperTaxonomy, the match is by directly-assigned terms (plus taxonomy children).
+7. All results merged and sorted by `orderby`. Sorting never triggers a new request — the full cached set is sorted locally.
+
+**Source-post weighting.** When HyperTaxonomy is active, each of the current post's terms is weighted by how central it is to that post (its HyperTaxonomy strength score). Local, peer and feed results are all ranked so content sharing the post's *main* topics outranks content sharing only an incidental tag.
+
+**Multiple taxonomies on one peer.** When the current post has terms in more than one taxonomy that map to a peer (such as tags *and* categories), that peer is queried once per taxonomy. A post returned for several taxonomies gets one combined score, so matching in an extra taxonomy raises its score, just like matching an extra term.
+
+**Ordering across sites.** Relevance scores are computed *per source* and are not comparable across independent sites (each site uses its own corpus). To present a relevance-ranked blend, order by `peer:asc,relevance:desc`: results are grouped by source (local first, then peers in Peer Sites admin order) and each source's posts are ranked by its own relevance. A plain `relevance` / `score` sort still works but interleaves sources by their independent scores, which is rarely meaningful for a blended set.
+
+**Attributes:**
+
+| Attribute | Description | Default |
+|-----------|-------------|---------|
+| `link_types` | CSV of link type slugs to query. Empty = all enabled peer and feed types. (In the block, choose these from a peer checklist instead of typing slugs.) | *(all)* |
+| `platforms` | CSV platform filter (`wordpress`, `feed`). Empty = all supported. | *(all)* |
+| `taxonomy` | Restrict to one taxonomy. | *(all enabled)* |
+| `match` | `any` (OR) or `all` (AND) across primary term groups. | `any` |
+| `scope` | `peers` (peer/feed posts only) or `all` (also blend in this site's own matching posts, with the local site treated as a pseudo-peer). | `peers` |
+| `orderby` | Comma-separated list of `field` or `field:dir` keys, applied in order. Fields: `peer`, `score`, `relevance`, `date`, `modified`, `title`, `foaf_depth`. Default directions: `title`/`peer` ascending, the rest descending. Use `peer:asc,relevance:desc` to group results by source and rank each by its own relevance. | `score` |
+| `per_page` | Results per page. | `5` |
+| `max_results` | Maximum total results. A **Load more** button fetches the next page from the local cache without a new remote request (local posts are re-queried each page under `scope="all"`). `0` fetches the larger of 20 or 10 × `per_page`. | `20` |
+| `days_before` | Show only posts published or last updated no more than this many days before the current post. Each post is judged by its last update, or its publication date if it was never updated; the reference point is the same date for the current post. `0` allows nothing before it. Leave it out or empty for no limit. | — |
+| `days_after` | Show only posts published or last updated no more than this many days after the current post, judged the same way. `0` allows nothing after it. Leave it out or empty for no limit. Either one can be used alone, or both together, for example `days_before="3" days_after="14"` for posts from three days before to two weeks after. Both apply to peer and feed posts and, with `scope="all"`, to this site's own posts. | — |
+| `foaf_depth` | FOAF hops. Capped at *[Max FOAF Depth](concepts.html#max-foaf-depth)* in Settings. | `0` |
+| `require_ht` | When `true`, skip non-HyperTaxonomy peers. | `false` |
+| `include_synonyms` | Resolve [synonym](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html#synonyms) terms (requires HyperTaxonomy) and send at direct-match weight. | `true` |
+| `include_related` | Resolve locally [included](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html#inclusions-and-containers) terms (requires HyperTaxonomy) and send at reduced weight. | `false` |
+| `peer_expand` | When `true`, HyperTaxonomy peers also match the queried terms through their *own* relationship graph (not just direct assignments), surfacing more of their content. Off by default for predictable results. | `false` |
+| `show_thumbnail` | Request featured image via `_embed` and render it. | `false` |
+| `show_excerpt` | Show post excerpt. | `true` |
+| `image_size` | Registered image size; sets the uniform thumbnail aspect (peer images can't be regenerated, but are cropped to a uniform box via CSS). | `medium` |
+| `columns` | Number of grid columns for the results. | `1` |
+| `format` | Output markup: `div` (full cards with thumbnail/excerpt/meta), `ul`, or `ol` (linked-title list items). | `div` |
+| `template` | Style-variant slug appended as the CSS class `tc-result-{template}` for theme styling. | `default` |
+| `meta` | Meta line template. Tokens: `{title}`, `{url}`, `{date}`, `{modified}`, `{excerpt}`, `{label}`, `{hostname}`, `{origin}`, `{author}`. | `{date} · {label}` |
+| `prepend` | Template inserted before each item. Takes the same tokens as `meta`. | *(empty)* |
+| `append` | Template inserted after each item. Takes the same tokens as `meta`. | *(empty)* |
+| `cache_ttl` | Override the **External Post Lists** cache setting for this instance, in seconds (minimum 60). | *(setting)* |
+| `no_results_message` | Message shown when no results. | *(empty)* |
+| `class` | Extra CSS class on the wrapper. | *(empty)* |
+
+When `foaf_depth > 0`, TermConnect reads peer connection data embedded in HyperTaxonomy post responses and queues discovered peers for fetching. FOAF-sourced results carry `tc-foaf-result` and `tc-foaf-depth-{N}` CSS classes.
+
+**Examples:**
+
+```
+[tc_peer_posts]
+
+[tc_peer_posts orderby="date" per_page="3"]
+
+[tc_peer_posts foaf_depth="1" show_thumbnail="true"]
+
+[tc_peer_posts link_types="my-blog,other-blog" taxonomy="post_tag"]
+
+[tc_peer_posts match="all" require_ht="true"]
+
+[tc_peer_posts scope="all" orderby="modified" columns="2"]
+
+[tc_peer_posts scope="all" orderby="peer:asc,relevance:desc"]
+
+[tc_peer_posts format="ul" orderby="date"]
+
+[tc_peer_posts peer_expand="true" template="compact"]
+```
+
+---
+
+## Blending local and peer posts together
+
+To show this site's own related posts **and** peer/feed results together in one block, set `scope="all"` on `[tc_peer_posts]` (or the Peer Posts block's **Source = Local + peers**). The local site is treated as another source; when HyperTaxonomy is active, local posts are selected via its relationship expansion (so relationship-related posts are included, not just directly-tagged ones), relevance-ranked by its search index, and `peer:asc,relevance:desc` groups the blend by source. TermConnect alone still handles term matching — without HyperTaxonomy the local side matches directly-assigned terms and isn't relevance-scored; HyperTaxonomy, when present, widens local recall, ranks the local side, and enforces term visibility.
+
+```
+[tc_peer_posts scope="all"]
+
+[tc_peer_posts scope="all" orderby="peer:asc,relevance:desc" columns="2"]
+```
+
+---
+
+## [tc_peer_browse] Shortcode — interactive topic browser
+
+The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages). On a term archive, with no `terms` set, it starts with the archive's term selected when that term is in its `taxonomy`, so it can go straight into an archive template, including a block theme's.
+
+[![The topic browser with three topics selected, Match, Source and Sort controls, and posts from this site and a peer site](../assets/images/screenshots/peer-browse.png){: .screenshot-small}](../assets/images/screenshots/peer-browse.png)
+
+```
+[tc_peer_browse taxonomy="post_tag"]
+
+[tc_peer_browse taxonomy="post_tag" terms="javascript,react" match="all"]
+
+[tc_peer_browse taxonomy="post_tag" columns="3" show_scope="true" show_sort="true"]
+```
+
+**How topics combine** (set by the Match control / `match` attribute):
+
+- **Any (OR, default):** posts matching *any* selected topic.
+- **All (AND):** only posts matching *every* selected topic.
+
+Both modes use the same scoring pipeline as `[tc_peer_posts]`: the selected topics are sent to each peer as one request (not one per topic), so a result that matches **more** of the selected topics ranks higher. For **All**, HyperTaxonomy peers apply the rule themselves, and TermConnect filters the results from standard peers. Local posts follow the same rule.
+
+**Source** (`scope`): `all` (local + peers, default) or `peers` (peers only) — the local site is treated as just another source. By default the browser targets all configured peers, but you can narrow it to specific peers via the peer picker / `peers` attribute (and further by `platforms` / `foaf_depth`).
+
+**Sort** is by `modified` (default), `date`, or `title` — all interleave local and peer results cleanly — or `peer:asc,relevance:desc`, which groups results by source and ranks each source's posts by its own relevance (relevance is not comparable across independent sites, so it is never interleaved across sources).
+
+**Attributes**
+
+| Attribute | Description | Default |
+|-----------|-------------|---------|
+| `taxonomy` | Taxonomy the topic pills draw from. | `post_tag` |
+| `terms` | Optional seed: comma-separated term IDs or slugs to pre-select. When empty on an archive of `taxonomy`, that archive's term is pre-selected. | *(none; on a term archive, its term)* |
+| `match` | `any` (OR) or `all` (AND) — the default match mode. | `any` |
+| `scope` | `all` (local + peers) or `peers`. | `all` |
+| `orderby` | `modified`, `date`, `title`, or `peer:asc,relevance:desc` (group by source, then relevance). | `modified` |
+| `peers` | CSV of peer slugs to query. Empty = all configured peers. (In the block, pick these from a peer checklist.) | *(all)* |
+| `platforms` | CSV platform filter (e.g. `wordpress,feed`). Empty = all supported. | *(all)* |
+| `foaf_depth` | Max FOAF discovery depth. `0` = direct peers only. | `0` |
+| `peer_expand` | When `true`, HyperTaxonomy peers also match the selected topics through their *own* relationship graph (not just direct assignments), surfacing more of their content. Same meaning as in `[tc_peer_posts]`. Off by default for predictable results. | `false` |
+| `per_page` | Results per Load-more page. | `10` |
+| `max_results` | Cap on the total number of results the visitor can page through. | `100` |
+| `columns` | Grid columns for the results. | `1` |
+| `show_thumbnail` / `show_excerpt` / `image_size` | Card display. | `true` / `true` / `medium` |
+| `meta` | Meta line template. Takes the same tokens as in `[tc_peer_posts]`. | `{date} · {label}` |
+| `prepend` / `append` / `no_results_message` / `class` | As in `[tc_peer_posts]`. | *(empty)* |
+| `show_match` | Show the Any/All control to visitors. | `true` |
+| `show_scope` | Show the Source (local/peers) control to visitors. | `false` |
+| `show_sort` | Show the Sort control to visitors. | `false` |
+
+By default only the topic pills and the Match toggle are shown; enable `show_scope` / `show_sort` to expose those too, or set `match` / `scope` / `orderby` to fix an axis without a control.
+
+**HyperTaxonomy is optional.** The browser works on TermConnect alone (local posts via a plain query, peers via TermConnect). When HyperTaxonomy *is* active, it is consulted only to [hide terms](https://hypertaxonomy.org/hypertaxonomy/user-guide/per-term-settings.html#term-visibility) — and their posts — that the current user is not permitted to see.
+
+---
+
+## Blocks
+
+| Block | Shortcode equivalent | Description |
+|-------|---------------------|-------------|
+| `termconnect/peer-posts` | `[tc_peer_posts]` | Peer site and feed posts for the current post (singular pages only) |
+| `termconnect/peer-browse` | `[tc_peer_browse]` | Interactive topic browser across local + peers |
+
+![The Peer Posts block in the editor: TermConnect's blocks in the inserter, a live preview with a peer site's post, and the block's Source settings](../assets/images/screenshots/peer-posts-block.png)
+
+Find them in the block inserter under **TermConnect**.
+
+Both blocks present a **peer picker** — a checklist of your actually-configured peers — instead of asking you to type link-type slugs. Leave all unchecked to query every configured peer. Only genuine TermConnect peers (WordPress peers + feeds) appear; companion-plugin link types such as TermConnect Social' social networks are excluded.
+
+**Peer Posts** inspector panels: **Source** (peer checklist, taxonomy), **Query** (match, source, order by, per page, max results), **Peer Network** (FOAF depth, require HyperTaxonomy, include synonyms, include related, let peers expand via their own relationships), **Display** (columns, thumbnail, excerpt, image size, format, template, meta, prepend/append, no-results, class), **Advanced** (cache TTL). Live server-side preview using the edited post as context.
+
+**Peer Browse** inspector panels: **Query** (taxonomy, initial topics, default match/source/sort, peer checklist, letting peers expand via their own relationships, platforms, FOAF depth, per page, max results), **Visitor controls** (show Match / Source / Sort), **Display** (columns, thumbnail, excerpt, image size, meta, prepend/append, no-results, class).

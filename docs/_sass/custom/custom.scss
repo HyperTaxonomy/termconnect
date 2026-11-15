@@ -1,0 +1,64 @@
+// Clicking anywhere on an expanded section's row collapses it. The theme only toggles a
+// section from its arrow, so the arrow's button is stretched across the row. A collapsed
+// section's row is still a link to its page.
+.site-nav .nav-list-item.active > .nav-list-expander {
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+// Plugin logo before the site title, matching the suite landing site.
+.site-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+// Half the theme's 2rem side padding on wide screens, so longer titles fit on one line
+// beside the logo.
+@media (min-width: 50rem) {
+  .site-title {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
+
+.site-title-logo {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.site-title-text {
+  min-width: 0;
+  font-size: 1.25rem;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #14222e;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.1;
+}
+
+// Screenshots: a frame sets them apart from the page's own content.
+.main-content img[src*="screenshots/"] {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Front-end screenshots show a theme's page, so they are shown small and open full size.
+.main-content img.screenshot-small {
+  width: 100%;
+  max-width: 380px;
+}
+
+// A page without subpages has no arrow, so it doesn't need the right padding the theme
+// keeps for one. Without this, a long title such as "Working with HyperTaxonomy" wraps
+// as soon as the sidebar shows a scrollbar, or when it's the current page (bold).
+.site-nav .nav-list-item > .nav-list-link:only-child {
+  padding-right: 0.5rem;
+}
