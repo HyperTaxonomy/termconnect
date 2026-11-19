@@ -17,7 +17,7 @@ The contract is HyperTaxonomy's generic term API (see its
 pattern TermConnect already uses for term URIs:
 
 - **Provider (TermConnect)** hooks HyperTaxonomy's `htax_term_external_posts`
-  filter (`TC_HT_Integration::provide_term_external_posts`,
+  filter (`TConn_HT_Integration::provide_term_external_posts`,
   `includes/integration/class-hypertaxonomy-integration.php`).
 - **Consumer** reads `htax_get_term_external_posts( $term_id, $args )`. The consumer
   never references TermConnect; TermConnect never references the consumer.
@@ -27,11 +27,11 @@ pattern TermConnect already uses for term URIs:
   is inert.)
 
 For a given term, TermConnect runs its full collection (the same core behind
-`[tc_peer_posts]`, see [Peer Fetch API](peer-fetch-api.html)) **scoped to that one
-concept term**: explicit per-term peer links (`_tc_link_{slug}`), shared-identifier
+`[tconn_peer_posts]`, see [Peer Fetch API](peer-fetch-api.html)) **scoped to that one
+concept term**: explicit per-term peer links (`_tconn_link_{slug}`), shared-identifier
 and synonym **auto-matching**, RSS/Atom **feeds**, and — when requested — **FOAF**
 discovery. It returns **plain normalized post arrays** (the
-`tc_external_normalize_post` shape: `url`, `title`, `excerpt`, `date_gmt`,
+`tconn_external_normalize_post` shape: `url`, `title`, `excerpt`, `date_gmt`,
 `modified_gmt`, `thumbnail_url`, `origin`, `score`, …). Converting those into a
 consumer-specific shape (e.g. `foaf:Document` JSON-LD) is the consumer's job.
 

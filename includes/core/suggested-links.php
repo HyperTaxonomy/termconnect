@@ -2,9 +2,9 @@
 /**
  * External Identifier Suggested Links
  *
- * Stores anonymous suggestions as WordPress comments (comment_type='tc_suggested_link').
+ * Stores anonymous suggestions as WordPress comments (comment_type='tconn_suggested_link').
  * A suggestion belongs to a term, not a post: comment_post_ID is 0 and the term ID is in
- * comment meta TC_META_SUGGESTION_TERM_ID. (Term and post IDs are separate sequences, so
+ * comment meta TCONN_META_SUGGESTION_TERM_ID. (Term and post IDs are separate sequences, so
  * using comment_post_ID for the term would attach the suggestion to whichever post has
  * that ID — counted in its pending-comments bubble, and deleted along with it.)
  * comment_author_url holds the submitted URL; taxonomy and term name are derived from
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TC_META_SUGGESTION_TERM_ID', '_tc_term_id' );
+define( 'TCONN_META_SUGGESTION_TERM_ID', '_tconn_term_id' );
 
 /**
  * Term a link suggestion was made for.
@@ -27,9 +27,9 @@ define( 'TC_META_SUGGESTION_TERM_ID', '_tc_term_id' );
  * @param WP_Comment|int $comment Suggestion comment or its ID.
  * @return int Term ID, or 0 when missing.
  */
-function tc_suggested_link_term_id( $comment ): int {
+function tconn_suggested_link_term_id( $comment ): int {
     $comment_id = $comment instanceof WP_Comment ? (int) $comment->comment_ID : (int) $comment;
-    return (int) get_comment_meta( $comment_id, TC_META_SUGGESTION_TERM_ID, true );
+    return (int) get_comment_meta( $comment_id, TCONN_META_SUGGESTION_TERM_ID, true );
 }
 
 /**
@@ -40,23 +40,23 @@ function tc_suggested_link_term_id( $comment ): int {
  * @param string $url     Submitted URL to match exactly ('' = any).
  * @return int[]
  */
-function tc_pending_suggested_link_ids( int $term_id, string $url = '' ): array {
+function tconn_pending_suggested_link_ids( int $term_id, string $url = '' ): array {
     global $wpdb;
     if ( '' === $url ) {
         $ids = $wpdb->get_col( $wpdb->prepare(
             "SELECT c.comment_ID FROM {$wpdb->comments} c
              JOIN {$wpdb->commentmeta} m ON m.comment_id = c.comment_ID AND m.meta_key = %s
-             WHERE c.comment_type = 'tc_suggested_link' AND c.comment_approved = '0' AND m.meta_value = %s",
-            TC_META_SUGGESTION_TERM_ID,
+             WHERE c.comment_type = 'tconn_suggested_link' AND c.comment_approved = '0' AND m.meta_value = %s",
+            TCONN_META_SUGGESTION_TERM_ID,
             (string) $term_id
         ) );
     } else {
         $ids = $wpdb->get_col( $wpdb->prepare(
             "SELECT c.comment_ID FROM {$wpdb->comments} c
              JOIN {$wpdb->commentmeta} m ON m.comment_id = c.comment_ID AND m.meta_key = %s
-             WHERE c.comment_type = 'tc_suggested_link' AND c.comment_approved = '0' AND m.meta_value = %s
+             WHERE c.comment_type = 'tconn_suggested_link' AND c.comment_approved = '0' AND m.meta_value = %s
                AND c.comment_author_url = %s",
-            TC_META_SUGGESTION_TERM_ID,
+            TCONN_META_SUGGESTION_TERM_ID,
             (string) $term_id,
             $url
         ) );
@@ -68,8 +68,8 @@ function tc_pending_suggested_link_ids( int $term_id, string $url = '' ): array 
 // SUBMISSION
 // ============================================================================
 
-add_action( 'wp_ajax_nopriv_tc_suggested_link_submit', 'tc_ajax_suggested_link_submit' );
-add_action( 'wp_ajax_tc_suggested_link_submit',        'tc_ajax_suggested_link_submit' );
+add_action( 'wp_ajax_nopriv_tconn_suggested_link_submit', 'tconn_ajax_suggested_link_submit' );
+add_action( 'wp_ajax_tconn_suggested_link_submit',        'tconn_ajax_suggested_link_submit' );
 
 /**
  * Accept an anonymous or logged-in identifier suggestion for a term.
@@ -77,14 +77,14 @@ add_action( 'wp_ajax_tc_suggested_link_submit',        'tc_ajax_suggested_link_s
  *
  * @since 1.0.0
  */
-function tc_ajax_suggested_link_submit(): void {
+function tconn_ajax_suggested_link_submit(): void {
     // Nonce check — works for both logged-in and anonymous users.
-    if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ?? '' ) ), 'tc_suggested_link' ) ) {
+    if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ?? '' ) ), 'tconn_suggested_link' ) ) {
         wp_send_json_success(); // Always return success to avoid enumeration.
     }
 
     // Honeypot — bots fill this field; humans leave it empty.
-    if ( ! empty( $_POST['tc_honeypot'] ) ) {
+    if ( ! empty( $_POST['tconn_honeypot'] ) ) {
         wp_send_json_success();
     }
 
@@ -100,7 +100,7 @@ function tc_ajax_suggested_link_submit(): void {
     if ( ! $term || is_wp_error( $term ) ) {
         wp_send_json_success();
     }
-    if ( ! in_array( $term->taxonomy, TC_Settings::get_enabled_taxonomies(), true ) ) {
+    if ( ! in_array( $term->taxonomy, TConn_Settings::get_enabled_taxonomies(), true ) ) {
         wp_send_json_success();
     }
 
@@ -109,12 +109,12 @@ function tc_ajax_suggested_link_submit(): void {
     $rate     = 0;
     if ( ! is_user_logged_in() ) {
         $ip_hash  = md5( sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) ) );
-        $rate_key = 'tc_sugg_rate_' . $ip_hash . '_' . $term_id;
+        $rate_key = 'tconn_sugg_rate_' . $ip_hash . '_' . $term_id;
         $rate     = (int) get_transient( $rate_key );
         if ( $rate >= 3 ) {
             wp_send_json_success();
         }
-        $global_key   = 'tc_suggest_global_' . $ip_hash;
+        $global_key   = 'tconn_suggest_global_' . $ip_hash;
         $global_count = (int) get_transient( $global_key );
         if ( $global_count >= 10 ) {
             // Respond exactly as the per-term limit does, so the response never
@@ -125,14 +125,14 @@ function tc_ajax_suggested_link_submit(): void {
     }
 
     // Deduplicate: same URL already pending for this term.
-    if ( tc_pending_suggested_link_ids( $term_id, $url ) ) {
+    if ( tconn_pending_suggested_link_ids( $term_id, $url ) ) {
         wp_send_json_success();
     }
 
     // Check if URL is already an active external link for this term.
-    $existing_links = tc_get_term_links( $term_id, false );
+    $existing_links = tconn_get_term_links( $term_id, false );
     foreach ( $existing_links as $peer_site_slug => $value ) {
-        $link_type = tc_get_link_type( $peer_site_slug );
+        $link_type = tconn_get_link_type( $peer_site_slug );
         if ( $link_type && rtrim( ( $link_type['uri_prefix'] ?? '' ), '/' ) . '/' === rtrim( $url, '/' ) . '/' ) {
             wp_send_json_success();
         }
@@ -147,8 +147,8 @@ function tc_ajax_suggested_link_submit(): void {
     $current_user_id = get_current_user_id();
     $comment_data    = array(
         'comment_post_ID'      => 0,
-        'comment_meta'         => array( TC_META_SUGGESTION_TERM_ID => $term_id ),
-        'comment_type'         => 'tc_suggested_link',
+        'comment_meta'         => array( TCONN_META_SUGGESTION_TERM_ID => $term_id ),
+        'comment_type'         => 'tconn_suggested_link',
         'comment_author_url'   => $url,
         'comment_content'      => $comment,
         'comment_author_email' => sanitize_email( wp_unslash( $_POST['email'] ?? '' ) ),
@@ -166,7 +166,7 @@ function tc_ajax_suggested_link_submit(): void {
         if ( $rate_key ) {
             set_transient( $rate_key, $rate + 1, DAY_IN_SECONDS );
         }
-        tc_suggested_link_notify_admin( $comment_id, $term );
+        tconn_suggested_link_notify_admin( $comment_id, $term );
     }
 
     wp_send_json_success();
@@ -181,8 +181,8 @@ function tc_ajax_suggested_link_submit(): void {
  * @param int     $comment_id Comment ID.
  * @param WP_Term $term       The term the suggestion is for.
  */
-function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void {
-    $options = get_option( 'tc_settings', array() );
+function tconn_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void {
+    $options = get_option( 'tconn_settings', array() );
     if ( isset( $options['suggested_link_notifications'] ) && empty( $options['suggested_link_notifications'] ) ) {
         return;
     }
@@ -219,7 +219,7 @@ function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void 
     /* translators: %s: proposed URL */
     $msg .= sprintf( __( 'Proposed URL: %s', 'termconnect' ), $comment->comment_author_url ) . "\r\n";
 
-    $match = tc_suggested_link_match_url( $comment->comment_author_url );
+    $match = tconn_suggested_link_match_url( $comment->comment_author_url );
     if ( $match ) {
         /* translators: 1: link type label, 2: matched identifier value */
         $msg .= sprintf( __( 'Recognized as: %1$s → %2$s', 'termconnect' ), $match['label'], $match['value'] ) . "\r\n";
@@ -229,7 +229,7 @@ function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void 
     $url_scheme  = (string) wp_parse_url( $comment->comment_author_url, PHP_URL_SCHEME );
     $url_host    = (string) wp_parse_url( $comment->comment_author_url, PHP_URL_HOST );
     $url_origin  = rtrim( $url_scheme . '://' . $url_host, '/' );
-    $is_peer_site = $url_origin !== '://' && function_exists( 'tc_external_is_ht_enabled' ) && tc_external_is_ht_enabled( $url_origin );
+    $is_peer_site = $url_origin !== '://' && function_exists( 'tconn_external_is_ht_enabled' ) && tconn_external_is_ht_enabled( $url_origin );
 
     if ( $comment->comment_content ) {
         /* translators: %s: submitter note */
@@ -242,8 +242,8 @@ function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void 
         $accept_url = add_query_arg( array(
             'taxonomy' => $term->taxonomy,
             'tag_ID'   => $term->term_id,
-            'tc_lt'    => $match['peer_site_slug'],
-            'tc_value' => $match['value'],
+            'tconn_lt'    => $match['peer_site_slug'],
+            'tconn_value' => $match['value'],
         ), admin_url( 'term.php' ) );
         /* translators: %s: accept URL */
         $msg .= sprintf( __( 'Add as external link: %s', 'termconnect' ), $accept_url ) . "\r\n";
@@ -257,7 +257,7 @@ function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void 
         /* translators: %s: term edit URL */
         $msg .= sprintf( __( 'Delegate identity to this peer site: %s', 'termconnect' ), $term_edit_url ) . "\r\n";
     } elseif ( ! $match ) {
-        $add_type_url = add_query_arg( 'tc_suggest_url', rawurlencode( $comment->comment_author_url ), admin_url( 'admin.php?page=tc-peer-sites' ) );
+        $add_type_url = add_query_arg( 'tconn_suggest_url', rawurlencode( $comment->comment_author_url ), admin_url( 'admin.php?page=tconn-peer-sites' ) );
         /* translators: %s: add link type URL */
         $msg .= sprintf( __( 'Add link type or peer site: %s', 'termconnect' ), $add_type_url ) . "\r\n";
         $msg .= __( '(Not a configured peer site — identity delegation requires adding it as a peer site first)', 'termconnect' ) . "\r\n";
@@ -268,7 +268,7 @@ function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void 
 
     global $wpdb;
     $pending = (int) $wpdb->get_var(
-        "SELECT COUNT(*) FROM {$wpdb->comments} WHERE comment_type = 'tc_suggested_link' AND comment_approved = '0'"
+        "SELECT COUNT(*) FROM {$wpdb->comments} WHERE comment_type = 'tconn_suggested_link' AND comment_approved = '0'"
     );
 
     $msg .= "\r\n" . sprintf(
@@ -282,7 +282,7 @@ function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void 
         number_format_i18n( $pending )
     ) . "\r\n";
     /* translators: %s: suggested identifiers admin URL */
-    $msg .= sprintf( __( 'Review all suggestions: %s', 'termconnect' ), admin_url( 'edit-comments.php?type=tc_suggested_link' ) ) . "\r\n";
+    $msg .= sprintf( __( 'Review all suggestions: %s', 'termconnect' ), admin_url( 'edit-comments.php?type=tconn_suggested_link' ) ) . "\r\n";
 
     /* translators: 1: site name, 2: term name */
     $subject = sprintf( __( '[%1$s] Please review: identifier suggestion for "%2$s"', 'termconnect' ), $site_name, $term_name );
@@ -290,15 +290,15 @@ function tc_suggested_link_notify_admin( int $comment_id, WP_Term $term ): void 
     wp_mail( $admin_email, $subject, $msg );
 }
 
-// Suppress the default WP moderator notification for tc_suggested_link comments.
+// Suppress the default WP moderator notification for tconn_suggested_link comments.
 add_filter( 'notify_moderator', static function ( bool $notify, int $comment_id ): bool {
     $c = get_comment( $comment_id );
-    return ( $c && 'tc_suggested_link' === $c->comment_type ) ? false : $notify;
+    return ( $c && 'tconn_suggested_link' === $c->comment_type ) ? false : $notify;
 }, 10, 2 );
 
 // Trash pending suggestions when their target term is permanently deleted.
 add_action( 'deleted_term', static function ( int $term_id ): void {
-    foreach ( tc_pending_suggested_link_ids( $term_id ) as $comment_id ) {
+    foreach ( tconn_pending_suggested_link_ids( $term_id ) as $comment_id ) {
         wp_trash_comment( $comment_id );
     }
 }, 10, 1 );
@@ -309,7 +309,7 @@ add_action( 'delete_term_taxonomy', static function ( int $tt_id ): void {
     if ( ! ( $term instanceof WP_Term ) ) {
         return;
     }
-    foreach ( tc_pending_suggested_link_ids( $term->term_id ) as $comment_id ) {
+    foreach ( tconn_pending_suggested_link_ids( $term->term_id ) as $comment_id ) {
         wp_trash_comment( $comment_id );
     }
 }, 10, 1 );
@@ -318,22 +318,22 @@ add_action( 'delete_term_taxonomy', static function ( int $tt_id ): void {
 // FRONTEND FORM ON TERM ARCHIVES
 // ============================================================================
 
-add_filter( 'get_the_archive_description', 'tc_append_suggested_link_form', 20 );
+add_filter( 'get_the_archive_description', 'tconn_append_suggested_link_form', 20 );
 
 // When HyperTaxonomy handles the description block, inject the suggest form inside
 // .htax-archive-description via HT's append filter (runs after see-also at priority 10).
 add_filter( 'htax_archive_description_append', static function ( string $append, WP_Term $term ): string {
-    $options = get_option( 'tc_settings', array() );
+    $options = get_option( 'tconn_settings', array() );
     if ( empty( $options['allow_suggested_links'] ) ) {
         return $append;
     }
-    if ( ! in_array( $term->taxonomy, TC_Settings::get_enabled_taxonomies(), true ) ) {
+    if ( ! in_array( $term->taxonomy, TConn_Settings::get_enabled_taxonomies(), true ) ) {
         return $append;
     }
-    if ( null !== tc_get_identity_source( $term->term_id ) ) {
+    if ( null !== tconn_get_identity_source( $term->term_id ) ) {
         return $append;
     }
-    return tc_build_suggested_link_append_html( $append, $term );
+    return tconn_build_suggested_link_append_html( $append, $term );
 }, 20, 2 );
 
 /**
@@ -347,13 +347,13 @@ add_filter( 'htax_archive_description_append', static function ( string $append,
  * @param string $description Current archive description HTML.
  * @return string
  */
-function tc_append_suggested_link_form( string $description ): string {
+function tconn_append_suggested_link_form( string $description ): string {
     global $htax_handling_archive_description;
     if ( ! empty( $htax_handling_archive_description ) ) {
         return $description;
     }
 
-    $options = get_option( 'tc_settings', array() );
+    $options = get_option( 'tconn_settings', array() );
     if ( empty( $options['allow_suggested_links'] ) ) {
         return $description;
     }
@@ -366,16 +366,16 @@ function tc_append_suggested_link_form( string $description ): string {
     if ( ! ( $term instanceof WP_Term ) ) {
         return $description;
     }
-    if ( ! in_array( $term->taxonomy, TC_Settings::get_enabled_taxonomies(), true ) ) {
+    if ( ! in_array( $term->taxonomy, TConn_Settings::get_enabled_taxonomies(), true ) ) {
         return $description;
     }
 
     // Skip delegated-identity terms — they already have authoritative identifiers.
-    if ( null !== tc_get_identity_source( $term->term_id ) ) {
+    if ( null !== tconn_get_identity_source( $term->term_id ) ) {
         return $description;
     }
 
-    return tc_build_suggested_link_append_html( $description, $term );
+    return tconn_build_suggested_link_append_html( $description, $term );
 }
 
 /**
@@ -387,9 +387,9 @@ function tc_append_suggested_link_form( string $description ): string {
  * @param WP_Term $term        The queried term.
  * @return string
  */
-function tc_build_suggested_link_append_html( string $description, WP_Term $term ): string {
-    $options  = get_option( 'tc_settings', array() );
-    $nonce    = wp_create_nonce( 'tc_suggested_link' );
+function tconn_build_suggested_link_append_html( string $description, WP_Term $term ): string {
+    $options  = get_option( 'tconn_settings', array() );
+    $nonce    = wp_create_nonce( 'tconn_suggested_link' );
     $term_id  = $term->term_id;
     $ajax_url = admin_url( 'admin-ajax.php' );
 
@@ -400,13 +400,13 @@ function tc_build_suggested_link_append_html( string $description, WP_Term $term
 
     // Dashicons for the trigger icon, the form's styles, and its script. Enqueued while
     // the archive renders, so they print in the footer. The markup is printed through
-    // wp_kses() by HyperTaxonomy, which removes <script> tags and some CSS properties,
+    // wp_kses() by HyperTaxonomy, which removes script elements and some CSS properties,
     // so neither lives inline.
     wp_enqueue_style( 'dashicons' );
-    wp_enqueue_style( 'tc-suggest-link', TC_PLUGIN_URL . 'assets/css/tc-suggest-link.css', array( 'dashicons' ), TC_VERSION );
-    if ( ! wp_script_is( 'tc-suggest-link', 'enqueued' ) ) {
-        wp_enqueue_script( 'tc-suggest-link', TC_PLUGIN_URL . 'assets/js/tc-suggest-link.js', array(), TC_VERSION, true );
-        wp_localize_script( 'tc-suggest-link', 'TC_SuggestLink', array(
+    wp_enqueue_style( 'tconn-suggest-link', TCONN_PLUGIN_URL . 'assets/css/tconn-suggest-link.css', array( 'dashicons' ), TCONN_VERSION );
+    if ( ! wp_script_is( 'tconn-suggest-link', 'enqueued' ) ) {
+        wp_enqueue_script( 'tconn-suggest-link', TCONN_PLUGIN_URL . 'assets/js/tconn-suggest-link.js', array(), TCONN_VERSION, true );
+        wp_localize_script( 'tconn-suggest-link', 'TConn_SuggestLink', array(
             'ajaxUrl'    => $ajax_url,
             'invalidUrl' => __( 'Please enter a valid URL (e.g. https://example.com/page)', 'termconnect' ),
         ) );
@@ -414,27 +414,27 @@ function tc_build_suggested_link_append_html( string $description, WP_Term $term
 
     // Build the trigger button (styled as a link via CSS).
     $trigger = '<span class="dashicons dashicons-admin-links" aria-hidden="true"></span>'
-        . '<button type="button" class="tc-suggest-trigger">'
+        . '<button type="button" class="tconn-suggest-trigger">'
         . esc_html( $label )
         . '</button>'
-        . '<span class="tc-suggest-thankyou" style="display:none">'
+        . '<span class="tconn-suggest-thankyou" style="display:none">'
         . esc_html__( 'Thank you!', 'termconnect' )
         . '</span>';
 
     // Build the floating pane with the mini form.
     ob_start();
     ?>
-<div class="tc-suggest-pane" style="display:none">
-    <form class="tc-suggested-link-form">
-        <input type="hidden" name="tc_honeypot" value="">
+<div class="tconn-suggest-pane" style="display:none">
+    <form class="tconn-suggested-link-form">
+        <input type="hidden" name="tconn_honeypot" value="">
         <input type="hidden" name="term_id" value="<?php echo esc_attr( $term_id ); ?>">
         <input type="hidden" name="nonce" value="<?php echo esc_attr( $nonce ); ?>">
-        <input type="text" name="url" class="tc-suggested-link-url" autocomplete="off" value="https://">
-        <div class="tc-suggested-link-actions">
-            <button type="submit" class="button tc-suggested-link-submit">
+        <input type="text" name="url" class="tconn-suggested-link-url" autocomplete="off" value="https://">
+        <div class="tconn-suggested-link-actions">
+            <button type="submit" class="button tconn-suggested-link-submit">
                 <?php esc_html_e( 'Suggest', 'termconnect' ); ?>
             </button>
-            <textarea name="comment" class="tc-suggested-link-comment"
+            <textarea name="comment" class="tconn-suggested-link-comment"
                       placeholder="<?php esc_attr_e( 'Optional note', 'termconnect' ); ?>"></textarea>
         </div>
     </form>
@@ -444,7 +444,7 @@ function tc_build_suggested_link_append_html( string $description, WP_Term $term
 
     // Find the See Also block in the description (already added at priority 10).
     // Wrap it and the trigger side-by-side in a flex row.
-    $see_also_pos = strpos( $description, 'class="tc-term-links-see-also"' );
+    $see_also_pos = strpos( $description, 'class="tconn-term-links-see-also"' );
     if ( false !== $see_also_pos ) {
         // Walk back to the opening tag delimiter.
         $tag_start = strrpos( substr( $description, 0, $see_also_pos ), '<' );
@@ -458,9 +458,9 @@ function tc_build_suggested_link_append_html( string $description, WP_Term $term
                 $see_also = substr( $description, $tag_start, $close_at + strlen( $close ) - $tag_start );
                 $after    = substr( $description, $close_at + strlen( $close ) );
 
-                $row = '<div class="tc-term-links-row">'
-                    . '<div class="tc-term-links-see-also-col">' . $see_also . '</div>'
-                    . '<div class="tc-term-links-suggest-col">' . $trigger . '</div>'
+                $row = '<div class="tconn-term-links-row">'
+                    . '<div class="tconn-term-links-see-also-col">' . $see_also . '</div>'
+                    . '<div class="tconn-term-links-suggest-col">' . $trigger . '</div>'
                     . '</div>'
                     . $pane_html;
 
@@ -471,8 +471,8 @@ function tc_build_suggested_link_append_html( string $description, WP_Term $term
 
     // No See Also block present — append trigger standalone.
     return $description
-        . '<div class="tc-term-links-row">'
-        . '<div class="tc-term-links-suggest-col">' . $trigger . '</div>'
+        . '<div class="tconn-term-links-row">'
+        . '<div class="tconn-term-links-suggest-col">' . $trigger . '</div>'
         . '</div>'
         . $pane_html;
 }
@@ -485,8 +485,8 @@ function tc_build_suggested_link_append_html( string $description, WP_Term $term
  * @param string $url
  * @return array{peer_site_slug:string,label:string,value:string,enabled:bool}|null
  */
-function tc_suggested_link_match_url( string $url ): ?array {
-    $types = tc_get_all_link_types();
+function tconn_suggested_link_match_url( string $url ): ?array {
+    $types = tconn_get_all_link_types();
     foreach ( $types as $peer_site_slug => $type ) {
         $prefix = $type['uri_prefix'] ?? '';
         if ( $prefix && strpos( $url, $prefix ) === 0 ) {

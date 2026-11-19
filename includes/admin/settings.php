@@ -10,25 +10,25 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class TC_Settings_Page {
+class TConn_Settings_Page {
 
     /** Registered on admin_init so wp_safe_redirect() fires before any page output. */
     public static function handle_save(): void {
-        if ( ! isset( $_POST['tc_settings_nonce'] ) ) {
+        if ( ! isset( $_POST['tconn_settings_nonce'] ) ) {
             return;
         }
-        if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['tc_settings_nonce'] ) ), 'tc_settings_save' ) ) {
+        if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['tconn_settings_nonce'] ) ), 'tconn_settings_save' ) ) {
             return;
         }
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_die( esc_html__( 'Permission denied.', 'termconnect' ) );
         }
 
-        self::save( get_option( 'tc_settings', array() ) );
+        self::save( get_option( 'tconn_settings', array() ) );
 
-        $tab      = sanitize_key( wp_unslash( $_POST['tc_current_tab'] ?? 'general' ) );
+        $tab      = sanitize_key( wp_unslash( $_POST['tconn_current_tab'] ?? 'general' ) );
         $redirect = add_query_arg(
-            array( 'page' => 'termconnect-settings', 'tab' => $tab, 'tc-settings-saved' => '1' ),
+            array( 'page' => 'termconnect-settings', 'tab' => $tab, 'tconn-settings-saved' => '1' ),
             admin_url( 'options-general.php' )
         );
         wp_safe_redirect( $redirect );
@@ -49,19 +49,26 @@ class TC_Settings_Page {
             wp_die( esc_html__( 'Permission denied.', 'termconnect' ) );
         }
 
-        $options = get_option( 'tc_settings', array() );
+        $options = get_option( 'tconn_settings', array() );
 
         // Notices.
-        if ( isset( $_GET['tc-settings-saved'] ) ) {
+        if ( isset( $_GET['tconn-settings-saved'] ) ) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'termconnect' ) . '</p></div>';
         }
-        $import_result = sanitize_key( wp_unslash( $_GET['tc-import'] ?? '' ) );
+        $import_result = sanitize_key( wp_unslash( $_GET['tconn-import'] ?? '' ) );
         if ( 'ok' === $import_result ) {
-            $count = absint( wp_unslash( $_GET['tc-import-count'] ?? 0 ) );
+            $count = absint( wp_unslash( $_GET['tconn-import-count'] ?? 0 ) );
             printf(
                 '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
                 /* translators: %d: number of records */
                 esc_html( sprintf( __( 'Import complete — %d records restored.', 'termconnect' ), $count ) )
+            );
+        } elseif ( 'no-vocabularies' === $import_result ) {
+            $count = absint( wp_unslash( $_GET['tconn-import-count'] ?? 0 ) );
+            printf(
+                '<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+                /* translators: %d: number of records */
+                esc_html( sprintf( __( 'Import partly complete — %d records restored, but the Shared Vocabularies were not imported because another update was in progress. Import the file again to add them.', 'termconnect' ), $count ) )
             );
         } elseif ( in_array( $import_result, array( 'invalid', 'no-file' ), true ) ) {
             $msg = 'no-file' === $import_result
@@ -98,8 +105,8 @@ class TC_Settings_Page {
 
             <?php if ( 'export-import' !== $active_tab ) : ?>
             <form method="post">
-                <?php wp_nonce_field( 'tc_settings_save', 'tc_settings_nonce' ); ?>
-                <input type="hidden" name="tc_current_tab" value="<?php echo esc_attr( $active_tab ); ?>" />
+                <?php wp_nonce_field( 'tconn_settings_save', 'tconn_settings_nonce' ); ?>
+                <input type="hidden" name="tconn_current_tab" value="<?php echo esc_attr( $active_tab ); ?>" />
             <?php endif; ?>
 
                 <?php
@@ -138,14 +145,14 @@ class TC_Settings_Page {
     // =========================================================================
 
     private static function render_general_tab( array $options ): void {
-        $enabled  = TC_Settings::get_enabled_taxonomies();
+        $enabled  = TConn_Settings::get_enabled_taxonomies();
         $all_taxa = get_taxonomies( array( 'public' => true, 'show_ui' => true ), 'objects' );
 
-        // Taxonomies forced on by a companion plugin via the tc_enabled_taxonomies
+        // Taxonomies forced on by a companion plugin via the tconn_enabled_taxonomies
         // filter (present in the effective list but not the stored option). Their
         // checkboxes are shown checked but disabled — toggling them here would have
         // no effect, since the filter re-adds them every request.
-        $stored = (array) get_option( 'tc_enabled_taxonomies', array() );
+        $stored = (array) get_option( 'tconn_enabled_taxonomies', array() );
         $forced = array_diff( $enabled, $stored );
 
         $show_see_also              = (bool) ( $options['link_types_show_see_also'] ?? true );
@@ -167,7 +174,7 @@ class TC_Settings_Page {
                         <?php foreach ( $all_taxa as $slug => $tax_obj ) : ?>
                         <?php $is_forced = in_array( $slug, $forced, true ); ?>
                         <label style="display:block;margin-bottom:4px;">
-                            <input type="checkbox" name="tc_enabled_taxonomies[]"
+                            <input type="checkbox" name="tconn_enabled_taxonomies[]"
                                    value="<?php echo esc_attr( $slug ); ?>"
                                    <?php checked( in_array( $slug, $enabled, true ) ); ?>
                                    <?php disabled( $is_forced ); ?> />
@@ -189,7 +196,7 @@ class TC_Settings_Page {
                 <th><?php esc_html_e( 'Enable', 'termconnect' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" id="tc_see_also_enable" name="tc_settings[link_types_show_see_also]"
+                        <input type="checkbox" id="tconn_see_also_enable" name="tconn_settings[link_types_show_see_also]"
                                value="1" <?php checked( $show_see_also ); ?> />
                         <?php esc_html_e( 'Show "See also" section on term archive pages', 'termconnect' ); ?>
                     </label>
@@ -198,39 +205,39 @@ class TC_Settings_Page {
                     </p>
                 </td>
             </tr>
-            <tr id="tc_see_also_format_row"<?php echo $show_see_also ? '' : ' style="display:none"'; ?>>
+            <tr id="tconn_see_also_format_row"<?php echo $show_see_also ? '' : ' style="display:none"'; ?>>
                 <th><?php esc_html_e( 'Format', 'termconnect' ); ?></th>
                 <td>
                     <label style="display:block;margin-bottom:4px;">
-                        <input type="radio" name="tc_settings[see_also_format]" id="tc_see_also_inline"
+                        <input type="radio" name="tconn_settings[see_also_format]" id="tconn_see_also_inline"
                                value="inline" <?php checked( $see_also_format, 'inline' ); ?> />
                         <?php esc_html_e( 'Inline — "See also: Wikidata · GeoNames"', 'termconnect' ); ?>
                     </label>
                     <label style="display:block;">
-                        <input type="radio" name="tc_settings[see_also_format]" id="tc_see_also_list"
+                        <input type="radio" name="tconn_settings[see_also_format]" id="tconn_see_also_list"
                                value="list" <?php checked( $see_also_format, 'list' ); ?> />
                         <?php esc_html_e( 'List — unordered list of links', 'termconnect' ); ?>
                     </label>
-                    <div id="tc_see_also_label_row" style="margin-top:8px;<?php echo 'inline' !== $see_also_format ? 'display:none;' : ''; ?>">
-                        <label for="tc_see_also_label"><?php esc_html_e( 'Inline label', 'termconnect' ); ?></label>
-                        <input type="text" id="tc_see_also_label" name="tc_settings[see_also_label]"
+                    <div id="tconn_see_also_label_row" style="margin-top:8px;<?php echo 'inline' !== $see_also_format ? 'display:none;' : ''; ?>">
+                        <label for="tconn_see_also_label"><?php esc_html_e( 'Inline label', 'termconnect' ); ?></label>
+                        <input type="text" id="tconn_see_also_label" name="tconn_settings[see_also_label]"
                                value="<?php echo esc_attr( $see_also_label ); ?>" style="width:200px;margin-left:8px;" />
                         <p class="description"><?php esc_html_e( 'Text prepended to links in inline format.', 'termconnect' ); ?></p>
                     </div>
-                    <script>
+                    <?php ob_start(); ?>
                     ( function() {
-                        var enableCb  = document.getElementById( 'tc_see_also_enable' );
-                        var formatRow = document.getElementById( 'tc_see_also_format_row' );
-                        var labelRow  = document.getElementById( 'tc_see_also_label_row' );
-                        var inl = document.getElementById( 'tc_see_also_inline' );
-                        var lst = document.getElementById( 'tc_see_also_list' );
+                        var enableCb  = document.getElementById( 'tconn_see_also_enable' );
+                        var formatRow = document.getElementById( 'tconn_see_also_format_row' );
+                        var labelRow  = document.getElementById( 'tconn_see_also_label_row' );
+                        var inl = document.getElementById( 'tconn_see_also_inline' );
+                        var lst = document.getElementById( 'tconn_see_also_list' );
                         function syncLabel() { if (labelRow) labelRow.style.display = inl.checked ? '' : 'none'; }
                         function syncFormat() { if (formatRow) formatRow.style.display = enableCb.checked ? '' : 'none'; }
                         if ( inl ) inl.addEventListener( 'change', syncLabel );
                         if ( lst ) lst.addEventListener( 'change', syncLabel );
                         if ( enableCb ) enableCb.addEventListener( 'change', syncFormat );
                     } )();
-                    </script>
+                    <?php tconn_add_inline_script( 'settings', ob_get_clean() ); ?>
                 </td>
             </tr>
         </table>
@@ -241,33 +248,33 @@ class TC_Settings_Page {
                 <th scope="row"><?php esc_html_e( 'Allow suggestions', 'termconnect' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" id="tc_allow_suggested_links" name="tc_settings[allow_suggested_links]" value="1"
+                        <input type="checkbox" id="tconn_allow_suggested_links" name="tconn_settings[allow_suggested_links]" value="1"
                                <?php checked( $allow_suggestions ); ?> />
                         <?php esc_html_e( 'Show a suggestion form on term archive pages (below "See also"). Skipped on terms with delegated identity.', 'termconnect' ); ?>
                     </label>
-                    <div id="tc_suggested_link_label_row" style="margin-top:8px;<?php echo $allow_suggestions ? '' : 'display:none;'; ?>">
-                        <label for="tc_suggested_link_label"><?php esc_html_e( 'Form label', 'termconnect' ); ?></label>
-                        <input type="text" id="tc_suggested_link_label" name="tc_settings[suggested_link_label]"
+                    <div id="tconn_suggested_link_label_row" style="margin-top:8px;<?php echo $allow_suggestions ? '' : 'display:none;'; ?>">
+                        <label for="tconn_suggested_link_label"><?php esc_html_e( 'Form label', 'termconnect' ); ?></label>
+                        <input type="text" id="tconn_suggested_link_label" name="tconn_settings[suggested_link_label]"
                                value="<?php echo esc_attr( $suggested_link_label ); ?>" style="width:400px;margin-left:8px;" />
                     </div>
-                    <script>
+                    <?php ob_start(); ?>
                     ( function() {
-                        var cb  = document.getElementById( 'tc_allow_suggested_links' );
-                        var row = document.getElementById( 'tc_suggested_link_label_row' );
+                        var cb  = document.getElementById( 'tconn_allow_suggested_links' );
+                        var row = document.getElementById( 'tconn_suggested_link_label_row' );
                         if ( cb && row ) {
                             cb.addEventListener( 'change', function() {
                                 row.style.display = this.checked ? '' : 'none';
                             } );
                         }
                     } )();
-                    </script>
+                    <?php tconn_add_inline_script( 'settings', ob_get_clean() ); ?>
                 </td>
             </tr>
             <tr>
                 <th scope="row"><?php esc_html_e( 'Notify admin', 'termconnect' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" name="tc_settings[suggested_link_notifications]" value="1"
+                        <input type="checkbox" name="tconn_settings[suggested_link_notifications]" value="1"
                                <?php checked( $suggested_link_notifications ); ?> />
                         <?php esc_html_e( 'Send admin email when a suggestion is submitted.', 'termconnect' ); ?>
                     </label>
@@ -285,14 +292,14 @@ class TC_Settings_Page {
             <?php printf(
                 /* translators: %s: link to Peer Sites */
                 esc_html__( 'Configure peer WordPress sites and RSS/Atom feeds in %s.', 'termconnect' ),
-                '<a href="' . esc_url( admin_url( 'admin.php?page=tc-peer-sites' ) ) . '">' . esc_html__( 'Terms → Peer Sites', 'termconnect' ) . '</a>'
+                '<a href="' . esc_url( admin_url( 'admin.php?page=tconn-peer-sites' ) ) . '">' . esc_html__( 'Terms → Peer Sites', 'termconnect' ) . '</a>'
             ); ?>
         </p>
         <table class="form-table" role="presentation">
             <tr>
-                <th><label for="tc_foaf_depth"><?php esc_html_e( 'Max FOAF Depth', 'termconnect' ); ?></label></th>
+                <th><label for="tconn_foaf_depth"><?php esc_html_e( 'Max FOAF Depth', 'termconnect' ); ?></label></th>
                 <td>
-                    <select id="tc_foaf_depth" name="tc_settings[max_foaf_depth]">
+                    <select id="tconn_foaf_depth" name="tconn_settings[max_foaf_depth]">
                         <?php foreach ( range( 0, 5 ) as $d ) : ?>
                         <option value="<?php echo esc_attr( $d ); ?>" <?php selected( $max_foaf, $d ); ?>>
                             <?php echo esc_html( $d ); ?>
@@ -305,9 +312,9 @@ class TC_Settings_Page {
                 </td>
             </tr>
             <tr>
-                <th><label for="tc_blacklist"><?php esc_html_e( 'Blocked Sites', 'termconnect' ); ?></label></th>
+                <th><label for="tconn_blacklist"><?php esc_html_e( 'Blocked Sites', 'termconnect' ); ?></label></th>
                 <td>
-                    <textarea id="tc_blacklist" name="tc_settings[external_site_blacklist]"
+                    <textarea id="tconn_blacklist" name="tconn_settings[external_site_blacklist]"
                               rows="5" style="width:400px;"
                               placeholder="example.com"><?php echo esc_textarea( implode( "\n", $blacklist ) ); ?></textarea>
                     <p class="description"><?php esc_html_e( 'One domain per line. Blocks the site and all its subdomains.', 'termconnect' ); ?></p>
@@ -319,12 +326,12 @@ class TC_Settings_Page {
 
     private static function render_shared_vocabularies_tab( array $options ): void {
         $health_url          = admin_url( 'site-health.php' );
-        $sv_url              = admin_url( 'admin.php?page=tc-shared-vocabularies' );
+        $sv_url              = admin_url( 'admin.php?page=tconn-shared-vocabularies' );
         $auto_redirects      = (bool) ( $options['auto_accept_redirects'] ?? false );
         $auto_chain_redirect = (bool) ( $options['auto_accept_chain_redirects'] ?? false );
         $max_depth           = (int) ( $options['identity_chain_max_depth'] ?? 3 );
-        $queue_count         = count( tc_identity_redirect_queue_get() );
-        $misplaced_count     = count( (array) get_option( 'tc_sv_misplaced_queue', array() ) );
+        $queue_count         = count( tconn_identity_redirect_queue_get() );
+        $misplaced_count     = count( (array) get_option( 'tconn_sv_misplaced_queue', array() ) );
 
         // Count orphaned mirrored terms.
         global $wpdb;
@@ -333,7 +340,7 @@ class TC_Settings_Page {
                 "SELECT COUNT(*) FROM {$wpdb->termmeta}
                  WHERE meta_key = %s
                    AND meta_value LIKE %s",
-                TC_META_IDENTITY_SOURCE,
+                TCONN_META_IDENTITY_SOURCE,
                 '%"status";s:9:"not_found"%'
             )
         );
@@ -395,7 +402,7 @@ class TC_Settings_Page {
                     ? esc_html__( 'Mirror individual terms, groups, hierarchy branches or full taxonomies from peer sites in %s.', 'termconnect' )
                     /* translators: %s: link to Shared Vocabularies */
                     : esc_html__( 'Mirror individual terms, hierarchy branches or full taxonomies from peer sites in %s.', 'termconnect' ),
-                '<a href="' . esc_url( admin_url( 'admin.php?page=tc-shared-vocabularies' ) ) . '">' . esc_html__( 'Terms → Shared Vocabularies', 'termconnect' ) . '</a>'
+                '<a href="' . esc_url( admin_url( 'admin.php?page=tconn-shared-vocabularies' ) ) . '">' . esc_html__( 'Terms → Shared Vocabularies', 'termconnect' ) . '</a>'
             ); ?>
         </p>
         <table class="form-table" role="presentation">
@@ -415,7 +422,7 @@ class TC_Settings_Page {
                 <th><?php esc_html_e( 'Auto-accept redirects', 'termconnect' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" id="tc_auto_accept_redirects" name="tc_settings[auto_accept_redirects]"
+                        <input type="checkbox" id="tconn_auto_accept_redirects" name="tconn_settings[auto_accept_redirects]"
                                value="1" <?php checked( $auto_redirects ); ?> />
                         <?php esc_html_e( 'Automatically update delegated identity when the remote term becomes a redirect (skips the review queue).', 'termconnect' ); ?>
                     </label>
@@ -428,30 +435,30 @@ class TC_Settings_Page {
                 <th><?php esc_html_e( 'Auto-follow chain redirects', 'termconnect' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" id="tc_auto_chain_redirects" name="tc_settings[auto_accept_chain_redirects]"
+                        <input type="checkbox" id="tconn_auto_chain_redirects" name="tconn_settings[auto_accept_chain_redirects]"
                                value="1" <?php checked( $auto_chain_redirect ); disabled( ! $auto_redirects ); ?> />
                         <?php esc_html_e( 'When your direct identity source has itself been redirected (chain scenario), automatically update your delegation to point to the new ultimate target.', 'termconnect' ); ?>
                     </label>
                     <p class="description">
                         <?php esc_html_e( 'When the redirect target is itself a redirect on the same peer site, follow the chain up to the max depth. If any hop crosses to a different taxonomy or is unreachable, the chain stops and the redirect is queued for review.', 'termconnect' ); ?>
                     </p>
-                    <script>
+                    <?php ob_start(); ?>
                     ( function() {
-                        var parent = document.getElementById( 'tc_auto_accept_redirects' );
-                        var child  = document.getElementById( 'tc_auto_chain_redirects' );
+                        var parent = document.getElementById( 'tconn_auto_accept_redirects' );
+                        var child  = document.getElementById( 'tconn_auto_chain_redirects' );
                         if ( ! parent || ! child ) { return; }
                         parent.addEventListener( 'change', function() {
                             child.disabled = ! parent.checked;
                             if ( ! parent.checked ) { child.checked = false; }
                         } );
                     } )();
-                    </script>
+                    <?php tconn_add_inline_script( 'settings', ob_get_clean() ); ?>
                 </td>
             </tr>
             <tr>
-                <th><label for="tc_chain_depth"><?php esc_html_e( 'Max chain depth', 'termconnect' ); ?></label></th>
+                <th><label for="tconn_chain_depth"><?php esc_html_e( 'Max chain depth', 'termconnect' ); ?></label></th>
                 <td>
-                    <select id="tc_chain_depth" name="tc_settings[identity_chain_max_depth]">
+                    <select id="tconn_chain_depth" name="tconn_settings[identity_chain_max_depth]">
                         <?php foreach ( range( 1, 5 ) as $d ) : ?>
                         <option value="<?php echo esc_attr( $d ); ?>" <?php selected( $max_depth, $d ); ?>>
                             <?php echo esc_html( $d ); ?>
@@ -470,7 +477,7 @@ class TC_Settings_Page {
     private static function render_cache_tab( array $options ): void {
         $posts_ttl    = (int) ( $options['external_posts_cache_ttl'] ?? 3600 );
         $status_ttl   = (int) ( $options['ht_status_cache_ttl'] ?? 86400 );
-        $identity_ttl = (int) ( $options['identity_cache_ttl'] ?? TC_IDENTITY_CACHE_TTL );
+        $identity_ttl = (int) ( $options['identity_cache_ttl'] ?? TCONN_IDENTITY_CACHE_TTL );
         ?>
         <p class="description" style="margin-top:16px;margin-bottom:.5em">
             <?php
@@ -480,66 +487,66 @@ class TC_Settings_Page {
                     __( 'Individual peer site and feed post caches are cleared per-entry from <a href="%s">Terms &rarr; Peer Sites</a>.', 'termconnect' ),
                     array( 'a' => array( 'href' => array() ) )
                 ),
-                esc_url( admin_url( 'admin.php?page=tc-peer-sites' ) )
+                esc_url( admin_url( 'admin.php?page=tconn-peer-sites' ) )
             );
             ?>
         </p>
         <table class="form-table" role="presentation">
             <tr>
-                <th><label for="tc_status_ttl"><?php esc_html_e( 'Peer Site Status', 'termconnect' ); ?></label></th>
+                <th><label for="tconn_status_ttl"><?php esc_html_e( 'Peer Site Status', 'termconnect' ); ?></label></th>
                 <td>
-                    <input type="number" id="tc_status_ttl" name="tc_settings[ht_status_cache_ttl]"
+                    <input type="number" id="tconn_status_ttl" name="tconn_settings[ht_status_cache_ttl]"
                            value="<?php echo esc_attr( $status_ttl ); ?>" min="60" step="60" class="small-text" style="width:80px" />
                     <?php esc_html_e( 'seconds', 'termconnect' ); ?>
                     &nbsp;&nbsp;
-                    <button type="button" class="button tc-clear-all-peer-cache"
-                            data-nonce="<?php echo esc_attr( wp_create_nonce( 'tc_clear_all_peer_cache' ) ); ?>">
+                    <button type="button" class="button tconn-clear-all-peer-cache"
+                            data-nonce="<?php echo esc_attr( wp_create_nonce( 'tconn_clear_all_peer_cache' ) ); ?>">
                         <?php esc_html_e( 'Clear All Peer Cache', 'termconnect' ); ?>
                     </button>
-                    <span class="tc-all-peer-clear-status" style="display:none;margin-left:6px;color:#46b450">&#10003;</span>
+                    <span class="tconn-all-peer-clear-status" style="display:none;margin-left:6px;color:#46b450">&#10003;</span>
                     &nbsp;&nbsp;
-                    <button type="button" class="button tc-clear-foaf-cache"
-                            data-nonce="<?php echo esc_attr( wp_create_nonce( 'tc_clear_foaf_cache' ) ); ?>">
+                    <button type="button" class="button tconn-clear-foaf-cache"
+                            data-nonce="<?php echo esc_attr( wp_create_nonce( 'tconn_clear_foaf_cache' ) ); ?>">
                         <?php esc_html_e( 'Clear FOAF Cache', 'termconnect' ); ?>
                     </button>
-                    <span class="tc-foaf-clear-status" style="display:none;margin-left:6px;color:#46b450">&#10003;</span>
+                    <span class="tconn-foaf-clear-status" style="display:none;margin-left:6px;color:#46b450">&#10003;</span>
                     <p class="description" style="margin-top:4px">
                         <?php esc_html_e( 'Whether each peer site has HyperTaxonomy active. Used for scored post fetching, FOAF discovery, proximity term matching, and relationship delegation.', 'termconnect' ); ?>
                     </p>
                 </td>
             </tr>
             <tr>
-                <th><label for="tc_posts_ttl"><?php esc_html_e( 'External Post Lists', 'termconnect' ); ?></label></th>
+                <th><label for="tconn_posts_ttl"><?php esc_html_e( 'External Post Lists', 'termconnect' ); ?></label></th>
                 <td>
-                    <input type="number" id="tc_posts_ttl" name="tc_settings[external_posts_cache_ttl]"
+                    <input type="number" id="tconn_posts_ttl" name="tconn_settings[external_posts_cache_ttl]"
                            value="<?php echo esc_attr( $posts_ttl ); ?>" min="60" step="60" class="small-text" style="width:80px" />
                     <?php esc_html_e( 'seconds', 'termconnect' ); ?>
                     <p class="description" style="margin-top:4px">
-                        <?php esc_html_e( 'Post lists fetched from peer sites for [tc_peer_posts] and HyperTaxonomy related posts.', 'termconnect' ); ?>
+                        <?php esc_html_e( 'Post lists fetched from peer sites for [tconn_peer_posts] and HyperTaxonomy related posts.', 'termconnect' ); ?>
                     </p>
                 </td>
             </tr>
             <tr>
-                <th><label for="tc_identity_ttl"><?php esc_html_e( 'Shared Vocabularies', 'termconnect' ); ?></label></th>
+                <th><label for="tconn_identity_ttl"><?php esc_html_e( 'Shared Vocabularies', 'termconnect' ); ?></label></th>
                 <td>
-                    <input type="number" id="tc_identity_ttl" name="tc_settings[identity_cache_ttl]"
+                    <input type="number" id="tconn_identity_ttl" name="tconn_settings[identity_cache_ttl]"
                            value="<?php echo esc_attr( $identity_ttl ); ?>" min="60" step="60" class="small-text" style="width:80px" />
                     <?php esc_html_e( 'seconds', 'termconnect' ); ?>
                     &nbsp;&nbsp;
-                    <button type="button" class="button tc-resync-delegated"
-                            data-nonce="<?php echo esc_attr( wp_create_nonce( 'tc_admin' ) ); ?>">
+                    <button type="button" class="button tconn-resync-delegated"
+                            data-nonce="<?php echo esc_attr( wp_create_nonce( 'tconn_admin' ) ); ?>">
                         <?php esc_html_e( 'Re-sync All', 'termconnect' ); ?>
                     </button>
-                    <span class="tc-resync-status" style="margin-left:8px;"></span>
+                    <span class="tconn-resync-status" style="margin-left:8px;"></span>
                     <p class="description" style="margin-top:6px">
                         <?php esc_html_e( 'How often delegated term data is refreshed from source sites. Terms are checked twice daily, so values under 12 hours have no further effect. Re-sync All ignores this setting and fetches immediately.', 'termconnect' ); ?>
                     </p>
                 </td>
             </tr>
         </table>
-        <script>
+        <?php ob_start(); ?>
         jQuery( function( $ ) {
-            function tcCacheBtn( btnSel, statusSel, action, nonceKey ) {
+            function tconnCacheBtn( btnSel, statusSel, action, nonceKey ) {
                 $( btnSel ).on( 'click', function() {
                     var $btn = $( this ).prop( 'disabled', true );
                     var $st  = $( statusSel ).hide();
@@ -550,23 +557,23 @@ class TC_Settings_Page {
                         .always( function() { $btn.prop( 'disabled', false ); } );
                 } );
             }
-            tcCacheBtn( '.tc-clear-all-peer-cache', '.tc-all-peer-clear-status', 'tc_clear_all_peer_cache', 'nonce' );
-            tcCacheBtn( '.tc-clear-foaf-cache',     '.tc-foaf-clear-status',     'tc_clear_foaf_cache',     'nonce' );
-            $( '.tc-resync-delegated' ).on( 'click', function() {
+            tconnCacheBtn( '.tconn-clear-all-peer-cache', '.tconn-all-peer-clear-status', 'tconn_clear_all_peer_cache', 'nonce' );
+            tconnCacheBtn( '.tconn-clear-foaf-cache',     '.tconn-foaf-clear-status',     'tconn_clear_foaf_cache',     'nonce' );
+            $( '.tconn-resync-delegated' ).on( 'click', function() {
                 var $btn = $( this ).prop( 'disabled', true );
-                var $st  = $( '.tc-resync-status' ).text( '<?php echo esc_js( __( 'Syncing…', 'termconnect' ) ); ?>' );
-                $.post( ajaxurl, { action: 'tc_di_resync_all', nonce: $btn.data( 'nonce' ) } )
+                var $st  = $( '.tconn-resync-status' ).text( '<?php echo esc_js( __( 'Syncing…', 'termconnect' ) ); ?>' );
+                $.post( ajaxurl, { action: 'tconn_di_resync_all', nonce: $btn.data( 'nonce' ) } )
                     .done( function( r ) { $st.text( r.success ? ( r.data && r.data.message ) || '<?php echo esc_js( __( 'Done.', 'termconnect' ) ); ?>' : '<?php echo esc_js( __( 'Error.', 'termconnect' ) ); ?>' ); } )
                     .fail( function() { $st.text( '<?php echo esc_js( __( 'Request failed.', 'termconnect' ) ); ?>' ); } )
                     .always( function() { $btn.prop( 'disabled', false ); } );
             } );
         } );
-        </script>
+        <?php tconn_add_inline_script( 'settings', ob_get_clean() ); ?>
         <?php
     }
 
     private static function render_export_import_tab(): void {
-        $export_url = wp_nonce_url( admin_url( 'admin-post.php?action=tc_export_links' ), 'tc_export_links' );
+        $export_url = wp_nonce_url( admin_url( 'admin-post.php?action=tconn_export_links' ), 'tconn_export_links' );
         ?>
         <h2><?php esc_html_e( 'Export', 'termconnect' ); ?></h2>
         <table class="form-table" role="presentation">
@@ -585,13 +592,13 @@ class TC_Settings_Page {
 
         <h2><?php echo esc_html( _x( 'Import', 'settings section heading', 'termconnect' ) ); ?></h2>
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data">
-            <?php wp_nonce_field( 'tc_import_links', 'tc_import_nonce' ); ?>
-            <input type="hidden" name="action" value="tc_import_links" />
+            <?php wp_nonce_field( 'tconn_import_links', 'tconn_import_nonce' ); ?>
+            <input type="hidden" name="action" value="tconn_import_links" />
             <table class="form-table" role="presentation">
                 <tr>
-                    <th><label for="tc_import_file"><?php esc_html_e( 'Import file', 'termconnect' ); ?></label></th>
+                    <th><label for="tconn_import_file"><?php esc_html_e( 'Import file', 'termconnect' ); ?></label></th>
                     <td>
-                        <input type="file" id="tc_import_file" name="tc_import_file" accept=".json" required />
+                        <input type="file" id="tconn_import_file" name="tconn_import_file" accept=".json" required />
                         &nbsp;
                         <input type="submit" class="button" value="<?php echo esc_attr( _x( 'Import', 'submit button verb', 'termconnect' ) ); ?>" />
                     </td>
@@ -611,7 +618,7 @@ class TC_Settings_Page {
                 <th><?php esc_html_e( 'Share external links', 'termconnect' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" name="tc_settings[expose_links_api]"
+                        <input type="checkbox" name="tconn_settings[expose_links_api]"
                                value="1" <?php checked( $expose_links ); ?> />
                         <?php esc_html_e( 'Enable', 'termconnect' ); ?>
                     </label>
@@ -628,7 +635,7 @@ class TC_Settings_Page {
                 <th><?php esc_html_e( 'Delete all data', 'termconnect' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" name="tc_settings[delete_on_uninstall]"
+                        <input type="checkbox" name="tconn_settings[delete_on_uninstall]"
                                value="1" <?php checked( $delete_on_uninstall ); ?> />
                         <?php esc_html_e( 'Delete all TermConnect data (link types, enabled taxonomies, shared vocabulary sources, per-term identifiers, delegated identity) when the plugin is deleted. Other settings are always removed.', 'termconnect' ); ?>
                     </label>
@@ -646,9 +653,9 @@ class TC_Settings_Page {
     // =========================================================================
 
     private static function save( array $existing ): void {
-        update_option( 'tc_enabled_taxonomies', array_map( 'sanitize_key', (array) wp_unslash( $_POST['tc_enabled_taxonomies'] ?? array() ) ) );
+        update_option( 'tconn_enabled_taxonomies', array_map( 'sanitize_key', (array) wp_unslash( $_POST['tconn_enabled_taxonomies'] ?? array() ) ) );
 
-        $input = wp_unslash( $_POST['tc_settings'] ?? array() );
+        $input = wp_unslash( $_POST['tconn_settings'] ?? array() );
 
         // General
         $existing['allow_suggested_links']  = ! empty( $input['allow_suggested_links'] );
@@ -672,7 +679,7 @@ class TC_Settings_Page {
         $existing['identity_chain_max_depth']     = min( 5, max( 1, (int) ( $input['identity_chain_max_depth'] ?? 3 ) ) );
 
         // Cache
-        $existing['identity_cache_ttl']           = max( 60, (int) ( $input['identity_cache_ttl'] ?? TC_IDENTITY_CACHE_TTL ) );
+        $existing['identity_cache_ttl']           = max( 60, (int) ( $input['identity_cache_ttl'] ?? TCONN_IDENTITY_CACHE_TTL ) );
         $existing['external_posts_cache_ttl']     = max( 60, (int) ( $input['external_posts_cache_ttl'] ?? 3600 ) );
         $existing['ht_status_cache_ttl']          = max( 60, (int) ( $input['ht_status_cache_ttl'] ?? 86400 ) );
 
@@ -680,9 +687,9 @@ class TC_Settings_Page {
         $existing['expose_links_api']             = ! empty( $input['expose_links_api'] );
         $existing['delete_on_uninstall']          = ! empty( $input['delete_on_uninstall'] );
 
-        update_option( 'tc_settings', $existing );
+        update_option( 'tconn_settings', $existing );
     }
 }
 
 // Process settings form submissions before any output.
-add_action( 'admin_init', array( 'TC_Settings_Page', 'handle_save' ) );
+add_action( 'admin_init', array( 'TConn_Settings_Page', 'handle_save' ) );

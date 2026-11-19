@@ -7,7 +7,7 @@ nav_order: 4
 # Displaying Peer Posts
 {: .no_toc }
 
-Two shortcodes, each with a block, that show related posts from your peer sites and feeds, optionally blended with this site's own posts: `[tc_peer_posts]` for the current post, and the interactive `[tc_peer_browse]` topic browser.
+Two shortcodes, each with a block, that show related posts from your peer sites and feeds, optionally blended with this site's own posts: `[tconn_peer_posts]` for the current post, and the interactive `[tconn_peer_browse]` topic browser.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -17,7 +17,7 @@ Two shortcodes, each with a block, that show related posts from your peer sites 
 
 ---
 
-## [tc_peer_posts] Shortcode
+## [tconn_peer_posts] Shortcode
 
 Fetches and displays related posts from configured [WordPress peer sites and RSS/Atom feeds](peer-sites-feeds.html). Only renders on singular pages.
 
@@ -63,7 +63,7 @@ Fetches and displays related posts from configured [WordPress peer sites and RSS
 | `image_size` | Registered image size; sets the uniform thumbnail aspect (peer images can't be regenerated, but are cropped to a uniform box via CSS). | `medium` |
 | `columns` | Number of grid columns for the results. | `1` |
 | `format` | Output markup: `div` (full cards with thumbnail/excerpt/meta), `ul`, or `ol` (linked-title list items). | `div` |
-| `template` | Style-variant slug appended as the CSS class `tc-result-{template}` for theme styling. | `default` |
+| `template` | Style-variant slug appended as the CSS class `tconn-result-{template}` for theme styling. | `default` |
 | `meta` | Meta line template. Tokens: `{title}`, `{url}`, `{date}`, `{modified}`, `{excerpt}`, `{label}`, `{hostname}`, `{origin}`, `{author}`. | `{date} · {label}` |
 | `prepend` | Template inserted before each item. Takes the same tokens as `meta`. | *(empty)* |
 | `append` | Template inserted after each item. Takes the same tokens as `meta`. | *(empty)* |
@@ -71,56 +71,56 @@ Fetches and displays related posts from configured [WordPress peer sites and RSS
 | `no_results_message` | Message shown when no results. | *(empty)* |
 | `class` | Extra CSS class on the wrapper. | *(empty)* |
 
-When `foaf_depth > 0`, TermConnect reads peer connection data embedded in HyperTaxonomy post responses and queues discovered peers for fetching. FOAF-sourced results carry `tc-foaf-result` and `tc-foaf-depth-{N}` CSS classes.
+When `foaf_depth > 0`, TermConnect reads peer connection data embedded in HyperTaxonomy post responses and queues discovered peers for fetching. FOAF-sourced results carry `tconn-foaf-result` and `tconn-foaf-depth-{N}` CSS classes.
 
 **Examples:**
 
 ```
-[tc_peer_posts]
+[tconn_peer_posts]
 
-[tc_peer_posts orderby="date" per_page="3"]
+[tconn_peer_posts orderby="date" per_page="3"]
 
-[tc_peer_posts foaf_depth="1" show_thumbnail="true"]
+[tconn_peer_posts foaf_depth="1" show_thumbnail="true"]
 
-[tc_peer_posts link_types="my-blog,other-blog" taxonomy="post_tag"]
+[tconn_peer_posts link_types="my-blog,other-blog" taxonomy="post_tag"]
 
-[tc_peer_posts match="all" require_ht="true"]
+[tconn_peer_posts match="all" require_ht="true"]
 
-[tc_peer_posts scope="all" orderby="modified" columns="2"]
+[tconn_peer_posts scope="all" orderby="modified" columns="2"]
 
-[tc_peer_posts scope="all" orderby="peer:asc,relevance:desc"]
+[tconn_peer_posts scope="all" orderby="peer:asc,relevance:desc"]
 
-[tc_peer_posts format="ul" orderby="date"]
+[tconn_peer_posts format="ul" orderby="date"]
 
-[tc_peer_posts peer_expand="true" template="compact"]
+[tconn_peer_posts peer_expand="true" template="compact"]
 ```
 
 ---
 
 ## Blending local and peer posts together
 
-To show this site's own related posts **and** peer/feed results together in one block, set `scope="all"` on `[tc_peer_posts]` (or the Peer Posts block's **Source = Local + peers**). The local site is treated as another source; when HyperTaxonomy is active, local posts are selected via its relationship expansion (so relationship-related posts are included, not just directly-tagged ones), relevance-ranked by its search index, and `peer:asc,relevance:desc` groups the blend by source. TermConnect alone still handles term matching — without HyperTaxonomy the local side matches directly-assigned terms and isn't relevance-scored; HyperTaxonomy, when present, widens local recall, ranks the local side, and enforces term visibility.
+To show this site's own related posts **and** peer/feed results together in one block, set `scope="all"` on `[tconn_peer_posts]` (or the Peer Posts block's **Source = Local + peers**). The local site is treated as another source; when HyperTaxonomy is active, local posts are selected via its relationship expansion (so relationship-related posts are included, not just directly-tagged ones), relevance-ranked by its search index, and `peer:asc,relevance:desc` groups the blend by source. TermConnect alone still handles term matching — without HyperTaxonomy the local side matches directly-assigned terms and isn't relevance-scored; HyperTaxonomy, when present, widens local recall, ranks the local side, and enforces term visibility.
 
 ```
-[tc_peer_posts scope="all"]
+[tconn_peer_posts scope="all"]
 
-[tc_peer_posts scope="all" orderby="peer:asc,relevance:desc" columns="2"]
+[tconn_peer_posts scope="all" orderby="peer:asc,relevance:desc" columns="2"]
 ```
 
 ---
 
-## [tc_peer_browse] Shortcode — interactive topic browser
+## [tconn_peer_browse] Shortcode — interactive topic browser
 
-The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages). On a term archive, with no `terms` set, it starts with the archive's term selected when that term is in its `taxonomy`, so it can go straight into an archive template, including a block theme's.
+The interactive, visitor-driven counterpart to `[tconn_peer_posts]`. Instead of deriving topics from the current post, it renders a **term-pills control** the visitor fills in, then shows matching posts from this site **and** configured peer sites and feeds, updating live via AJAX with a **Load more** button. Works anywhere (not just singular pages). On a term archive, with no `terms` set, it starts with the archive's term selected when that term is in its `taxonomy`, so it can go straight into an archive template, including a block theme's.
 
 [![The topic browser with three topics selected, Match, Source and Sort controls, and posts from this site and a peer site](../assets/images/screenshots/peer-browse.png){: .screenshot-small}](../assets/images/screenshots/peer-browse.png)
 
 ```
-[tc_peer_browse taxonomy="post_tag"]
+[tconn_peer_browse taxonomy="post_tag"]
 
-[tc_peer_browse taxonomy="post_tag" terms="javascript,react" match="all"]
+[tconn_peer_browse taxonomy="post_tag" terms="javascript,react" match="all"]
 
-[tc_peer_browse taxonomy="post_tag" columns="3" show_scope="true" show_sort="true"]
+[tconn_peer_browse taxonomy="post_tag" columns="3" show_scope="true" show_sort="true"]
 ```
 
 **How topics combine** (set by the Match control / `match` attribute):
@@ -128,7 +128,7 @@ The interactive, visitor-driven counterpart to `[tc_peer_posts]`. Instead of der
 - **Any (OR, default):** posts matching *any* selected topic.
 - **All (AND):** only posts matching *every* selected topic.
 
-Both modes use the same scoring pipeline as `[tc_peer_posts]`: the selected topics are sent to each peer as one request (not one per topic), so a result that matches **more** of the selected topics ranks higher. For **All**, HyperTaxonomy peers apply the rule themselves, and TermConnect filters the results from standard peers. Local posts follow the same rule.
+Both modes use the same scoring pipeline as `[tconn_peer_posts]`: the selected topics are sent to each peer as one request (not one per topic), so a result that matches **more** of the selected topics ranks higher. For **All**, HyperTaxonomy peers apply the rule themselves, and TermConnect filters the results from standard peers. Local posts follow the same rule.
 
 **Source** (`scope`): `all` (local + peers, default) or `peers` (peers only) — the local site is treated as just another source. By default the browser targets all configured peers, but you can narrow it to specific peers via the peer picker / `peers` attribute (and further by `platforms` / `foaf_depth`).
 
@@ -146,13 +146,13 @@ Both modes use the same scoring pipeline as `[tc_peer_posts]`: the selected topi
 | `peers` | CSV of peer slugs to query. Empty = all configured peers. (In the block, pick these from a peer checklist.) | *(all)* |
 | `platforms` | CSV platform filter (e.g. `wordpress,feed`). Empty = all supported. | *(all)* |
 | `foaf_depth` | Max FOAF discovery depth. `0` = direct peers only. | `0` |
-| `peer_expand` | When `true`, HyperTaxonomy peers also match the selected topics through their *own* relationship graph (not just direct assignments), surfacing more of their content. Same meaning as in `[tc_peer_posts]`. Off by default for predictable results. | `false` |
+| `peer_expand` | When `true`, HyperTaxonomy peers also match the selected topics through their *own* relationship graph (not just direct assignments), surfacing more of their content. Same meaning as in `[tconn_peer_posts]`. Off by default for predictable results. | `false` |
 | `per_page` | Results per Load-more page. | `10` |
 | `max_results` | Cap on the total number of results the visitor can page through. | `100` |
 | `columns` | Grid columns for the results. | `1` |
 | `show_thumbnail` / `show_excerpt` / `image_size` | Card display. | `true` / `true` / `medium` |
-| `meta` | Meta line template. Takes the same tokens as in `[tc_peer_posts]`. | `{date} · {label}` |
-| `prepend` / `append` / `no_results_message` / `class` | As in `[tc_peer_posts]`. | *(empty)* |
+| `meta` | Meta line template. Takes the same tokens as in `[tconn_peer_posts]`. | `{date} · {label}` |
+| `prepend` / `append` / `no_results_message` / `class` | As in `[tconn_peer_posts]`. | *(empty)* |
 | `show_match` | Show the Any/All control to visitors. | `true` |
 | `show_scope` | Show the Source (local/peers) control to visitors. | `false` |
 | `show_sort` | Show the Sort control to visitors. | `false` |
@@ -167,8 +167,8 @@ By default only the topic pills and the Match toggle are shown; enable `show_sco
 
 | Block | Shortcode equivalent | Description |
 |-------|---------------------|-------------|
-| `termconnect/peer-posts` | `[tc_peer_posts]` | Peer site and feed posts for the current post (singular pages only) |
-| `termconnect/peer-browse` | `[tc_peer_browse]` | Interactive topic browser across local + peers |
+| `termconnect/peer-posts` | `[tconn_peer_posts]` | Peer site and feed posts for the current post (singular pages only) |
+| `termconnect/peer-browse` | `[tconn_peer_browse]` | Interactive topic browser across local + peers |
 
 ![The Peer Posts block in the editor: TermConnect's blocks in the inserter, a live preview with a peer site's post, and the block's Source settings](../assets/images/screenshots/peer-posts-block.png)
 

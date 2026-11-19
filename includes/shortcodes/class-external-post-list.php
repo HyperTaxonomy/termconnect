@@ -2,7 +2,7 @@
 /**
  * External Post List Shortcodes
  *
- * [tc_peer_posts] — Fetches related posts from configured WordPress peer
+ * [tconn_peer_posts] — Fetches related posts from configured WordPress peer
  * sites. HT-enabled peers receive scored requests (htax_includes/htax_term_weights,
  * plus htax_expand when peer_expand is on) and return htax_score in post responses;
  * standard WordPress peers receive standard taxonomy params and are scored
@@ -11,7 +11,7 @@
  * the remote term via shared external identifiers (htax_link REST param).
  * Results from all peers are merged into a single flat list ordered by orderby.
  *
- * TC_Shortcode_PeerPosts also exposes collect_posts_for_terms() so HyperTaxonomy's
+ * TConn_Shortcode_PeerPosts also exposes collect_posts_for_terms() so HyperTaxonomy's
  * generic external-posts API (htax_get_term_external_posts) can source peer/feed
  * content for [ht_related_posts] external mode.
  *
@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param array  $origin_labels Map of origin URL → link-type label (may be empty).
  * @return string
  */
-function tc_process_external_post_placeholders( string $text, array $post, array $origin_labels ): string {
+function tconn_process_external_post_placeholders( string $text, array $post, array $origin_labels ): string {
     if ( '' === $text ) {
         return '';
     }
@@ -75,26 +75,26 @@ function tc_process_external_post_placeholders( string $text, array $post, array
 }
 
 // ===========================================================================
-// [tc_peer_posts]
+// [tconn_peer_posts]
 // ===========================================================================
 
-class TC_Shortcode_PeerPosts {
+class TConn_Shortcode_PeerPosts {
 
     /**
-     * Register the [tc_peer_posts] shortcode and its load-more AJAX handlers.
+     * Register the [tconn_peer_posts] shortcode and its load-more AJAX handlers.
      *
      * @since 1.0.0
      */
     public function __construct() {
-        add_shortcode( 'tc_peer_posts', array( $this, 'shortcode_handler' ) );
-        add_action( 'wp_ajax_tc_external_load_more', array( $this, 'ajax_load_more' ) );
-        add_action( 'wp_ajax_nopriv_tc_external_load_more', array( $this, 'ajax_load_more' ) );
+        add_shortcode( 'tconn_peer_posts', array( $this, 'shortcode_handler' ) );
+        add_action( 'wp_ajax_tconn_external_load_more', array( $this, 'ajax_load_more' ) );
+        add_action( 'wp_ajax_nopriv_tconn_external_load_more', array( $this, 'ajax_load_more' ) );
     }
 
     /**
      * Shared singleton instance.
      *
-     * Lets other components (e.g. TC_Shortcode_PeerBrowse) reuse the public
+     * Lets other components (e.g. TConn_Shortcode_PeerBrowse) reuse the public
      * collect/sort/render methods without constructing a second instance, which
      * would double-register the shortcode and AJAX hooks.
      *
@@ -155,7 +155,7 @@ class TC_Shortcode_PeerPosts {
         if ( ! is_singular() || ! get_the_ID() ) {
             return '';
         }
-        $atts = shortcode_atts( $this->get_defaults(), $atts, 'tc_peer_posts' );
+        $atts = shortcode_atts( $this->get_defaults(), $atts, 'tconn_peer_posts' );
         return $this->fetch_and_render( get_the_ID(), $atts );
     }
 
@@ -233,7 +233,7 @@ class TC_Shortcode_PeerPosts {
     private function collect_blended( int $post_id, array $p ): array {
         $peers = $this->fetch_posts_for_atts( $post_id, $p );
         $local = ( 'all' === ( $p['scope'] ?? 'peers' ) ) ? $this->collect_local_for_post( $post_id, $p ) : array();
-        return tc_dedupe_posts_by_url( array_merge( $local, $peers ) );
+        return tconn_dedupe_posts_by_url( array_merge( $local, $peers ) );
     }
 
     /**
@@ -249,7 +249,7 @@ class TC_Shortcode_PeerPosts {
             return array();
         }
 
-        $taxonomies = ( '' !== $p['taxonomy'] ) ? array( $p['taxonomy'] ) : TC_Settings::get_enabled_taxonomies();
+        $taxonomies = ( '' !== $p['taxonomy'] ) ? array( $p['taxonomy'] ) : TConn_Settings::get_enabled_taxonomies();
 
         $tax_terms = array();
         foreach ( $taxonomies as $tax ) {
@@ -263,7 +263,7 @@ class TC_Shortcode_PeerPosts {
         }
 
         // Drop terms hidden from the current user before selecting or scoring.
-        $tax_terms = tc_filter_hidden_terms( $tax_terms );
+        $tax_terms = tconn_filter_hidden_terms( $tax_terms );
         if ( empty( $tax_terms ) ) {
             return array();
         }
@@ -273,9 +273,9 @@ class TC_Shortcode_PeerPosts {
         // With HyperTaxonomy active, select via relationship expansion so local
         // recall matches its archives / [ht_related_posts] (inclusion-, group-, and
         // hierarchy-related posts, not just directly-tagged ones).
-        $expansions = tc_local_term_expansions( $tax_terms );
+        $expansions = tconn_local_term_expansions( $tax_terms );
 
-        $records = tc_collect_local_posts(
+        $records = tconn_collect_local_posts(
             $tax_terms,
             $p['match'],
             $limit,
@@ -327,7 +327,7 @@ class TC_Shortcode_PeerPosts {
      * @return array Typed scalars keyed by short names.
      */
     private function parse_atts( array $atts ): array {
-        $settings       = get_option( 'tc_settings', array() );
+        $settings       = get_option( 'tconn_settings', array() );
         $foaf_depth_req = max( 0, (int) $atts['foaf_depth'] );
 
         // Peer platform types to include. Empty = all supported (currently WordPress + feeds).
@@ -436,7 +436,7 @@ class TC_Shortcode_PeerPosts {
             $taxonomy = $group_tuples[0]['remote_taxonomy'];
             $peer_site_slug  = $group_tuples[0]['peer_site_slug'];
 
-            if ( tc_external_is_blacklisted( $origin ) || ! tc_external_validate_origin( $origin ) ) {
+            if ( tconn_external_is_blacklisted( $origin ) || ! tconn_external_validate_origin( $origin ) ) {
                 continue;
             }
 
@@ -457,18 +457,18 @@ class TC_Shortcode_PeerPosts {
 
             $include_ids = array_merge( ...array_values( $term_id_map ) );
             $all_ids     = array_unique( array_merge( array_keys( $term_id_map ), $include_ids ) );
-            $is_ht       = tc_external_is_ht_enabled( $origin );
+            $is_ht       = tconn_external_is_ht_enabled( $origin );
 
             if ( $is_ht ) {
-                $posts = tc_external_fetch_scored_posts( $origin, $taxonomy, $term_id_map, $p['match'], $term_weights, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $p['expand'], $window );
+                $posts = tconn_external_fetch_scored_posts( $origin, $taxonomy, $term_id_map, $p['match'], $term_weights, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $p['expand'], $window );
             } elseif ( ! $p['require_ht'] ) {
                 // Relevance order ranks by the current post's title; otherwise newest first.
                 $keyword = 'relevance' === $this->primary_orderby_field( $p['orderby'] ) ? (string) get_the_title( $post_id ) : null;
-                $posts   = tc_external_fetch_posts( $origin, $taxonomy, $all_ids, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $window, $keyword );
+                $posts   = tconn_external_fetch_posts( $origin, $taxonomy, $all_ids, $p['show_thumbnail'], $fetch_size, $p['cache_ttl'], $peer_site_slug, $window, $keyword );
                 if ( 'all' === $p['match'] ) {
                     $posts = $this->filter_and_match( $posts, $and_groups );
                 }
-                $posts = tc_external_score_posts( $posts, $term_id_map, $id_to_slug, $term_weights );
+                $posts = tconn_external_score_posts( $posts, $term_id_map, $id_to_slug, $term_weights );
             } else {
                 continue;
             }
@@ -511,7 +511,7 @@ class TC_Shortcode_PeerPosts {
      * @return array 'modified_after' and 'modified_before' ISO 8601 UTC dates; '' = no limit.
      */
     private function date_window( int $post_id, int $days_before, int $days_after ): array {
-        $window = tc_normalize_date_window( array() );
+        $window = tconn_normalize_date_window( array() );
         if ( $post_id <= 0 || ( $days_before < 0 && $days_after < 0 ) ) {
             return $window;
         }
@@ -545,7 +545,7 @@ class TC_Shortcode_PeerPosts {
      * @return array
      */
     private function filter_by_window( array $posts, array $window ): array {
-        $window = tc_normalize_date_window( $window );
+        $window = tconn_normalize_date_window( $window );
         $start  = '' !== $window['modified_after'] ? strtotime( $window['modified_after'] ) : false;
         $end    = '' !== $window['modified_before'] ? strtotime( $window['modified_before'] ) : false;
         if ( false === $start && false === $end ) {
@@ -621,15 +621,15 @@ class TC_Shortcode_PeerPosts {
 
     /**
      * Enqueue the shared post-list base stylesheet (grid layout + uniform
-     * thumbnails). Shared by [tc_peer_posts] and [tc_peer_browse].
+     * thumbnails). Shared by [tconn_peer_posts] and [tconn_peer_browse].
      */
     protected function enqueue_styles(): void {
-        if ( ! wp_style_is( 'tc-post-list', 'enqueued' ) ) {
+        if ( ! wp_style_is( 'tconn-post-list', 'enqueued' ) ) {
             wp_enqueue_style(
-                'tc-post-list',
-                TC_PLUGIN_URL . 'assets/css/tc-post-list.css',
+                'tconn-post-list',
+                TCONN_PLUGIN_URL . 'assets/css/tconn-post-list.css',
                 array(),
-                TC_VERSION
+                TCONN_VERSION
             );
         }
     }
@@ -638,21 +638,21 @@ class TC_Shortcode_PeerPosts {
      * Enqueue the load-more JS on the frontend.
      */
     protected function enqueue_scripts(): void {
-        if ( wp_script_is( 'tc-external-posts', 'enqueued' ) || wp_script_is( 'tc-external-posts', 'done' ) ) {
+        if ( wp_script_is( 'tconn-external-posts', 'enqueued' ) || wp_script_is( 'tconn-external-posts', 'done' ) ) {
             return;
         }
 
         wp_enqueue_script(
-            'tc-external-posts',
-            TC_PLUGIN_URL . 'assets/js/tc-external-posts.js',
+            'tconn-external-posts',
+            TCONN_PLUGIN_URL . 'assets/js/tconn-external-posts.js',
             array( 'jquery' ),
-            TC_VERSION,
+            TCONN_VERSION,
             true
         );
 
-        wp_localize_script( 'tc-external-posts', 'TC_ExtPosts', array(
+        wp_localize_script( 'tconn-external-posts', 'TConn_ExtPosts', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
-            'nonce'    => wp_create_nonce( 'tc_external_load_more' ),
+            'nonce'    => wp_create_nonce( 'tconn_external_load_more' ),
         ) );
     }
 
@@ -662,7 +662,7 @@ class TC_Shortcode_PeerPosts {
      * Expects POST fields: post_id, offset, atts (JSON-encoded shortcode attrs).
      */
     public function ajax_load_more(): void {
-        check_ajax_referer( 'tc_external_load_more', 'nonce' );
+        check_ajax_referer( 'tconn_external_load_more', 'nonce' );
 
         $post_id = intval( wp_unslash( $_POST['post_id'] ?? 0 ) );
         $offset  = max( 0, intval( wp_unslash( $_POST['offset'] ?? 0 ) ) );
@@ -673,7 +673,7 @@ class TC_Shortcode_PeerPosts {
         }
 
         $raw_atts = ( isset( $_POST['atts'] ) && is_string( $_POST['atts'] ) )
-            ? tc_external_json_decode( wp_unslash( $_POST['atts'] ) )
+            ? tconn_decode_json_request( wp_unslash( $_POST['atts'] ) )
             : array();
         if ( ! is_array( $raw_atts ) ) {
             $raw_atts = array();
@@ -719,7 +719,7 @@ class TC_Shortcode_PeerPosts {
      *
      * Groups tuples by peer_site_slug, extracts the category slug from each tuple's
      * remote_slug identifier, reads the accumulated post cache, and scores using
-     * tc_feed_score_posts(). Returns an empty array when no cached posts exist.
+     * tconn_feed_score_posts(). Returns an empty array when no cached posts exist.
      *
      * @param array[] $feed_tuples Tuples with platform='feed' from collect_tuples().
      * @return array Normalized scored posts with origin set.
@@ -737,7 +737,7 @@ class TC_Shortcode_PeerPosts {
 
         $all_posts = array();
         foreach ( $by_peer_site as $peer_site_slug => $link_type_tuples ) {
-            $posts = tc_feed_get_cached_posts( $peer_site_slug );
+            $posts = tconn_feed_get_cached_posts( $peer_site_slug );
             if ( empty( $posts ) ) {
                 continue;
             }
@@ -745,16 +745,16 @@ class TC_Shortcode_PeerPosts {
             // Build the set of category slugs this post's terms are mapped to.
             $category_slugs = array();
             foreach ( $link_type_tuples as $tuple ) {
-                $parsed = tc_feed_parse_identifier( $tuple['remote_slug'] );
+                $parsed = tconn_feed_parse_identifier( $tuple['remote_slug'] );
                 if ( '' !== $parsed['slug'] ) {
                     $category_slugs[] = $parsed['slug'];
                 }
             }
             $category_slugs = array_unique( $category_slugs );
 
-            $type      = tc_get_link_type( $peer_site_slug );
+            $type      = tconn_get_link_type( $peer_site_slug );
             $feed_url  = $type ? ( $type['uri_prefix'] ?? '' ) : '';
-            $scored    = tc_feed_score_posts( $posts, $category_slugs, 1.0, $feed_url );
+            $scored    = tconn_feed_score_posts( $posts, $category_slugs, 1.0, $feed_url );
             $all_posts = array_merge( $all_posts, $scored );
         }
 
@@ -774,8 +774,8 @@ class TC_Shortcode_PeerPosts {
      * @return array[]
      */
     public function collect_tuples( int $post_id, string $link_type_filter, string $tax_filter, ?array $explicit_term_ids = null ): array {
-        $peer_types = tc_get_platform_link_types( 'wordpress' );
-        $feed_types = tc_get_platform_link_types( 'feed' );
+        $peer_types = tconn_get_platform_link_types( 'wordpress' );
+        $feed_types = tconn_get_platform_link_types( 'feed' );
 
         if ( '' !== $link_type_filter ) {
             $allowed    = array_map( 'trim', explode( ',', $link_type_filter ) );
@@ -787,7 +787,7 @@ class TC_Shortcode_PeerPosts {
 
         // WordPress peer tuples.
         foreach ( $peer_types as $peer_site_slug => $link_type ) {
-            $origin = tc_external_get_site_origin( $link_type['uri_prefix'] );
+            $origin = tconn_external_get_site_origin( $link_type['uri_prefix'] );
             if ( '' === $origin ) {
                 continue;
             }
@@ -795,11 +795,11 @@ class TC_Shortcode_PeerPosts {
             foreach ( $this->link_type_taxonomies( $link_type, $tax_filter ) as $taxonomy ) {
                 $post_terms = $this->terms_in_taxonomy( $post_id, $taxonomy, $explicit_term_ids );
                 foreach ( $post_terms as $term_id ) {
-                    $remote_slug = tc_get_term_link_id( (int) $term_id, $peer_site_slug );
+                    $remote_slug = tconn_get_term_link_id( (int) $term_id, $peer_site_slug );
                     if ( '' === $remote_slug ) {
                         continue;
                     }
-                    $remote_taxonomy = tc_wp_peer_remote_taxonomy( $link_type, $taxonomy );
+                    $remote_taxonomy = tconn_wp_peer_remote_taxonomy( $link_type, $taxonomy );
                     $tuples[]        = array(
                         'origin'          => $origin,
                         'taxonomy'        => $taxonomy,
@@ -823,7 +823,7 @@ class TC_Shortcode_PeerPosts {
             foreach ( $this->link_type_taxonomies( $link_type, $tax_filter ) as $taxonomy ) {
                 $post_terms = $this->terms_in_taxonomy( $post_id, $taxonomy, $explicit_term_ids );
                 foreach ( $post_terms as $term_id ) {
-                    $raw_id = tc_get_term_link_id( (int) $term_id, $peer_site_slug );
+                    $raw_id = tconn_get_term_link_id( (int) $term_id, $peer_site_slug );
                     if ( '' === $raw_id ) {
                         continue;
                     }
@@ -845,7 +845,7 @@ class TC_Shortcode_PeerPosts {
         // This lets two sites share content automatically when both have the same Wikidata QID,
         // GeoNames ID, etc. on equivalent terms — without manual per-peer slug configuration.
         foreach ( $peer_types as $peer_site_slug => $link_type ) {
-            $origin = tc_external_get_site_origin( $link_type['uri_prefix'] );
+            $origin = tconn_external_get_site_origin( $link_type['uri_prefix'] );
             if ( '' === $origin ) {
                 continue;
             }
@@ -854,17 +854,17 @@ class TC_Shortcode_PeerPosts {
                 $post_terms = $this->terms_in_taxonomy( $post_id, $taxonomy, $explicit_term_ids );
                 foreach ( $post_terms as $term_id ) {
                     // Skip if this term already has an explicit remote slug for this peer.
-                    if ( '' !== tc_get_term_link_id( (int) $term_id, $peer_site_slug ) ) {
+                    if ( '' !== tconn_get_term_link_id( (int) $term_id, $peer_site_slug ) ) {
                         continue;
                     }
                     // Collect URI index for this term (covers local and delegated links).
-                    $cached = get_transient( 'tc_uris_' . $term_id );
-                    $uris   = is_array( $cached ) ? $cached : get_term_meta( $term_id, '_tc_uris' );
+                    $cached = get_transient( 'tconn_uris_' . $term_id );
+                    $uris   = is_array( $cached ) ? $cached : get_term_meta( $term_id, '_tconn_uris' );
                     $uris   = array_values( array_filter( (array) $uris, 'is_string' ) );
                     if ( empty( $uris ) ) {
                         continue;
                     }
-                    $remote_taxonomy = tc_wp_peer_remote_taxonomy( $link_type, $taxonomy );
+                    $remote_taxonomy = tconn_wp_peer_remote_taxonomy( $link_type, $taxonomy );
                     $tuples[]        = array(
                         'origin'          => $origin,
                         'taxonomy'        => $taxonomy,
@@ -891,7 +891,7 @@ class TC_Shortcode_PeerPosts {
      * @return string[]
      */
     private function link_type_taxonomies( array $link_type, string $tax_filter ): array {
-        $taxes = ! empty( $link_type['taxonomies'] ) ? $link_type['taxonomies'] : TC_Settings::get_enabled_taxonomies();
+        $taxes = ! empty( $link_type['taxonomies'] ) ? $link_type['taxonomies'] : TConn_Settings::get_enabled_taxonomies();
         if ( '' !== $tax_filter ) {
             $taxes = in_array( $tax_filter, $taxes, true ) ? array( $tax_filter ) : array();
         }
@@ -942,7 +942,7 @@ class TC_Shortcode_PeerPosts {
      * @param string  $origin
      * @param string  $taxonomy          Remote taxonomy REST base.
      * @param bool    $include_synonyms  Promote local synonyms to additional primary entries.
-     * @param bool    $include_related   Add non-synonym local includes as tc_includes entries.
+     * @param bool    $include_related   Add non-synonym local includes as tconn_includes entries.
      * @param array   $source_strengths  Optional map of local term_id => source-post centrality
      *                                   (0–1). Each term's weight is multiplied by its source
      *                                   strength so the peer ranks the post's central topics
@@ -966,7 +966,7 @@ class TC_Shortcode_PeerPosts {
 
         foreach ( $group_tuples as $tuple ) {
             if ( '' !== $tuple['remote_slug'] ) {
-                $primary_id = tc_external_resolve_term_id( $origin, $taxonomy, $tuple['remote_slug'] );
+                $primary_id = tconn_external_resolve_term_id( $origin, $taxonomy, $tuple['remote_slug'] );
             } elseif ( ! empty( $tuple['uris'] ) ) {
                 $primary_id = $this->resolve_term_id_by_identifier( $origin, $taxonomy, $tuple['uris'] );
             } else {
@@ -1021,11 +1021,11 @@ class TC_Shortcode_PeerPosts {
             // Promote local synonyms to additional primary entries (scored at weight_direct).
             if ( $include_synonyms ) {
                 foreach ( $synonym_terms as $syn_term_id => $syn_term ) {
-                    $syn_slug = get_term_meta( (int) $syn_term_id, '_tc_link_' . $tuple['peer_site_slug'], true );
+                    $syn_slug = get_term_meta( (int) $syn_term_id, '_tconn_link_' . $tuple['peer_site_slug'], true );
                     if ( '' === $syn_slug || false === $syn_slug ) {
                         continue;
                     }
-                    $syn_id = tc_external_resolve_term_id( $origin, $taxonomy, (string) $syn_slug );
+                    $syn_id = tconn_external_resolve_term_id( $origin, $taxonomy, (string) $syn_slug );
                     if ( null === $syn_id || isset( $term_id_map[ $syn_id ] ) ) {
                         continue;
                     }
@@ -1038,18 +1038,18 @@ class TC_Shortcode_PeerPosts {
 
             $and_groups[] = $group;
 
-            // Add non-synonym local includes as tc_includes (scored at weight_included_direct).
+            // Add non-synonym local includes as tconn_includes (scored at weight_included_direct).
             if ( $include_related ) {
                 $included = function_exists( 'htax_get_included_terms' ) ? htax_get_included_terms( $tuple['term_id'] ) : array();
                 foreach ( $included as $inc_term_id => $inc_term_obj ) {
                     if ( in_array( (int) $inc_term_id, $synonym_term_ids, true ) ) {
                         continue; // Synonyms are handled above.
                     }
-                    $inc_slug = get_term_meta( (int) $inc_term_id, '_tc_link_' . $tuple['peer_site_slug'], true );
+                    $inc_slug = get_term_meta( (int) $inc_term_id, '_tconn_link_' . $tuple['peer_site_slug'], true );
                     if ( '' === $inc_slug || false === $inc_slug ) {
                         continue;
                     }
-                    $inc_id = tc_external_resolve_term_id( $origin, $taxonomy, (string) $inc_slug );
+                    $inc_id = tconn_external_resolve_term_id( $origin, $taxonomy, (string) $inc_slug );
                     if ( null === $inc_id ) {
                         continue;
                     }
@@ -1069,7 +1069,7 @@ class TC_Shortcode_PeerPosts {
      * Resolve a remote term ID by querying a peer site for a matching identifier URI.
      *
      * Queries /wp-json/wp/v2/{taxonomy}?htax_term_uri={uri} on the peer site for each URI
-     * in the local term's _tc_uris index (Wikidata, VIAF, custom link types, etc.).
+     * in the local term's _tconn_uris index (Wikidata, VIAF, custom link types, etc.).
      * Returns the first match found, or null if none.
      *
      * htax_term_uri is a TC-registered query param; a peer without TC silently ignores
@@ -1079,14 +1079,14 @@ class TC_Shortcode_PeerPosts {
      *
      * @param string   $origin   Peer site origin (scheme://host).
      * @param string   $taxonomy Remote taxonomy REST base.
-     * @param string[] $uris     Identifier URIs from the local term's _tc_uris index.
+     * @param string[] $uris     Identifier URIs from the local term's _tconn_uris index.
      * @return int|null Remote term ID, or null if not found.
      */
     private function resolve_term_id_by_identifier( string $origin, string $taxonomy, array $uris ): ?int {
-        if ( ! tc_external_is_tc_enabled( $origin ) ) {
+        if ( ! tconn_external_is_tc_enabled( $origin ) ) {
             return null;
         }
-        $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+        $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
         foreach ( $uris as $uri ) {
             if ( ! is_string( $uri ) || '' === $uri ) {
                 continue;
@@ -1096,12 +1096,12 @@ class TC_Shortcode_PeerPosts {
                 '_fields'       => 'id',
                 'per_page'      => 1,
             ) );
-            $args = tc_external_request_args( 5, tc_external_peer_headers( tc_external_is_ht_enabled( $origin ), false ) );
+            $args = tconn_external_request_args( 5, tconn_external_peer_headers( tconn_external_is_ht_enabled( $origin ), false ) );
             $response = wp_remote_get( $url, $args );
             if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
                 continue;
             }
-            $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+            $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
             if ( is_array( $body ) && ! empty( $body[0]['id'] ) ) {
                 return (int) $body[0]['id'];
             }
@@ -1179,7 +1179,7 @@ class TC_Shortcode_PeerPosts {
             return array();
         }
 
-        $candidates = tc_external_get_foaf_candidates( $origin, $term_taxonomy_map, $visited );
+        $candidates = tconn_external_get_foaf_candidates( $origin, $term_taxonomy_map, $visited );
         $foaf_posts = array();
 
         foreach ( $candidates as $candidate ) {
@@ -1190,7 +1190,7 @@ class TC_Shortcode_PeerPosts {
                 continue;
             }
 
-            $peer_id = tc_external_resolve_term_id( $peer_origin, $taxonomy, $peer_slug );
+            $peer_id = tconn_external_resolve_term_id( $peer_origin, $taxonomy, $peer_slug );
             if ( null === $peer_id ) {
                 $visited[] = $peer_origin;
                 continue;
@@ -1200,12 +1200,12 @@ class TC_Shortcode_PeerPosts {
             $peer_map         = array( $peer_id => array() );
             $peer_id_to_slug  = array( $peer_id => $peer_slug );
 
-            $is_ht = tc_external_is_ht_enabled( $peer_origin );
+            $is_ht = tconn_external_is_ht_enabled( $peer_origin );
             if ( $is_ht ) {
-                $posts = tc_external_fetch_scored_posts( $peer_origin, $taxonomy, $peer_map, $match, array(), $show_thumbnail, $fetch_size, $cache_ttl, '', $expand, $window );
+                $posts = tconn_external_fetch_scored_posts( $peer_origin, $taxonomy, $peer_map, $match, array(), $show_thumbnail, $fetch_size, $cache_ttl, '', $expand, $window );
             } else {
-                $posts = tc_external_fetch_posts( $peer_origin, $taxonomy, array( $peer_id ), $show_thumbnail, $fetch_size, $cache_ttl, '', $window );
-                $posts = tc_external_score_posts( $posts, $peer_map, $peer_id_to_slug, array() );
+                $posts = tconn_external_fetch_posts( $peer_origin, $taxonomy, array( $peer_id ), $show_thumbnail, $fetch_size, $cache_ttl, '', $window );
+                $posts = tconn_external_score_posts( $posts, $peer_map, $peer_id_to_slug, array() );
             }
 
             foreach ( $posts as &$post ) {
@@ -1355,8 +1355,8 @@ class TC_Shortcode_PeerPosts {
         $map = array();
         $i   = 0;
         foreach ( array( 'wordpress', 'feed' ) as $platform ) {
-            foreach ( tc_get_platform_link_types( $platform ) as $type ) {
-                $origin = tc_external_get_site_origin( $type['uri_prefix'] ?? '' );
+            foreach ( tconn_get_platform_link_types( $platform ) as $type ) {
+                $origin = tconn_external_get_site_origin( $type['uri_prefix'] ?? '' );
                 if ( '' !== $origin && ! isset( $map[ $origin ] ) ) {
                     $map[ $origin ] = $i++;
                 }
@@ -1394,7 +1394,7 @@ class TC_Shortcode_PeerPosts {
      * @param string $prepend_tpl   Template injected before each item; empty = skip.
      * @param string $append_tpl    Template injected after each item; empty = skip.
      * @param string $format        'div' (article cards), 'ul'/'ol' (linked-title list items).
-     * @param string $template      Style variant class suffix (tc-result-{template}).
+     * @param string $template      Style variant class suffix (tconn-result-{template}).
      * @return string
      */
     public function render_items(
@@ -1416,9 +1416,9 @@ class TC_Shortcode_PeerPosts {
             foreach ( $posts as $post ) {
                 $is_local = ! empty( $post['is_local'] );
                 $rel      = $is_local ? '' : ' target="_blank" rel="noopener noreferrer"';
-                $cls      = 'tc-result-item tc-result-' . $template . ' ' . ( $is_local ? 'tc-result-local' : 'tc-result-external' );
+                $cls      = 'tconn-result-item tconn-result-' . $template . ' ' . ( $is_local ? 'tconn-result-local' : 'tconn-result-external' );
                 if ( ! empty( $post['foaf_depth'] ) ) {
-                    $cls .= ' tc-foaf-result tc-foaf-depth-' . (int) $post['foaf_depth'];
+                    $cls .= ' tconn-foaf-result tconn-foaf-depth-' . (int) $post['foaf_depth'];
                 }
                 $html .= '<li class="' . esc_attr( $cls ) . '"><a href="' . esc_url( $post['url'] ?? '' ) . '"' . $rel . '>'
                        . esc_html( $post['title'] ?? '' ) . '</a></li>';
@@ -1435,8 +1435,8 @@ class TC_Shortcode_PeerPosts {
                 || strpos( $meta_tpl . $prepend_tpl . $append_tpl, '{origin}' )  !== false
             );
         if ( $needs_labels ) {
-            foreach ( tc_get_platform_link_types( 'wordpress' ) as $link_type ) {
-                $origin = tc_external_get_site_origin( $link_type['uri_prefix'] );
+            foreach ( tconn_get_platform_link_types( 'wordpress' ) as $link_type ) {
+                $origin = tconn_external_get_site_origin( $link_type['uri_prefix'] );
                 if ( '' !== $origin ) {
                     $origin_labels[ $origin ] = $link_type['label'];
                 }
@@ -1447,19 +1447,19 @@ class TC_Shortcode_PeerPosts {
 
         foreach ( $posts as $post ) {
             $is_local   = ! empty( $post['is_local'] );
-            $item_class = 'tc-result-item tc-result-' . $template . ' ' . ( $is_local ? 'tc-result-local' : 'tc-result-external' );
+            $item_class = 'tconn-result-item tconn-result-' . $template . ' ' . ( $is_local ? 'tconn-result-local' : 'tconn-result-external' );
             if ( $post['foaf_depth'] > 0 ) {
-                $item_class .= ' tc-foaf-result tc-foaf-depth-' . (int) $post['foaf_depth'];
+                $item_class .= ' tconn-foaf-result tconn-foaf-depth-' . (int) $post['foaf_depth'];
             }
 
             $html .= '<article class="' . esc_attr( $item_class ) . '">';
 
             if ( '' !== $prepend_tpl ) {
-                $html .= tc_process_external_post_placeholders( $prepend_tpl, $post, $origin_labels );
+                $html .= tconn_process_external_post_placeholders( $prepend_tpl, $post, $origin_labels );
             }
 
             if ( $show_thumbnail && ! empty( $post['thumbnail_url'] ) ) {
-                $html .= '<div class="tc-result-thumbnail">';
+                $html .= '<div class="tconn-result-thumbnail">';
                 $html .= '<img src="' . esc_url( $post['thumbnail_url'] ) . '"';
                 if ( $post['thumbnail_width'] ) {
                     $html .= ' width="' . (int) $post['thumbnail_width'] . '"';
@@ -1471,8 +1471,8 @@ class TC_Shortcode_PeerPosts {
                 $html .= '</div>';
             }
 
-            $html .= '<div class="tc-result-content">';
-            $html .= '<h3 class="tc-result-title">';
+            $html .= '<div class="tconn-result-content">';
+            $html .= '<h3 class="tconn-result-title">';
             if ( $is_local ) {
                 $html .= '<a href="' . esc_url( $post['url'] ) . '">';
             } else {
@@ -1482,17 +1482,17 @@ class TC_Shortcode_PeerPosts {
             $html .= '</a></h3>';
 
             if ( '' !== $meta_tpl ) {
-                $html .= '<div class="tc-result-meta">' . tc_process_external_post_placeholders( $meta_tpl, $post, $origin_labels ) . '</div>';
+                $html .= '<div class="tconn-result-meta">' . tconn_process_external_post_placeholders( $meta_tpl, $post, $origin_labels ) . '</div>';
             }
 
             if ( $show_excerpt && ! empty( $post['excerpt'] ) ) {
-                $html .= '<div class="tc-result-excerpt">' . esc_html( $post['excerpt'] ) . '</div>';
+                $html .= '<div class="tconn-result-excerpt">' . esc_html( $post['excerpt'] ) . '</div>';
             }
 
             $html .= '</div>';
 
             if ( '' !== $append_tpl ) {
-                $html .= tc_process_external_post_placeholders( $append_tpl, $post, $origin_labels );
+                $html .= tconn_process_external_post_placeholders( $append_tpl, $post, $origin_labels );
             }
 
             $html .= '</article>';
@@ -1530,28 +1530,28 @@ class TC_Shortcode_PeerPosts {
     ): string {
         $this->enqueue_styles();
 
-        $wrapper_class = 'tc-post-list tc-external-posts';
+        $wrapper_class = 'tconn-post-list tconn-external-posts';
         if ( '' !== $extra_class ) {
             $wrapper_class .= ' ' . $extra_class;
         }
 
         $columns     = max( 1, (int) ( $atts['columns'] ?? 1 ) );
         $image_size  = sanitize_key( $atts['image_size'] ?? 'medium' );
-        $items_style = tc_post_list_items_style( $columns, $image_size );
+        $items_style = tconn_post_list_items_style( $columns, $image_size );
         $format      = in_array( ( $atts['format'] ?? 'div' ), array( 'ul', 'ol', 'div' ), true ) ? $atts['format'] : 'div';
         $template    = sanitize_html_class( $atts['template'] ?? 'default' );
         $items_tag   = ( 'ul' === $format || 'ol' === $format ) ? $format : 'div';
 
         $html  = '<div class="' . esc_attr( $wrapper_class ) . '">';
-        $html .= '<' . $items_tag . ' class="tc-post-list-items"' . ( '' !== $items_style ? ' style="' . esc_attr( $items_style ) . '"' : '' ) . '>';
+        $html .= '<' . $items_tag . ' class="tconn-post-list-items"' . ( '' !== $items_style ? ' style="' . esc_attr( $items_style ) . '"' : '' ) . '>';
         $html .= $this->render_items( $posts, $show_thumbnail, $show_excerpt, $meta_tpl, $prepend_tpl, $append_tpl, $format, $template );
         $html .= '</' . $items_tag . '>';
 
         if ( $next_offset >= 0 && $post_id > 0 ) {
             $serializable = $atts;
             unset( $serializable['offset'] );
-            $html .= '<div class="tc-pagination">';
-            $html .= '<button type="button" class="tc-load-more"'
+            $html .= '<div class="tconn-pagination">';
+            $html .= '<button type="button" class="tconn-load-more"'
                 . ' data-post-id="' . (int) $post_id . '"'
                 . ' data-offset="' . (int) $next_offset . '"'
                 . ' data-atts="' . esc_attr( wp_json_encode( $serializable ) ) . '">';
@@ -1565,4 +1565,4 @@ class TC_Shortcode_PeerPosts {
     }
 }
 
-TC_Shortcode_PeerPosts::instance();
+TConn_Shortcode_PeerPosts::instance();

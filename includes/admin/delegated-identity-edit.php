@@ -34,7 +34,7 @@ add_filter( 'wp_update_term_data', static function ( $data, $term_id, $taxonomy,
     if ( ! wp_doing_ajax() || ( sanitize_key( wp_unslash( $_POST['action'] ?? '' ) ) !== 'inline-save-tax' ) ) {
         return $data;
     }
-    $source = tc_get_identity_source( $term_id );
+    $source = tconn_get_identity_source( $term_id );
     if ( ! $source ) {
         return $data;
     }
@@ -54,9 +54,9 @@ add_filter( 'wp_update_term_data', static function ( $data, $term_id, $taxonomy,
  *
  * @param WP_Term|string $term  WP_Term on edit screens, taxonomy slug on add screens.
  */
-function tc_add_delegated_identity_field( $term ): void {
+function tconn_add_delegated_identity_field( $term ): void {
     $taxonomy = is_object( $term ) ? $term->taxonomy : $term;
-    if ( ! in_array( $taxonomy, TC_Settings::get_enabled_taxonomies(), true ) ) {
+    if ( ! in_array( $taxonomy, TConn_Settings::get_enabled_taxonomies(), true ) ) {
         return;
     }
     if ( 'group' === $taxonomy ) {
@@ -64,7 +64,7 @@ function tc_add_delegated_identity_field( $term ): void {
     }
 
     $term_id = is_object( $term ) ? $term->term_id : 0;
-    $source  = $term_id ? tc_get_identity_source( $term_id ) : null;
+    $source  = $term_id ? tconn_get_identity_source( $term_id ) : null;
     $is_edit = $term_id > 0;
 
     // Peer sites: enabled WordPress peer link types available on this taxonomy only
@@ -72,43 +72,43 @@ function tc_add_delegated_identity_field( $term ): void {
     // TermConnect Social' author-profile peer, which only applies to 'mention'
     // — isn't a meaningful delegation target here and must not count toward "peers exist").
     $peer_sites = array_filter(
-        tc_get_enabled_link_types_for_taxonomy( $taxonomy ),
+        tconn_get_enabled_link_types_for_taxonomy( $taxonomy ),
         static fn( $peer_site ) => 'wordpress' === ( $peer_site['platform'] ?? '' )
     );
 
     if ( $is_edit ) {
-        echo '<tr class="form-field tc-delegated-identity-field" id="tc-delegated-identity-row">';
+        echo '<tr class="form-field tconn-delegated-identity-field" id="tconn-delegated-identity-row">';
         echo '<th scope="row" valign="top"><label>' . esc_html__( 'Delegated Identity', 'termconnect' ) . '</label></th>';
         echo '<td>';
     } else {
-        echo '<div class="form-field tc-delegated-identity-field" id="tc-delegated-identity-row">';
+        echo '<div class="form-field tconn-delegated-identity-field" id="tconn-delegated-identity-row">';
         echo '<label>' . esc_html__( 'Delegated Identity', 'termconnect' ) . '</label>';
     }
 
     if ( $source ) {
-        tc_render_delegated_identity_active( $term_id, $source );
-        tc_render_di_panels_once();
+        tconn_render_delegated_identity_active( $term_id, $source );
+        tconn_render_di_panels_once();
         $lock_name = ! empty( $source['sync_name'] ) || ! isset( $source['sync_name'] );
         $lock_desc = ! empty( $source['sync_description'] ) || ! isset( $source['sync_description'] );
         ?>
-        <script>
+        <?php ob_start(); ?>
         jQuery(function($){
-            function tcReadOnly( $el ) {
+            function tconnReadOnly( $el ) {
                 $el.prop( 'readonly', true ).css({ background: '#f0f0f1', cursor: 'not-allowed' });
             }
             // Slug is always locked — canonical matching key.
-            tcReadOnly( $( '#slug, #tag-slug' ) );
+            tconnReadOnly( $( '#slug, #tag-slug' ) );
             <?php if ( $lock_name ) : ?>
-            tcReadOnly( $( '#name, #tag-name' ) );
+            tconnReadOnly( $( '#name, #tag-name' ) );
             <?php endif; ?>
             <?php if ( $lock_desc ) : ?>
-            tcReadOnly( $( '#description, #tag-description' ) );
+            tconnReadOnly( $( '#description, #tag-description' ) );
             <?php endif; ?>
         });
-        </script>
+        <?php tconn_add_inline_script( 'delegated-identity', ob_get_clean() ); ?>
         <?php
     } else {
-        tc_render_delegated_identity_empty( $term_id, $term, $peer_sites );
+        tconn_render_delegated_identity_empty( $term_id, $term, $peer_sites );
     }
 
     if ( $is_edit ) {
@@ -125,12 +125,12 @@ function tc_add_delegated_identity_field( $term ): void {
  * @param WP_Term|string   $term
  * @param array            $peer_sites Enabled WordPress peer link types, keyed by slug.
  */
-function tc_render_delegated_identity_empty( int $term_id, $term, array $peer_sites ): void {
+function tconn_render_delegated_identity_empty( int $term_id, $term, array $peer_sites ): void {
     $local_slug = is_object( $term ) ? $term->slug : '';
     $taxonomy   = is_object( $term ) ? $term->taxonomy : (string) $term;
-    $nonce      = $term_id ? wp_create_nonce( 'tc_admin' ) : '';
+    $nonce      = $term_id ? wp_create_nonce( 'tconn_admin' ) : '';
     ?>
-    <div class="tc-external-links-field">
+    <div class="tconn-external-links-field">
         <?php if ( empty( $peer_sites ) ) : ?>
         <p class="description">
             <?php
@@ -140,30 +140,30 @@ function tc_render_delegated_identity_empty( int $term_id, $term, array $peer_si
                     __( 'No WordPress peer sites configured. Add a WordPress peer in <a href="%s">Peer Sites</a> first.', 'termconnect' ),
                     array( 'a' => array( 'href' => array() ) )
                 ),
-                esc_url( admin_url( 'admin.php?page=tc-peer-sites' ) )
+                esc_url( admin_url( 'admin.php?page=tconn-peer-sites' ) )
             );
             ?>
         </p>
         <?php else : ?>
-        <div class="tc-links-container tc-di-container"
+        <div class="tconn-links-container tconn-di-container"
              data-term-id="<?php echo esc_attr( $term_id ); ?>"
              data-nonce="<?php echo esc_attr( $nonce ); ?>"
              data-local-slug="<?php echo esc_attr( $local_slug ); ?>"
              data-taxonomy="<?php echo esc_attr( $taxonomy ); ?>"
              data-hierarchical="<?php echo esc_attr( is_taxonomy_hierarchical( $taxonomy ) ? '1' : '0' ); ?>">
 
-            <button type="button" class="tc-links-add-btn tc-di-add-btn"
+            <button type="button" class="tconn-links-add-btn tconn-di-add-btn"
                     title="<?php esc_attr_e( 'Delegate identity', 'termconnect' ); ?>">
                 <span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span>
                 <span class="screen-reader-text"><?php esc_html_e( 'Delegate identity', 'termconnect' ); ?></span>
             </button>
 
-            <div class="tc-links-dropdown tc-di-dropdown" style="display:none">
-                <div class="tc-links-dd-row tc-di-site-row">
+            <div class="tconn-links-dropdown tconn-di-dropdown" style="display:none">
+                <div class="tconn-links-dd-row tconn-di-site-row">
                     <label style="font-size:11px;color:#646970;padding:6px 10px 2px;display:block">
                         <?php esc_html_e( 'Peer site', 'termconnect' ); ?>
                     </label>
-                    <select class="tc-di-site-select" style="width:100%;margin:0 10px 6px;box-sizing:border-box;max-width:calc(100% - 20px)">
+                    <select class="tconn-di-site-select" style="width:100%;margin:0 10px 6px;box-sizing:border-box;max-width:calc(100% - 20px)">
                         <option value="">&mdash; <?php esc_html_e( 'Select peer site', 'termconnect' ); ?> &mdash;</option>
                         <?php foreach ( $peer_sites as $peer_site_slug => $peer_site ) : ?>
                         <option value="<?php echo esc_attr( $peer_site_slug ); ?>">
@@ -173,15 +173,15 @@ function tc_render_delegated_identity_empty( int $term_id, $term, array $peer_si
                     </select>
                 </div>
                 <!-- Lookup status: shown after peer selected while fetching the same-slug remote term -->
-                <div class="tc-di-lookup-status" style="display:none;padding:4px 10px 8px;font-size:13px"></div>
+                <div class="tconn-di-lookup-status" style="display:none;padding:4px 10px 8px;font-size:13px"></div>
             </div>
         </div>
 
         <!-- Confirmation pane: shown after remote term found, before commit -->
-        <div class="tc-di-confirm" style="display:none;margin-top:8px">
-            <div class="tc-di-preview-box" style="display:none;background:#f6f7f7;border:1px solid #dcdcde;border-radius:3px;padding:10px 12px;margin-bottom:8px">
-                <div class="tc-di-preview-desc description" style="margin:0 0 6px"></div>
-                <div class="tc-di-preview-mappings"></div>
+        <div class="tconn-di-confirm" style="display:none;margin-top:8px">
+            <div class="tconn-di-preview-box" style="display:none;background:#f6f7f7;border:1px solid #dcdcde;border-radius:3px;padding:10px 12px;margin-bottom:8px">
+                <div class="tconn-di-preview-desc description" style="margin:0 0 6px"></div>
+                <div class="tconn-di-preview-mappings"></div>
             </div>
             <div style="background:#fff8e5;border:1px solid #d6a700;border-radius:3px;padding:8px 12px;margin-bottom:8px">
                 <strong><?php esc_html_e( 'Before you continue:', 'termconnect' ); ?></strong>
@@ -192,29 +192,29 @@ function tc_render_delegated_identity_empty( int $term_id, $term, array $peer_si
             </div>
             <div style="margin-bottom:8px">
                 <label style="display:block;margin-bottom:4px">
-                    <input type="checkbox" class="tc-di-sync-name" value="1" checked />
+                    <input type="checkbox" class="tconn-di-sync-name" value="1" checked />
                     <?php esc_html_e( 'Sync name from remote (makes field read-only while delegated)', 'termconnect' ); ?>
                 </label>
                 <label style="display:block">
-                    <input type="checkbox" class="tc-di-sync-description" value="1" checked />
+                    <input type="checkbox" class="tconn-di-sync-description" value="1" checked />
                     <?php esc_html_e( 'Sync description from remote (makes field read-only while delegated)', 'termconnect' ); ?>
                 </label>
             </div>
-            <div class="tc-di-sync-descendants-row" style="display:none;margin-bottom:8px">
+            <div class="tconn-di-sync-descendants-row" style="display:none;margin-bottom:8px">
                 <label>
-                    <input type="checkbox" class="tc-di-sync-descendants" value="1" checked />
+                    <input type="checkbox" class="tconn-di-sync-descendants" value="1" checked />
                     <?php esc_html_e( 'Track and sync descendant terms, including future ones added remotely', 'termconnect' ); ?>
                 </label>
             </div>
-            <button type="button" class="button button-primary tc-di-confirm-btn"
+            <button type="button" class="button button-primary tconn-di-confirm-btn"
                     data-term-id="<?php echo esc_attr( $term_id ); ?>"
                     data-nonce="<?php echo esc_attr( $nonce ); ?>">
                 <?php esc_html_e( 'Delegate', 'termconnect' ); ?>
             </button>
-            <button type="button" class="button tc-di-cancel-confirm" style="margin-left:4px">
+            <button type="button" class="button tconn-di-cancel-confirm" style="margin-left:4px">
                 <?php esc_html_e( 'Cancel', 'termconnect' ); ?>
             </button>
-            <span class="tc-di-confirm-status description" style="margin-left:8px"></span>
+            <span class="tconn-di-confirm-status description" style="margin-left:8px"></span>
         </div>
         <?php endif; ?>
 
@@ -237,16 +237,16 @@ function tc_render_delegated_identity_empty( int $term_id, $term, array $peer_si
  * @param int   $term_id
  * @param array $source  Identity source meta.
  */
-function tc_render_delegated_identity_active( int $term_id, array $source ): void {
+function tconn_render_delegated_identity_active( int $term_id, array $source ): void {
     $peer_site_slug      = $source['peer_site_slug'];
     $remote_slug  = $source['remote_slug'];
     $remote_link  = $source['remote_link'] ?? '';
     $site_url     = $source['site_url'];
     $status       = $source['status'] ?? 'active';
     $last_fetched = $source['last_fetched'] ?? 0;
-    $nonce        = wp_create_nonce( 'tc_admin' );
+    $nonce        = wp_create_nonce( 'tconn_admin' );
 
-    $link_type  = tc_get_link_type( $peer_site_slug );
+    $link_type  = tconn_get_link_type( $peer_site_slug );
     $site_label = $link_type ? $link_type['label'] : ( wp_parse_url( $site_url, PHP_URL_HOST ) ?: $site_url );
     $pill_url   = $remote_link ?: $site_url;
 
@@ -270,7 +270,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
             $status_label = $status;
             break;
     }
-    $status_class = 'active' === $status ? 'tc-di-status-ok' : 'tc-di-status-warning';
+    $status_class = 'active' === $status ? 'tconn-di-status-ok' : 'tconn-di-status-warning';
 
     // Determine whether this delegation can be removed in place from this screen.
     // Manual delegations (no sv_source_id) and 'terms' scope are always removable.
@@ -285,14 +285,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
     $sv_name        = '';
 
     if ( $sv_source_id ) {
-        $all_sources = get_option( 'tc_shared_vocabularies', array() );
-        $sv_config   = null;
-        foreach ( $all_sources as $sv ) {
-            if ( ( $sv['id'] ?? '' ) === $sv_source_id ) {
-                $sv_config = $sv;
-                break;
-            }
-        }
+        $sv_config = tconn_sv_get_source( (string) $sv_source_id );
 
         if ( $sv_config ) {
             $sv_name  = $sv_config['sv_name'] ?? '';
@@ -327,7 +320,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
                     $root_name        = $root_slug_names[ $term_remote_slug ] ?? '';
                     if ( ! $root_name ) {
                         foreach ( get_ancestors( $term_id, $sv_config['taxonomy'], 'taxonomy' ) as $ancestor_id ) {
-                            $ancestor_src = get_term_meta( $ancestor_id, TC_META_IDENTITY_SOURCE, true );
+                            $ancestor_src = get_term_meta( $ancestor_id, TCONN_META_IDENTITY_SOURCE, true );
                             if ( is_array( $ancestor_src ) ) {
                                 $root_name = $root_slug_names[ $ancestor_src['remote_slug'] ?? '' ] ?? '';
                                 if ( $root_name ) { break; }
@@ -361,13 +354,13 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
     }
 
     $sv_page_url = $sv_source_id
-        ? add_query_arg( 'scope', $sv_scope_tab, admin_url( 'admin.php?page=tc-shared-vocabularies' ) )
+        ? add_query_arg( 'scope', $sv_scope_tab, admin_url( 'admin.php?page=tconn-shared-vocabularies' ) )
         : '';
 
     ?>
-    <div class="tc-external-links-field">
-        <div class="tc-links-container tc-di-container-active">
-            <span class="tc-link-pill">
+    <div class="tconn-external-links-field">
+        <div class="tconn-links-container tconn-di-container-active">
+            <span class="tconn-link-pill">
                 <?php if ( $pill_url ) : ?>
                 <a href="<?php echo esc_url( $pill_url ); ?>" target="_blank" rel="noopener noreferrer"
                    style="color:inherit;text-decoration:none">
@@ -377,7 +370,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
                 <?php echo esc_html( $site_label ); ?>: <?php echo esc_html( $remote_slug ); ?>
                 <?php endif; ?>
                 <?php if ( $removable ) : ?>
-                <button type="button" class="tc-link-pill-remove tc-di-remove-btn"
+                <button type="button" class="tconn-link-pill-remove tconn-di-remove-btn"
                         data-term-id="<?php echo esc_attr( $term_id ); ?>"
                         data-nonce="<?php echo esc_attr( $nonce ); ?>"
                         data-sync-name="<?php echo esc_attr( ! empty( $source['sync_name'] ) || ! isset( $source['sync_name'] ) ? '1' : '0' ); ?>"
@@ -390,7 +383,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
         </div>
 
         <p class="description" style="margin-top:4px">
-            <span class="tc-di-status <?php echo esc_attr( $status_class ); ?>">
+            <span class="tconn-di-status <?php echo esc_attr( $status_class ); ?>">
                 <?php echo esc_html( $status_label ); ?>
             </span>
             <?php if ( $last_fetched ) : ?>
@@ -405,7 +398,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
             <?php endif; ?>
             <?php if ( ! $sv_source_id ) : ?>
             &mdash;
-            <button type="button" class="button-link tc-di-refresh-btn"
+            <button type="button" class="button-link tconn-di-refresh-btn"
                     data-term-id="<?php echo esc_attr( $term_id ); ?>"
                     data-nonce="<?php echo esc_attr( $nonce ); ?>">
                 <?php esc_html_e( 'Refresh now', 'termconnect' ); ?>
@@ -413,7 +406,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
             <?php endif; ?>
             <?php if ( $removable ) : ?>
             &mdash;
-            <button type="button" class="button-link tc-di-settings-btn"
+            <button type="button" class="button-link tconn-di-settings-btn"
                     data-term-id="<?php echo esc_attr( $term_id ); ?>"
                     data-nonce="<?php echo esc_attr( $nonce ); ?>"
                     data-sync-name="<?php echo esc_attr( ! empty( $source['sync_name'] ) || ! isset( $source['sync_name'] ) ? '1' : '0' ); ?>"
@@ -422,7 +415,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
             </button>
             <?php endif; ?>
             <?php if ( ! $sv_source_id || $removable ) : ?>
-            <span class="tc-di-action-status" style="margin-left:4px"></span>
+            <span class="tconn-di-action-status" style="margin-left:4px"></span>
             <?php endif; ?>
         </p>
 
@@ -459,7 +452,7 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
         <?php endif; ?>
 
         <?php
-        $rel_sync_issues = get_term_meta( $term_id, TC_META_REL_SYNC_ISSUES, true );
+        $rel_sync_issues = get_term_meta( $term_id, TCONN_META_REL_SYNC_ISSUES, true );
         $peer_sync_issues       = array();
         if ( ! empty( $rel_sync_issues ) && is_array( $rel_sync_issues ) ) :
             // Filter to issues for this peer link type.
@@ -521,74 +514,74 @@ function tc_render_delegated_identity_active( int $term_id, array $source ): voi
 /**
  * Output the remove-confirmation and sync-settings floating panels once per page.
  *
- * A shared backdrop is included. Both panels are populated and shown by tc-term-edit.js.
+ * A shared backdrop is included. Both panels are populated and shown by tconn-term-edit.js.
  */
-function tc_render_di_panels_once(): void {
+function tconn_render_di_panels_once(): void {
     static $rendered = false;
     if ( $rendered ) {
         return;
     }
     $rendered = true;
     ?>
-    <div id="tc-di-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:160000"></div>
+    <div id="tconn-di-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:160000"></div>
 
-    <div id="tc-di-remove-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:20px;width:min(480px,90vw);z-index:160001;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+    <div id="tconn-di-remove-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:20px;width:min(480px,90vw);z-index:160001;box-shadow:0 8px 32px rgba(0,0,0,.18)">
         <h3 style="margin:0 0 10px"><?php esc_html_e( 'End delegation?', 'termconnect' ); ?></h3>
         <p style="margin:0 0 12px"><?php esc_html_e( 'Delegation to the remote term will end. Remote-synced name and description will be replaced with local values.', 'termconnect' ); ?></p>
-        <div id="tc-di-remove-restore-name-row" style="margin-bottom:6px">
+        <div id="tconn-di-remove-restore-name-row" style="margin-bottom:6px">
             <label>
-                <input type="checkbox" id="tc-di-restore-name" value="1" checked>
+                <input type="checkbox" id="tconn-di-restore-name" value="1" checked>
                 <?php esc_html_e( 'Restore local name', 'termconnect' ); ?>
             </label>
         </div>
-        <div id="tc-di-remove-restore-desc-row" style="margin-bottom:6px">
+        <div id="tconn-di-remove-restore-desc-row" style="margin-bottom:6px">
             <label>
-                <input type="checkbox" id="tc-di-restore-description" value="1" checked>
+                <input type="checkbox" id="tconn-di-restore-description" value="1" checked>
                 <?php esc_html_e( 'Restore local description', 'termconnect' ); ?>
             </label>
         </div>
         <div style="margin-bottom:16px">
             <label>
-                <input type="checkbox" id="tc-di-keep-peer-links" value="1">
+                <input type="checkbox" id="tconn-di-keep-peer-links" value="1">
                 <?php esc_html_e( 'Keep external links for existing peer sites', 'termconnect' ); ?>
             </label>
             <p class="description" style="margin:3px 0 0 20px"><?php esc_html_e( 'Delegated links for locally-configured platforms become local links. Any existing local link for the same platform will be replaced.', 'termconnect' ); ?></p>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-            <button type="button" id="tc-di-remove-confirm-btn" class="button button-primary" style="background:#d63638;border-color:#b32d2e;box-shadow:0 1px 0 #b32d2e">
+            <button type="button" id="tconn-di-remove-confirm-btn" class="button button-primary" style="background:#d63638;border-color:#b32d2e;box-shadow:0 1px 0 #b32d2e">
                 <?php esc_html_e( 'End delegation', 'termconnect' ); ?>
             </button>
-            <button type="button" id="tc-di-remove-cancel-btn" class="button">
+            <button type="button" id="tconn-di-remove-cancel-btn" class="button">
                 <?php esc_html_e( 'Cancel', 'termconnect' ); ?>
             </button>
-            <span id="tc-di-remove-status" class="description" style="margin-left:4px"></span>
+            <span id="tconn-di-remove-status" class="description" style="margin-left:4px"></span>
         </div>
     </div>
 
-    <div id="tc-di-settings-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:20px;width:min(420px,90vw);z-index:160001;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+    <div id="tconn-di-settings-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:20px;width:min(420px,90vw);z-index:160001;box-shadow:0 8px 32px rgba(0,0,0,.18)">
         <h3 style="margin:0 0 14px"><?php esc_html_e( 'Sync settings', 'termconnect' ); ?></h3>
-        <input type="hidden" id="tc-di-settings-term-id" value="">
-        <input type="hidden" id="tc-di-settings-nonce" value="">
+        <input type="hidden" id="tconn-di-settings-term-id" value="">
+        <input type="hidden" id="tconn-di-settings-nonce" value="">
         <div style="margin-bottom:8px">
             <label>
-                <input type="checkbox" id="tc-di-settings-sync-name" value="1">
+                <input type="checkbox" id="tconn-di-settings-sync-name" value="1">
                 <?php esc_html_e( 'Sync name from remote (makes field read-only while delegated)', 'termconnect' ); ?>
             </label>
         </div>
         <div style="margin-bottom:16px">
             <label>
-                <input type="checkbox" id="tc-di-settings-sync-description" value="1">
+                <input type="checkbox" id="tconn-di-settings-sync-description" value="1">
                 <?php esc_html_e( 'Sync description from remote (makes field read-only while delegated)', 'termconnect' ); ?>
             </label>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-            <button type="button" id="tc-di-settings-save-btn" class="button button-primary">
+            <button type="button" id="tconn-di-settings-save-btn" class="button button-primary">
                 <?php esc_html_e( 'Save', 'termconnect' ); ?>
             </button>
-            <button type="button" id="tc-di-settings-cancel-btn" class="button">
+            <button type="button" id="tconn-di-settings-cancel-btn" class="button">
                 <?php esc_html_e( 'Cancel', 'termconnect' ); ?>
             </button>
-            <span id="tc-di-settings-status" class="description" style="margin-left:4px"></span>
+            <span id="tconn-di-settings-status" class="description" style="margin-left:4px"></span>
         </div>
     </div>
     <?php

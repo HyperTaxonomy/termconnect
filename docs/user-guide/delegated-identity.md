@@ -37,7 +37,7 @@ The remote site only needs to run standard WordPress (REST API). No TermConnect 
 
 Click the **Sync settings** button next to the active delegation pill to open a floating panel where you can toggle **Sync name** and **Sync description** independently. Changes take effect immediately; the page reloads to reflect the new read-only state of the affected fields. Turning one off restores the value the term had before delegation. These settings belong to the term, and syncs keep them. Editing a Shared Vocabulary source's own sync settings changes them for all of its terms.
 
-Setting up delegation from term edit automatically creates or updates a vocabulary source entry visible in **Terms → Shared Vocabularies**. Without descendant tracking, it appears under the **Individual Terms** tab (individual term, no subtree). With descendant tracking on, it appears under the **Term Hierarchies** tab (term as a branch root; descendants are synced).
+Setting up delegation from term edit automatically creates or updates a vocabulary source entry visible in **Terms&nbsp;→ Shared Vocabularies**. Without descendant tracking, it appears under the **Individual Terms** tab (individual term, no subtree). With descendant tracking on, it appears under the **Term Hierarchies** tab (term as a branch root; descendants are synced).
 
 If you delegate multiple terms to the same peer site in the same taxonomy with the same sync settings (Sync name and Sync description), they are collected into a single Shared Vocabulary entry — not one entry per term. If a Shared Vocabulary already exists for that peer site and scope but with different sync settings, a prompt appears below the Delegate button:
 
@@ -50,14 +50,14 @@ Two buttons are offered:
 
 ## Setting up via Shared Vocabularies
 
-Delegation for many terms at once — entire taxonomies, hierarchy branches, or HyperTaxonomy [groups](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-groups.html) — is configured on the **Terms → Shared Vocabularies** page. See [Shared Vocabularies](shared-vocabularies.html).
+Delegation for many terms at once — entire taxonomies, hierarchy branches, or HyperTaxonomy [groups](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-groups.html) — is configured on the **Terms&nbsp;→ Shared Vocabularies** page. See [Shared Vocabularies](shared-vocabularies.html).
 
 ## What changes when delegation is active
 
 - **Slug** is always locked to match the remote term. The slug field is read-only in the term edit screen and Quick Edit.
 - **Name** (when Sync name is on): replaced with the remote name; field is read-only.
 - **Description** (when Sync description is on): replaced with the remote description; field is read-only.
-- **External links** — the External Links panel shows a merged view: locally-set pills (blue) and delegated-only pills (green, dashed border) appear together, sorted alphabetically. Two overlap cases: (1) **Same URL** — a single blue pill is shown with an ×; clicking × clears the local value and the pill turns green without disappearing, since the delegated link is still present. (2) **Same site, different URL** — the local pill is shown at reduced opacity with an "Overridden by delegated link" tooltip, and the delegated URL appears as a separate green pill. Delegated-only pills (no local equivalent) have no × button.
+- **External links** — the External Links panel shows a merged view: locally-set pills (blue) and delegated-only pills (green, dashed border) appear together, sorted alphabetically. Two overlap cases: (1) **Same URL** — a single blue pill is shown with an ×; clicking ×&nbsp;clears the local value and the pill turns green without disappearing, since the delegated link is still present. (2) **Same site, different URL** — the local pill is shown at reduced opacity with an "Overridden by delegated link" tooltip, and the delegated URL appears as a separate green pill. Delegated-only pills (no local equivalent) have no ×&nbsp;button.
 - **Remote term ID tracking** — after each successful sync, if the remote term's slug matched but its integer ID differs from the stored value (e.g. after a peer database migration), TermConnect updates the stored ID in both the term meta and the Shared Vocabularies roots entry. The remote term ID isn't shown in the admin screens. Shared Vocabulary syncs use it to recognize a renamed term, and **Check for rename** uses it too (see [below](#site-health-source-term-not-found)).
 - The **Delegated Identity** panel shows the source as a pill (`[Peer site]: [remote-slug] ↗`) with the last sync time. A **Refresh now** link appears only for terms with no Shared Vocabulary source. Delegating from the term edit screen always creates a source, so for those terms, use **Sync now** on the Shared Vocabularies page.
 
@@ -71,7 +71,7 @@ The remote term is always looked up in the same taxonomy as the local term. Cros
 
 ## Ending delegation
 
-Click the × button on the active delegation pill to open a confirmation panel. The panel lets you:
+Click the ×&nbsp;button on the active delegation pill to open a confirmation panel. The panel lets you:
 
 - **Restore local name** (shown only when Sync name is on) — reverts to the name the term had before delegation. On by default.
 - **Restore local description** (shown only when Sync description is on) — reverts to the original description. On by default.
@@ -79,7 +79,7 @@ Click the × button on the active delegation pill to open a confirmation panel. 
 
 Whether delegation can be removed from the term edit screen depends on the vocabulary source that manages it:
 
-| Source | × shown | How to remove |
+| Source | ×&nbsp;shown | How to remove |
 |---|---|---|
 | Individual Terms tab or Term Hierarchies root | ✓ | Click × — removes delegation and source entry. If other sources of lower priority cover this term, the next one claims it on its next sync. |
 | Taxonomies tab | — | Notice: "Shared vocabulary (taxonomy): *Tags* · Site B — Manage" |
@@ -89,23 +89,55 @@ Whether delegation can be removed from the term edit screen depends on the vocab
 
 When the source has a name, the notice shows it instead: "Shared vocabulary: *Name* (taxonomy · Site B) — Manage".
 
-For terms whose × is hidden, go to the linked Shared Vocabularies tab and remove the source or narrow its scope. After removing, the next priority source (by tab order: Taxonomies → Remote Groups → Local Groups → Term Hierarchies → Individual Terms) may claim the term on its next sync; repeat as needed.
+For terms whose ×&nbsp;is hidden, go to the linked Shared Vocabularies tab and remove the source or narrow its scope. After removing, the next priority source (by tab order: Taxonomies&nbsp;→ Remote Groups&nbsp;→ Local Groups&nbsp;→ Term Hierarchies&nbsp;→ Individual Terms) may claim the term on its next sync; repeat as needed.
+
+## Merging and converting terms
+
+A delegation and a term's external links are stored on the term, so when HyperTaxonomy [merges or converts terms](https://hypertaxonomy.org/hypertaxonomy/user-guide/merge-convert.html), what happens to them is a choice. On the Merge Terms and Convert Terms pages, TermConnect checks with the peers whether each delegated term's remote term still exists, and which Shared Vocabularies cover the terms involved, then shows the choices before anything changes. The **redirect stub** setting is shown there too and can still be changed: choices that need a stub, or no stub, follow it. With stubs, everything stays on the stubs by default.
+
+**Merging.** For each source term that's delegated:
+
+| Choice | What happens | Default |
+|---|---|---|
+| **Keep it on the redirect stub** | The stub, which keeps the source's name, slug and place in the hierarchy, takes over the delegation and redirects visitors to the target. A shared vocabulary keeps mirroring the remote term there, so nothing is recreated. Needs a stub | With a stub, unless the remote term no longer exists |
+| **Move it to the target** | The target is delegated instead; its own name and description are kept, to restore if the delegation ends. Only when the target isn't delegated, and for only one source. For a term from a Taxonomies, Remote Groups, Term Hierarchies or Individual Terms source, the target also takes the remote slug (its archive address changes), so this needs no stub, which would keep that slug. When a vocabulary covers the target's slug, the page warns that its next sync delegates the target to its own term instead | Without a stub |
+| **Let it end** | The delegation ends with the term. The page says what follows (below). When another vocabulary source covers the slug, this needs no stub: that source's next sync would delegate the stub again | When the remote term no longer exists, or no other choice is possible |
+
+If a stub can't be created (a term with its name already exists), the choice made without stubs applies.
+
+**Converting.** A delegation belongs to its taxonomy (the remote term is looked up in the same taxonomy on the peer), so it can't move to the new term:
+
+- **The old term's delegation:** with a redirect stub, the old term stays in the old taxonomy as the stub and keeps its delegation (the default). It can also end there, unless another vocabulary source covers the slug. Without a stub, the delegation ends with the term.
+- **The new term:** when the peer has a term with the same remote slug in the new taxonomy (for example because it converted its own), you can delegate the new term to it. This is the default when it's available. When a Shared Vocabulary in the new taxonomy covers the new term's slug, the page says that its next sync delegates the new term, and this choice isn't offered.
+
+**What follows when a delegation ends.** A term's delegation records the one vocabulary source that claimed it: sources are checked in tab order, then row order, and the first one wins. Other sources skip the term while it's delegated. When the delegation ends, the next source that covers the slug, in that order, claims it on its next sync, and the page names it: a Taxonomies, Remote Groups or Term Hierarchies source creates the term again (with no posts) and delegates it, or delegates the stub that has its slug. Ending a delegation also removes the term's own row from an Individual Terms source, or its root from a Term Hierarchies source, which then stops mirroring that hierarchy. When no source covers the slug any more, the delegation simply ends. The page also warns when a peer can't be reached to check its vocabularies.
+
+**External links.** One choice covers the external links of all the terms being merged or converted:
+
+| Choice | What happens | Default |
+|---|---|---|
+| **Leave them on the redirect stubs** | Each stub keeps the links of the term it replaces. Needs stubs | With stubs |
+| **Move them to the target** or **to the new terms** | The target or new term gets the link types it doesn't have (when converting, of the types enabled in the new taxonomy). A link it already has isn't kept twice; links it can't take (another link of the same type, or a type its taxonomy doesn't allow) stay on the stubs, or are deleted without stubs | Without stubs |
+| **Copy them, and leave them on the redirect stubs** | Both have them. Needs stubs | |
+| **Delete them** | No term keeps them | |
+
+The page reports what was done after the merge or conversion. Merges and conversions started outside these pages use the defaults, unless whatever started them asked for something else: conversions by the Categories to Tags Converter use the defaults, while [merge proposals](shared-vocabularies.html#merge-proposals) move the links to the replacement term. A term converted back to its stub gets its links back.
 
 ## External links from the remote term
 
-When the remote site runs TermConnect with **Share external links** on, its external links are cached locally as delegated links. They appear in the merged External Links panel and in the `tc_links` REST field, which lets other peer sites match this term by shared external links without configuring a slug.
+When the remote site runs TermConnect with **Share external links** on, its external links are cached locally as delegated links. They appear in the merged External Links panel and in the `tconn_links` REST field, which lets other peer sites match this term by shared external links without configuring a slug.
 
 A peer running HyperTaxonomy also reports in the same response whether the term redirects elsewhere, so redirects and external links are checked together.
 
 ## Redirect detection
 
-When a remote term is detected as a HyperTaxonomy [redirect](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html#redirects) (via `htax_redirect` in the REST response), it is queued for admin review in **Site Health → TermConnect delegated identity**, which shows where the source moved and offers three actions:
+When a remote term is detected as a HyperTaxonomy [redirect](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html#redirects) (via `htax_redirect` in the REST response), it is queued for admin review in **Site Health&nbsp;→ TermConnect delegated identity**, which shows where the source moved and offers three actions:
 
 - **Follow redirect** — point the delegation at the new remote term, keeping the delegation's settings (name/description syncing, descendants) and the backed-up original name and description.
 - **Keep current delegation** — dismiss this redirect. TermConnect stops raising it; if the remote term later redirects somewhere *else*, the new target is queued again. The term edit screen shows the status as *Remote term redirected — current delegation kept*.
 - **End delegation** — remove the delegation and restore the term's original name and description.
 
-The review entry also clears on its own when the remote term stops redirecting, when the term is re-delegated or its delegation ends, or when the term is deleted. With **Auto-accept redirects** on (**Settings → TermConnect → Shared Vocabularies**), the delegation follows the redirect automatically instead, within the same taxonomy. It follows chains of redirects only with **Auto-follow chain redirects** on. Delegations managed by a Shared Vocabulary are not followed from Site Health — the vocabulary source decides which remote term they track, so update it on **Terms → Shared Vocabularies**.
+The review entry also clears on its own when the remote term stops redirecting, when the term is re-delegated or its delegation ends, or when the term is deleted. With **Auto-accept redirects** on (**Settings&nbsp;→ TermConnect&nbsp;→ Shared Vocabularies**), the delegation follows the redirect automatically instead, within the same taxonomy. It follows chains of redirects only with **Auto-follow chain redirects** on. Delegations managed by a Shared Vocabulary are not followed from Site Health — the vocabulary source decides which remote term they track, so update it on **Terms&nbsp;→ Shared Vocabularies**.
 
 ## Site Health: source term not found
 
@@ -125,4 +157,4 @@ When a delegated term's remote source returns a not-found response, the Site Hea
 
 ## Scheduled refresh
 
-TermConnect checks delegated terms twice daily, and refreshes those older than the **Shared Vocabularies** cache setting (one day by default). Use the **Re-sync All** button in **Settings → TermConnect → Cache** to refresh all delegated terms immediately. It updates terms that are already delegated, and doesn't add terms or change the hierarchy, which only a Shared Vocabulary sync does. On a large site it can stop at a time limit; click it again to continue.
+TermConnect checks delegated terms twice daily, and refreshes those older than the **Shared Vocabularies** cache setting (one day by default). Use the **Re-sync All** button in **Settings&nbsp;→ TermConnect&nbsp;→ Cache** to refresh all delegated terms immediately. It updates terms that are already delegated, and doesn't add terms or change the hierarchy, which only a Shared Vocabulary sync does. On a large site it can stop at a time limit; click it again to continue.

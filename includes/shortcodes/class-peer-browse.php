@@ -2,12 +2,12 @@
 /**
  * Interactive cross-network topic browser.
  *
- * [tc_peer_browse] — renders a term-pills facet with optional Match (Any/All),
+ * [tconn_peer_browse] — renders a term-pills facet with optional Match (Any/All),
  * Source (local + peers / peers only), and Sort controls. The visitor selects
  * topics and results (local posts plus peer/feed posts) load and update via AJAX
  * with a Load-more button.
  *
- * This is the interactive, visitor-driven counterpart to [tc_peer_posts] (which
+ * This is the interactive, visitor-driven counterpart to [tconn_peer_posts] (which
  * derives its terms automatically from the current post). Term selection drives
  * the query:
  *   - Any (OR):  union of posts matching any selected term.
@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class TC_Shortcode_PeerBrowse {
+class TConn_Shortcode_PeerBrowse {
 
     /**
      * Valid orderby values. Date/modified/title interleave across all sources;
@@ -66,16 +66,16 @@ class TC_Shortcode_PeerBrowse {
     }
 
     /**
-     * Register the [tc_peer_browse] shortcode and its AJAX handlers.
+     * Register the [tconn_peer_browse] shortcode and its AJAX handlers.
      *
      * @since 1.0.0
      */
     public function __construct() {
-        add_shortcode( 'tc_peer_browse', array( $this, 'shortcode_handler' ) );
-        add_action( 'wp_ajax_tc_peer_browse',              array( $this, 'ajax_browse' ) );
-        add_action( 'wp_ajax_nopriv_tc_peer_browse',       array( $this, 'ajax_browse' ) );
-        add_action( 'wp_ajax_tc_peer_browse_terms',        array( $this, 'ajax_term_suggest' ) );
-        add_action( 'wp_ajax_nopriv_tc_peer_browse_terms', array( $this, 'ajax_term_suggest' ) );
+        add_shortcode( 'tconn_peer_browse', array( $this, 'shortcode_handler' ) );
+        add_action( 'wp_ajax_tconn_peer_browse',              array( $this, 'ajax_browse' ) );
+        add_action( 'wp_ajax_nopriv_tconn_peer_browse',       array( $this, 'ajax_browse' ) );
+        add_action( 'wp_ajax_tconn_peer_browse_terms',        array( $this, 'ajax_term_suggest' ) );
+        add_action( 'wp_ajax_nopriv_tconn_peer_browse_terms', array( $this, 'ajax_term_suggest' ) );
     }
 
     /**
@@ -137,14 +137,14 @@ class TC_Shortcode_PeerBrowse {
     /**
      * Shortcode handler — renders the facet controls plus the initial results.
      *
-     * Unlike [tc_peer_posts] there is no is_singular() guard: the browser is a
+     * Unlike [tconn_peer_posts] there is no is_singular() guard: the browser is a
      * standalone control that works anywhere.
      *
      * @param array|string $atts
      * @return string
      */
     public function shortcode_handler( $atts ) {
-        $atts = shortcode_atts( $this->get_defaults(), $atts, 'tc_peer_browse' );
+        $atts = shortcode_atts( $this->get_defaults(), $atts, 'tconn_peer_browse' );
         $this->enqueue_assets();
 
         $taxonomy   = sanitize_key( $atts['taxonomy'] );
@@ -177,25 +177,25 @@ class TC_Shortcode_PeerBrowse {
         $scope   = in_array( $atts['scope'], array( 'all', 'peers' ), true ) ? $atts['scope'] : 'all';
         $orderby = in_array( $atts['orderby'], self::SORT_OPTIONS, true ) ? $atts['orderby'] : 'modified';
 
-        $wrapper_class = 'tc-peer-browse';
+        $wrapper_class = 'tconn-peer-browse';
         if ( ! empty( $atts['class'] ) ) {
             $wrapper_class .= ' ' . sanitize_html_class( $atts['class'] );
         }
 
         $html  = '<div class="' . esc_attr( $wrapper_class ) . '"'
-               . ' data-nonce="' . esc_attr( wp_create_nonce( 'tc_peer_browse' ) ) . '"'
+               . ' data-nonce="' . esc_attr( wp_create_nonce( 'tconn_peer_browse' ) ) . '"'
                . ' data-taxonomy="' . esc_attr( $taxonomy ) . '"'
                . ' data-match="' . esc_attr( $match ) . '"'
                . ' data-scope="' . esc_attr( $scope ) . '"'
                . ' data-orderby="' . esc_attr( $orderby ) . '"'
                . ' data-columns="' . (int) $config['columns'] . '"'
-               . ' data-thumb-ratio="' . esc_attr( tc_image_size_ratio( $config['image_size'] ) ) . '"'
+               . ' data-thumb-ratio="' . esc_attr( tconn_image_size_ratio( $config['image_size'] ) ) . '"'
                . ' data-atts="' . esc_attr( wp_json_encode( $config ) ) . '">';
 
         $html .= $this->render_controls( $uid, $taxonomy, $match, $scope, $orderby, $seed_terms, $atts );
 
         // Initial results (server-rendered when seeded; otherwise a prompt).
-        $html .= '<div class="tc-pb-results">';
+        $html .= '<div class="tconn-pb-results">';
         if ( ! empty( $seed_terms ) ) {
             $result = $this->build_results( array(
                 'taxonomy'    => $taxonomy,
@@ -205,13 +205,13 @@ class TC_Shortcode_PeerBrowse {
                 'orderby'     => $orderby,
                 'offset'      => 0,
             ) + $config );
-            $html .= $this->wrap_results( $result, tc_post_list_items_style( (int) $config['columns'], $config['image_size'] ) );
+            $html .= $this->wrap_results( $result, tconn_post_list_items_style( (int) $config['columns'], $config['image_size'] ) );
         } else {
-            $html .= '<p class="tc-pb-empty">' . esc_html__( 'Choose one or more topics to see related posts.', 'termconnect' ) . '</p>';
+            $html .= '<p class="tconn-pb-empty">' . esc_html__( 'Choose one or more topics to see related posts.', 'termconnect' ) . '</p>';
         }
-        $html .= '</div>'; // .tc-pb-results
+        $html .= '</div>'; // .tconn-pb-results
 
-        $html .= '</div>'; // .tc-peer-browse
+        $html .= '</div>'; // .tconn-peer-browse
         return $html;
     }
 
@@ -228,39 +228,39 @@ class TC_Shortcode_PeerBrowse {
      * @return string
      */
     private function render_controls( string $uid, string $taxonomy, string $match, string $scope, string $orderby, array $seed_terms, array $atts ): string {
-        $html  = '<form class="tc-pb-controls" onsubmit="return false">';
+        $html  = '<form class="tconn-pb-controls" onsubmit="return false">';
 
         // Topic pills
-        $html .= '<div class="tc-pb-field tc-pb-pills-field">';
-        $html .= '<label class="tc-pb-label" for="' . esc_attr( $uid ) . '-input">' . esc_html__( 'Topics', 'termconnect' ) . '</label>';
-        $html .= '<div class="tc-pb-pillbox">';
+        $html .= '<div class="tconn-pb-field tconn-pb-pills-field">';
+        $html .= '<label class="tconn-pb-label" for="' . esc_attr( $uid ) . '-input">' . esc_html__( 'Topics', 'termconnect' ) . '</label>';
+        $html .= '<div class="tconn-pb-pillbox">';
         foreach ( $seed_terms as $tid ) {
             $term = get_term( $tid );
             if ( $term instanceof WP_Term ) {
                 $html .= $this->pill_html( (int) $tid, $term->name );
             }
         }
-        $html .= '<input type="text" id="' . esc_attr( $uid ) . '-input" class="tc-pb-input"'
+        $html .= '<input type="text" id="' . esc_attr( $uid ) . '-input" class="tconn-pb-input"'
                . ' placeholder="' . esc_attr__( 'Add a topic…', 'termconnect' ) . '" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list">';
-        $html .= '</div>'; // .tc-pb-pillbox
-        $html .= '<ul class="tc-pb-suggest" role="listbox" hidden></ul>';
-        $html .= '</div>'; // .tc-pb-pills-field
+        $html .= '</div>'; // .tconn-pb-pillbox
+        $html .= '<ul class="tconn-pb-suggest" role="listbox" hidden></ul>';
+        $html .= '</div>'; // .tconn-pb-pills-field
 
         // Match (Any/All)
         if ( 'false' !== $atts['show_match'] ) {
             $name  = esc_attr( $uid . '-match' );
-            $html .= '<div class="tc-pb-field tc-pb-match-field" role="radiogroup" aria-label="' . esc_attr__( 'Match', 'termconnect' ) . '">';
-            $html .= '<span class="tc-pb-label">' . esc_html__( 'Match', 'termconnect' ) . '</span>';
-            $html .= '<label class="tc-pb-radio"><input type="radio" name="' . $name . '" class="tc-pb-match" value="any" ' . checked( 'any', $match, false ) . '> ' . esc_html__( 'Any', 'termconnect' ) . '</label>';
-            $html .= '<label class="tc-pb-radio"><input type="radio" name="' . $name . '" class="tc-pb-match" value="all" ' . checked( 'all', $match, false ) . '> ' . esc_html__( 'All', 'termconnect' ) . '</label>';
+            $html .= '<div class="tconn-pb-field tconn-pb-match-field" role="radiogroup" aria-label="' . esc_attr__( 'Match', 'termconnect' ) . '">';
+            $html .= '<span class="tconn-pb-label">' . esc_html__( 'Match', 'termconnect' ) . '</span>';
+            $html .= '<label class="tconn-pb-radio"><input type="radio" name="' . $name . '" class="tconn-pb-match" value="any" ' . checked( 'any', $match, false ) . '> ' . esc_html__( 'Any', 'termconnect' ) . '</label>';
+            $html .= '<label class="tconn-pb-radio"><input type="radio" name="' . $name . '" class="tconn-pb-match" value="all" ' . checked( 'all', $match, false ) . '> ' . esc_html__( 'All', 'termconnect' ) . '</label>';
             $html .= '</div>';
         }
 
         // Source (local + peers / peers only)
         if ( 'false' !== $atts['show_scope'] ) {
-            $html .= '<div class="tc-pb-field tc-pb-scope-field">';
-            $html .= '<label class="tc-pb-label" for="' . esc_attr( $uid ) . '-scope">' . esc_html__( 'Source', 'termconnect' ) . '</label>';
-            $html .= '<select id="' . esc_attr( $uid ) . '-scope" class="tc-pb-scope">';
+            $html .= '<div class="tconn-pb-field tconn-pb-scope-field">';
+            $html .= '<label class="tconn-pb-label" for="' . esc_attr( $uid ) . '-scope">' . esc_html__( 'Source', 'termconnect' ) . '</label>';
+            $html .= '<select id="' . esc_attr( $uid ) . '-scope" class="tconn-pb-scope">';
             $html .= '<option value="all" ' . selected( 'all', $scope, false ) . '>' . esc_html__( 'Local + peers', 'termconnect' ) . '</option>';
             $html .= '<option value="peers" ' . selected( 'peers', $scope, false ) . '>' . esc_html__( 'Peers only', 'termconnect' ) . '</option>';
             $html .= '</select>';
@@ -269,9 +269,9 @@ class TC_Shortcode_PeerBrowse {
 
         // Sort
         if ( 'false' !== $atts['show_sort'] ) {
-            $html .= '<div class="tc-pb-field tc-pb-sort-field">';
-            $html .= '<label class="tc-pb-label" for="' . esc_attr( $uid ) . '-sort">' . esc_html__( 'Sort', 'termconnect' ) . '</label>';
-            $html .= '<select id="' . esc_attr( $uid ) . '-sort" class="tc-pb-sort">';
+            $html .= '<div class="tconn-pb-field tconn-pb-sort-field">';
+            $html .= '<label class="tconn-pb-label" for="' . esc_attr( $uid ) . '-sort">' . esc_html__( 'Sort', 'termconnect' ) . '</label>';
+            $html .= '<select id="' . esc_attr( $uid ) . '-sort" class="tconn-pb-sort">';
             foreach ( self::SORT_OPTIONS as $value ) {
                 $html .= '<option value="' . esc_attr( $value ) . '" ' . selected( $value, $orderby, false ) . '>'
                        . esc_html( self::sort_label( $value ) ) . '</option>';
@@ -292,9 +292,9 @@ class TC_Shortcode_PeerBrowse {
      * @return string
      */
     private function pill_html( int $term_id, string $name ): string {
-        return '<span class="tc-pb-pill" data-id="' . (int) $term_id . '">'
+        return '<span class="tconn-pb-pill" data-id="' . (int) $term_id . '">'
              . esc_html( $name )
-             . '<button type="button" class="tc-pb-remove" aria-label="' . esc_attr__( 'Remove topic', 'termconnect' ) . '">&times;</button>'
+             . '<button type="button" class="tconn-pb-remove" aria-label="' . esc_attr__( 'Remove topic', 'termconnect' ) . '">&times;</button>'
              . '</span>';
     }
 
@@ -311,11 +311,11 @@ class TC_Shortcode_PeerBrowse {
         }
 
         $style = '' !== $items_style ? ' style="' . esc_attr( $items_style ) . '"' : '';
-        $html  = '<div class="tc-post-list tc-peer-browse-list">';
-        $html .= '<div class="tc-post-list-items"' . $style . '>' . $result['items_html'] . '</div>';
-        $html .= '<div class="tc-pb-pager">';
+        $html  = '<div class="tconn-post-list tconn-peer-browse-list">';
+        $html .= '<div class="tconn-post-list-items"' . $style . '>' . $result['items_html'] . '</div>';
+        $html .= '<div class="tconn-pb-pager">';
         if ( $result['has_more'] ) {
-            $html .= '<button type="button" class="tc-pb-more" data-offset="' . (int) $result['next_offset'] . '">'
+            $html .= '<button type="button" class="tconn-pb-more" data-offset="' . (int) $result['next_offset'] . '">'
                    . esc_html__( 'Load more', 'termconnect' ) . '</button>';
         }
         $html .= '</div>';
@@ -331,7 +331,7 @@ class TC_Shortcode_PeerBrowse {
      * AJAX: return a page of combined results for the current facet state.
      */
     public function ajax_browse(): void {
-        check_ajax_referer( 'tc_peer_browse', 'nonce' );
+        check_ajax_referer( 'tconn_peer_browse', 'nonce' );
 
         $args = $this->parse_request();
         if ( empty( $args['term_ids'] ) ) {
@@ -357,7 +357,7 @@ class TC_Shortcode_PeerBrowse {
      * when HyperTaxonomy is active and the user lacks access).
      */
     public function ajax_term_suggest(): void {
-        check_ajax_referer( 'tc_peer_browse', 'nonce' );
+        check_ajax_referer( 'tconn_peer_browse', 'nonce' );
 
         $taxonomy = isset( $_POST['taxonomy'] ) ? sanitize_key( wp_unslash( $_POST['taxonomy'] ) ) : '';
         $search   = isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '';
@@ -407,7 +407,7 @@ class TC_Shortcode_PeerBrowse {
      */
     private function parse_request(): array {
         $raw_atts = ( isset( $_POST['atts'] ) && is_string( $_POST['atts'] ) )
-            ? json_decode( wp_unslash( $_POST['atts'] ), true )
+            ? tconn_decode_json_request( wp_unslash( $_POST['atts'] ) )
             : array();
         if ( ! is_array( $raw_atts ) ) {
             $raw_atts = array();
@@ -465,7 +465,7 @@ class TC_Shortcode_PeerBrowse {
      */
     private function build_results( array $args ): array {
         $no_results_html = ! empty( $args['no_results_message'] )
-            ? '<p class="tc-pb-no-results">' . esc_html( $args['no_results_message'] ) . '</p>'
+            ? '<p class="tconn-pb-no-results">' . esc_html( $args['no_results_message'] ) . '</p>'
             : '';
 
         $all = $this->get_combined_records( $args );
@@ -486,7 +486,7 @@ class TC_Shortcode_PeerBrowse {
         $page     = array_slice( $all, $offset, $per_page );
         $has_more = $total > ( $offset + $per_page );
 
-        $peer = TC_Shortcode_PeerPosts::instance();
+        $peer = TConn_Shortcode_PeerPosts::instance();
         $items_html = $peer->render_items(
             $page,
             'true' === $args['show_thumbnail'],
@@ -516,9 +516,9 @@ class TC_Shortcode_PeerBrowse {
         $local = ( 'all' === $args['scope'] ) ? $this->collect_local( $args ) : array();
 
         // Merge + dedupe by URL (local first, so it wins on a coincident URL).
-        $all = tc_dedupe_posts_by_url( array_merge( $local, $peers ) );
+        $all = tconn_dedupe_posts_by_url( array_merge( $local, $peers ) );
 
-        $all = TC_Shortcode_PeerPosts::instance()->sort_posts( $all, $args['orderby'] );
+        $all = TConn_Shortcode_PeerPosts::instance()->sort_posts( $all, $args['orderby'] );
 
         if ( count( $all ) > $args['max_results'] ) {
             $all = array_slice( $all, 0, $args['max_results'] );
@@ -529,7 +529,7 @@ class TC_Shortcode_PeerBrowse {
     /**
      * Collect peer/feed records for the selected terms, scored per match mode.
      *
-     * Delegates to the shared [tc_peer_posts] pipeline with the full term set as
+     * Delegates to the shared [tconn_peer_posts] pipeline with the full term set as
      * primaries, so AND/OR is handled by the match mode (htax_match=all /
      * filter_and_match), relevance reflects how many of the selected terms a post
      * matches (a post matching several ranks above one matching a single term),
@@ -556,7 +556,7 @@ class TC_Shortcode_PeerBrowse {
             'peer_expand'      => (string) ( $args['peer_expand'] ?? 'false' ),
         );
 
-        return TC_Shortcode_PeerPosts::instance()->collect_posts_for_terms(
+        return TConn_Shortcode_PeerPosts::instance()->collect_posts_for_terms(
             array_map( 'intval', $term_ids ),
             $peer_atts
         );
@@ -573,7 +573,7 @@ class TC_Shortcode_PeerBrowse {
         if ( empty( $args['term_ids'] ) ) {
             return array();
         }
-        $tax_terms = tc_filter_hidden_terms( array( $args['taxonomy'] => $args['term_ids'] ) );
+        $tax_terms = tconn_filter_hidden_terms( array( $args['taxonomy'] => $args['term_ids'] ) );
         if ( empty( $tax_terms ) ) {
             return array();
         }
@@ -581,9 +581,9 @@ class TC_Shortcode_PeerBrowse {
         // With HyperTaxonomy active, select via relationship expansion so local
         // recall matches its archives / [ht_related_posts] rather than just
         // directly-tagged posts.
-        $expansions = tc_local_term_expansions( $tax_terms );
+        $expansions = tconn_local_term_expansions( $tax_terms );
 
-        $records = tc_collect_local_posts(
+        $records = tconn_collect_local_posts(
             $tax_terms,
             $args['match'],
             $args['max_results'],
@@ -681,36 +681,36 @@ class TC_Shortcode_PeerBrowse {
      * Register and enqueue the browser's frontend assets.
      */
     private function enqueue_assets(): void {
-        if ( ! wp_style_is( 'tc-post-list', 'enqueued' ) ) {
+        if ( ! wp_style_is( 'tconn-post-list', 'enqueued' ) ) {
             wp_enqueue_style(
-                'tc-post-list',
-                TC_PLUGIN_URL . 'assets/css/tc-post-list.css',
+                'tconn-post-list',
+                TCONN_PLUGIN_URL . 'assets/css/tconn-post-list.css',
                 array(),
-                TC_VERSION
+                TCONN_VERSION
             );
         }
-        if ( ! wp_style_is( 'tc-peer-browse', 'enqueued' ) ) {
+        if ( ! wp_style_is( 'tconn-peer-browse', 'enqueued' ) ) {
             wp_enqueue_style(
-                'tc-peer-browse',
-                TC_PLUGIN_URL . 'assets/css/tc-peer-browse.css',
-                array( 'tc-post-list' ),
-                TC_VERSION
+                'tconn-peer-browse',
+                TCONN_PLUGIN_URL . 'assets/css/tconn-peer-browse.css',
+                array( 'tconn-post-list' ),
+                TCONN_VERSION
             );
         }
 
-        if ( wp_script_is( 'tc-peer-browse', 'enqueued' ) || wp_script_is( 'tc-peer-browse', 'done' ) ) {
+        if ( wp_script_is( 'tconn-peer-browse', 'enqueued' ) || wp_script_is( 'tconn-peer-browse', 'done' ) ) {
             return;
         }
 
         wp_enqueue_script(
-            'tc-peer-browse',
-            TC_PLUGIN_URL . 'assets/js/tc-peer-browse.js',
+            'tconn-peer-browse',
+            TCONN_PLUGIN_URL . 'assets/js/tconn-peer-browse.js',
             array(),
-            TC_VERSION,
+            TCONN_VERSION,
             true
         );
 
-        wp_localize_script( 'tc-peer-browse', 'TC_PeerBrowse', array(
+        wp_localize_script( 'tconn-peer-browse', 'TConn_PeerBrowse', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'i18n'     => array(
                 'remove'    => __( 'Remove topic', 'termconnect' ),
@@ -723,4 +723,4 @@ class TC_Shortcode_PeerBrowse {
     }
 }
 
-TC_Shortcode_PeerBrowse::instance();
+TConn_Shortcode_PeerBrowse::instance();

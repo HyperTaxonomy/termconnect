@@ -1,22 +1,22 @@
-/* global TC_PeerBrowse */
+/* global TConn_PeerBrowse */
 /**
- * Interactive topic browser for [tc_peer_browse].
+ * Interactive topic browser for [tconn_peer_browse].
  *
- * Vanilla JS (no jQuery). For each .tc-peer-browse widget: term-pills with
+ * Vanilla JS (no jQuery). For each .tconn-peer-browse widget: term-pills with
  * autocomplete, Any/All + source + sort controls, and a Load-more button. Every
  * facet change re-queries from offset 0; Load-more appends the next page.
  */
 ( function () {
 	'use strict';
 
-	var i18n = ( TC_PeerBrowse && TC_PeerBrowse.i18n ) || {};
+	var i18n = ( TConn_PeerBrowse && TConn_PeerBrowse.i18n ) || {};
 
 	function post( params ) {
 		var body = new URLSearchParams();
 		Object.keys( params ).forEach( function ( k ) {
 			body.append( k, params[ k ] );
 		} );
-		return fetch( TC_PeerBrowse.ajax_url, {
+		return fetch( TConn_PeerBrowse.ajax_url, {
 			method: 'POST',
 			credentials: 'same-origin',
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -46,10 +46,10 @@
 		this.columns  = parseInt( root.getAttribute( 'data-columns' ), 10 ) || 1;
 		this.thumbRatio = root.getAttribute( 'data-thumb-ratio' ) || '';
 
-		this.pillbox  = root.querySelector( '.tc-pb-pillbox' );
-		this.input    = root.querySelector( '.tc-pb-input' );
-		this.suggest  = root.querySelector( '.tc-pb-suggest' );
-		this.results  = root.querySelector( '.tc-pb-results' );
+		this.pillbox  = root.querySelector( '.tconn-pb-pillbox' );
+		this.input    = root.querySelector( '.tconn-pb-input' );
+		this.suggest  = root.querySelector( '.tconn-pb-suggest' );
+		this.results  = root.querySelector( '.tconn-pb-results' );
 
 		this.match    = root.getAttribute( 'data-match' ) || 'any';
 		this.scope    = root.getAttribute( 'data-scope' ) || 'all';
@@ -62,7 +62,7 @@
 
 	Browser.prototype.selectedIds = function () {
 		return Array.prototype.map.call(
-			this.pillbox.querySelectorAll( '.tc-pb-pill' ),
+			this.pillbox.querySelectorAll( '.tconn-pb-pill' ),
 			function ( p ) {
 				return p.getAttribute( 'data-id' );
 			}
@@ -70,7 +70,7 @@
 	};
 
 	Browser.prototype.hasPill = function ( id ) {
-		return !! this.pillbox.querySelector( '.tc-pb-pill[data-id="' + id + '"]' );
+		return !! this.pillbox.querySelector( '.tconn-pb-pill[data-id="' + id + '"]' );
 	};
 
 	Browser.prototype.addPill = function ( id, name ) {
@@ -78,12 +78,12 @@
 			return;
 		}
 		var pill = document.createElement( 'span' );
-		pill.className = 'tc-pb-pill';
+		pill.className = 'tconn-pb-pill';
 		pill.setAttribute( 'data-id', id );
 		pill.appendChild( document.createTextNode( name ) );
 		var btn = document.createElement( 'button' );
 		btn.type = 'button';
-		btn.className = 'tc-pb-remove';
+		btn.className = 'tconn-pb-remove';
 		btn.setAttribute( 'aria-label', i18n.remove || 'Remove' );
 		btn.innerHTML = '&times;';
 		pill.appendChild( btn );
@@ -110,7 +110,7 @@
 				return;
 			}
 			var li = document.createElement( 'li' );
-			li.className = 'tc-pb-suggest-item';
+			li.className = 'tconn-pb-suggest-item';
 			li.setAttribute( 'role', 'option' );
 			li.setAttribute( 'data-id', it.id );
 			li.textContent = it.name;
@@ -139,7 +139,7 @@
 		var self = this;
 		var q = this.input.value.trim();
 		post( {
-			action: 'tc_peer_browse_terms',
+			action: 'tconn_peer_browse_terms',
 			nonce: this.nonce,
 			taxonomy: this.taxonomy,
 			q: q,
@@ -151,13 +151,13 @@
 	};
 
 	Browser.prototype.ensureList = function () {
-		var list = this.results.querySelector( '.tc-peer-browse-list' );
+		var list = this.results.querySelector( '.tconn-peer-browse-list' );
 		if ( ! list ) {
 			this.results.innerHTML = '';
 			list = document.createElement( 'div' );
-			list.className = 'tc-post-list tc-peer-browse-list';
+			list.className = 'tconn-post-list tconn-peer-browse-list';
 			var items = document.createElement( 'div' );
-			items.className = 'tc-post-list-items';
+			items.className = 'tconn-post-list-items';
 			if ( this.columns > 1 ) {
 				items.style.setProperty( '--tc-columns', this.columns );
 			}
@@ -165,19 +165,19 @@
 				items.style.setProperty( '--tc-thumb-ratio', this.thumbRatio );
 			}
 			var pager = document.createElement( 'div' );
-			pager.className = 'tc-pb-pager';
+			pager.className = 'tconn-pb-pager';
 			list.appendChild( items );
 			list.appendChild( pager );
 			this.results.appendChild( list );
 		}
 		return {
-			items: list.querySelector( '.tc-post-list-items' ),
-			pager: list.querySelector( '.tc-pb-pager' ),
+			items: list.querySelector( '.tconn-post-list-items' ),
+			pager: list.querySelector( '.tconn-pb-pager' ),
 		};
 	};
 
 	Browser.prototype.setPrompt = function ( text ) {
-		this.results.innerHTML = '<p class="tc-pb-empty">' + text + '</p>';
+		this.results.innerHTML = '<p class="tconn-pb-empty">' + text + '</p>';
 	};
 
 	Browser.prototype.setPager = function ( pager, hasMore, nextOffset ) {
@@ -185,7 +185,7 @@
 		if ( hasMore ) {
 			var btn = document.createElement( 'button' );
 			btn.type = 'button';
-			btn.className = 'tc-pb-more';
+			btn.className = 'tconn-pb-more';
 			btn.setAttribute( 'data-offset', nextOffset );
 			btn.textContent = i18n.load_more || 'Load more';
 			pager.appendChild( btn );
@@ -204,10 +204,10 @@
 			return;
 		}
 
-		this.root.classList.add( 'tc-pb-loading' );
+		this.root.classList.add( 'tconn-pb-loading' );
 
 		post( {
-			action: 'tc_peer_browse',
+			action: 'tconn_peer_browse',
 			nonce: this.nonce,
 			terms: ids.join( ',' ),
 			match: this.match,
@@ -216,7 +216,7 @@
 			offset: this.offset,
 			atts: this.atts,
 		} ).then( function ( res ) {
-			self.root.classList.remove( 'tc-pb-loading' );
+			self.root.classList.remove( 'tconn-pb-loading' );
 			if ( ! res || ! res.success ) {
 				return;
 			}
@@ -230,7 +230,7 @@
 			if ( reset && ! data.html ) {
 				self.results.innerHTML = data.no_results
 					? data.no_results
-					: '<p class="tc-pb-empty">' + ( i18n.none || '' ) + '</p>';
+					: '<p class="tconn-pb-empty">' + ( i18n.none || '' ) + '</p>';
 				return;
 			}
 
@@ -243,12 +243,12 @@
 			self.offset = data.next_offset;
 			self.setPager( nodes.pager, !! data.has_more, data.next_offset );
 		} ).catch( function () {
-			self.root.classList.remove( 'tc-pb-loading' );
+			self.root.classList.remove( 'tconn-pb-loading' );
 		} );
 	};
 
 	Browser.prototype.moveActive = function ( delta ) {
-		var opts = this.suggest.querySelectorAll( '.tc-pb-suggest-item' );
+		var opts = this.suggest.querySelectorAll( '.tconn-pb-suggest-item' );
 		if ( ! opts.length ) {
 			return;
 		}
@@ -290,7 +290,7 @@
 				e.preventDefault();
 				self.moveActive( -1 );
 			} else if ( 'Enter' === e.key ) {
-				var opts = self.suggest.querySelectorAll( '.tc-pb-suggest-item' );
+				var opts = self.suggest.querySelectorAll( '.tconn-pb-suggest-item' );
 				if ( self.active >= 0 && opts[ self.active ] ) {
 					e.preventDefault();
 					self.choose( opts[ self.active ].getAttribute( 'data-id' ), opts[ self.active ].textContent );
@@ -308,11 +308,11 @@
 
 		// Remove pill (delegated).
 		this.pillbox.addEventListener( 'click', function ( e ) {
-			var btn = e.target.closest( '.tc-pb-remove' );
+			var btn = e.target.closest( '.tconn-pb-remove' );
 			if ( ! btn ) {
 				return;
 			}
-			var pill = btn.closest( '.tc-pb-pill' );
+			var pill = btn.closest( '.tconn-pb-pill' );
 			if ( pill ) {
 				pill.parentNode.removeChild( pill );
 				self.query( true );
@@ -320,7 +320,7 @@
 		} );
 
 		// Match radios.
-		Array.prototype.forEach.call( this.root.querySelectorAll( '.tc-pb-match' ), function ( radio ) {
+		Array.prototype.forEach.call( this.root.querySelectorAll( '.tconn-pb-match' ), function ( radio ) {
 			radio.addEventListener( 'change', function () {
 				if ( radio.checked ) {
 					self.match = radio.value;
@@ -330,7 +330,7 @@
 		} );
 
 		// Scope select.
-		var scopeSel = this.root.querySelector( '.tc-pb-scope' );
+		var scopeSel = this.root.querySelector( '.tconn-pb-scope' );
 		if ( scopeSel ) {
 			scopeSel.addEventListener( 'change', function () {
 				self.scope = scopeSel.value;
@@ -339,7 +339,7 @@
 		}
 
 		// Sort select.
-		var sortSel = this.root.querySelector( '.tc-pb-sort' );
+		var sortSel = this.root.querySelector( '.tconn-pb-sort' );
 		if ( sortSel ) {
 			sortSel.addEventListener( 'change', function () {
 				self.orderby = sortSel.value;
@@ -349,7 +349,7 @@
 
 		// Load more (delegated to results).
 		this.results.addEventListener( 'click', function ( e ) {
-			var more = e.target.closest( '.tc-pb-more' );
+			var more = e.target.closest( '.tconn-pb-more' );
 			if ( ! more ) {
 				return;
 			}
@@ -360,10 +360,10 @@
 
 	function init() {
 		Array.prototype.forEach.call(
-			document.querySelectorAll( '.tc-peer-browse' ),
+			document.querySelectorAll( '.tconn-peer-browse' ),
 			function ( root ) {
-				if ( ! root.tcPeerBrowse ) {
-					root.tcPeerBrowse = new Browser( root );
+				if ( ! root.tconnPeerBrowse ) {
+					root.tconnPeerBrowse = new Browser( root );
 				}
 			}
 		);

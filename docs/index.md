@@ -10,6 +10,10 @@ nav_order: 1
 
 TermConnect connects WordPress taxonomy terms to the global web of knowledge. Attach external links — knowledge-base identifiers (Wikidata, GeoNames, LCSH), peer WordPress site URLs, RSS/Atom feeds, or any custom link type — to anchor terms to shared reference points. Delegate term definitions to more authoritative sources. Mirror shared vocabularies from peer sites so your editors work with the same terms as the wider community. Pull related content from a network of peers using those shared terms as the matching key.
 
+Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable WordPress taxonomy plugins.
+
+## How it works
+
 **A term is a handle for a concept.** What identifies the concept is its external links, not its name: two sites whose terms share a Wikidata ID are talking about the same thing, even if they use different names or slugs. Peer sites running TermConnect can be matched on that basis.
 
 Delegating a term to a peer doesn't force you to take its name or description: each is synced only if you choose.
@@ -18,7 +22,30 @@ The result is a decentralized vocabulary layer — sites that independently cura
 
 Works with any WordPress site. [HyperTaxonomy](https://hypertaxonomy.org/hypertaxonomy/) adds relevance scoring and synonym expansion when both are active, and proximity search when [As the Crow Flies](https://hypertaxonomy.org/as-the-crow-flies/) is active too; TermConnect contributes its identifier data to HyperTaxonomy's abstraction layer to make it accessible to integrations like [WP-SKOS](https://hypertaxonomy.org/wp-skos/).
 
-Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable WordPress taxonomy plugins.
+## Requirements
+
+| Item | Version |
+|------|---------|
+| WordPress | 6.6+ |
+| PHP | 7.4+ |
+| MySQL | 5.7+ (MariaDB 10.3+) |
+
+## Getting started
+
+1. Install from the [WordPress.org plugin directory](https://wordpress.org/plugins/termconnect/), or download the zip from [GitHub Releases](https://github.com/HyperTaxonomy/termconnect/releases) and upload via **Plugins&nbsp;→ Add New&nbsp;→ Upload Plugin**, then activate it.
+2. Enable taxonomies (below).
+3. Edit a term in an enabled taxonomy and add an identifier, such as its Wikidata ID, in the **External Links** panel.
+4. To connect other sites, go to **Terms&nbsp;→ Peer Sites**. See [Peer Sites & Feeds](user-guide/peer-sites-feeds.html).
+
+### Enabled taxonomies
+
+Go to **Settings&nbsp;→ TermConnect&nbsp;→ General** and, under **Enabled Taxonomies**, check each taxonomy where you want TermConnect active. Enabling a taxonomy:
+
+- Shows the **Delegated Identity** and **External Links** panels on its term add/edit screens.
+- Includes it in "See also" display on term archive pages.
+- Turns on peer site term matching when fetching cross-site posts.
+
+Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear in the list.
 
 ## Documentation map
 
@@ -26,30 +53,6 @@ Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable Wo
 - **[User Guide](user-guide/)** — for site owners and editors: concepts, peer sites and feeds, settings, the peer-post shortcodes and blocks, See Also and link suggestions, delegated identity, shared vocabularies, export/import, and deactivation.
 - **[Developer Reference](developer-reference/)** — for theme and plugin developers: the Term Links API, the Peer Fetch API, the External Documents API, REST API fields, actions and filters, and the stored settings.
 - **[Architecture](architecture/)** — for contributors: file structure and loading, function and hook references, and data storage.
-
-## Requirements
-
-| Item | Version |
-|------|---------|
-| WordPress | 6.6+ |
-| PHP | 7.4+ |
-
-## Getting started
-
-1. Install from the [WordPress.org plugin directory](https://wordpress.org/plugins/termconnect/), or download the zip from [GitHub Releases](https://github.com/HyperTaxonomy/termconnect/releases) and upload via **Plugins → Add New → Upload Plugin**, then activate it.
-2. Enable taxonomies (below).
-3. Edit a term in an enabled taxonomy and add an identifier, such as its Wikidata ID, in the **External Links** panel.
-4. To connect other sites, go to **Terms → Peer Sites**. See [Peer Sites & Feeds](user-guide/peer-sites-feeds.html).
-
-### Enabled taxonomies
-
-Go to **Settings → TermConnect → General** and, under **Enabled Taxonomies**, check each taxonomy where you want TermConnect active. Enabling a taxonomy:
-
-- Shows the **Delegated Identity** and **External Links** panels on its term add/edit screens.
-- Includes it in "See also" display on term archive pages.
-- Turns on peer site term matching when fetching cross-site posts.
-
-Built-in taxonomies (Tags, Categories) and any public custom taxonomies appear in the list.
 
 ## External services
 
@@ -67,7 +70,7 @@ TermConnect contacts outside services only for features the site owner sets up. 
 
 Other built-in link types (Grokipedia, Merriam-Webster, GeoNames, ORCID, VIAF, MeSH, Getty AAT and TGN, schema.org, GS1) have no autocomplete and are never contacted; TermConnect only builds links to them.
 
-**Peer sites and feeds.** TermConnect requests the public REST API of each WordPress site, and the RSS or Atom feed of each feed, that the site owner adds at Terms → Peer Sites. It does so to show their related posts, keep delegated terms and Shared Vocabularies in sync, suggest their terms and authors while an editor types, and detect whether they run TermConnect or HyperTaxonomy. Requests contain the term slugs, external identifiers or search text being looked up. With FOAF discovery turned on (a `foaf_depth` above 0, capped by Max FOAF Depth), TermConnect also queries peers of those peers, as reported by the peers themselves; sites listed under Blocked Sites are never contacted. These are sites the site owner chooses, so their own terms and privacy policies apply.
+**Peer sites and feeds.** TermConnect requests the public REST API of each WordPress site, and the RSS or Atom feed of each feed, that the site owner adds at Terms&nbsp;→ Peer Sites. It does so to show their related posts, keep delegated terms and Shared Vocabularies in sync, suggest their terms and authors while an editor types, and detect whether they run TermConnect or HyperTaxonomy. Requests contain the term slugs, external identifiers or search text being looked up. With FOAF discovery turned on (a `foaf_depth` above 0, capped by Max FOAF Depth), TermConnect also queries peers of those peers, as reported by the peers themselves; sites listed under Blocked Sites are never contacted. These are sites the site owner chooses, so their own terms and privacy policies apply.
 
 **Link suggestions.** When a visitor suggests a link for a term and admin notifications are on, and when an administrator reviews suggestions, TermConnect sends a request to the suggested URL's site to check whether it runs HyperTaxonomy. Only that site's address is used; nothing about the visitor is sent.
 

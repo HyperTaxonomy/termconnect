@@ -21,16 +21,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Failure count at which backoff begins.
-const TC_PEER_DEGRADED_THRESHOLD    = 3;
+const TCONN_PEER_DEGRADED_THRESHOLD    = 3;
 // Failure count at which the site is considered unreachable.
-const TC_PEER_UNREACHABLE_THRESHOLD = 10;
+const TCONN_PEER_UNREACHABLE_THRESHOLD = 10;
 // TTL multiplier applied when degraded.
-const TC_PEER_DEGRADED_MULTIPLIER   = 4;
+const TCONN_PEER_DEGRADED_MULTIPLIER   = 4;
 // Fixed backoff TTL (seconds) when unreachable.
-const TC_PEER_UNREACHABLE_TTL       = 86400;
+const TCONN_PEER_UNREACHABLE_TTL       = 86400;
 // Minimum seconds between persisted option writes for failures that don't
-// change status (see tc_peer_site_health_record_failure()).
-const TC_PEER_HEALTH_MIN_WRITE_INTERVAL = 60;
+// change status (see tconn_peer_site_health_record_failure()).
+const TCONN_PEER_HEALTH_MIN_WRITE_INTERVAL = 60;
 
 // ==============================================================================
 // STATE ACCESSORS
@@ -42,8 +42,8 @@ const TC_PEER_HEALTH_MIN_WRITE_INTERVAL = 60;
  * @since 1.0.0
  * @return array
  */
-function tc_peer_site_health_get_all(): array {
-    return (array) get_option( 'tc_peer_site_health', array() );
+function tconn_peer_site_health_get_all(): array {
+    return (array) get_option( 'tconn_peer_site_health', array() );
 }
 
 /**
@@ -53,8 +53,8 @@ function tc_peer_site_health_get_all(): array {
  * @param string $slug Link-type slug.
  * @return array { status, consecutive_failures, last_failure, last_success, last_error, next_allowed }
  */
-function tc_peer_site_health_get( string $slug ): array {
-    $all = tc_peer_site_health_get_all();
+function tconn_peer_site_health_get( string $slug ): array {
+    $all = tconn_peer_site_health_get_all();
     return $all[ $slug ] ?? array(
         'status'               => 'ok',
         'consecutive_failures' => 0,
@@ -72,10 +72,15 @@ function tc_peer_site_health_get( string $slug ): array {
  * @param string $slug  Link-type slug.
  * @param array  $state Updated state array.
  */
-function tc_peer_site_health_save( string $slug, array $state ): void {
-    $all          = tc_peer_site_health_get_all();
-    $all[ $slug ] = $state;
-    update_option( 'tc_peer_site_health', $all, false );
+function tconn_peer_site_health_save( string $slug, array $state ): void {
+    // Requests to different peers record their health at the same time. Under the lock the
+    // peer site delete uses; a short wait, since this runs while a page is served, and a
+    // missed update only delays a health change until the next request to that peer.
+    tconn_update_option_locked( 'tconn_peer_site_health', static function ( $all ) use ( $slug, $state ): array {
+        $all          = (array) $all;
+        $all[ $slug ] = $state;
+        return $all;
+    }, array(), false, 'tconn_peer_health_lock', 1 );
 }
 
 // ==============================================================================
@@ -85,10 +90,10 @@ function tc_peer_site_health_save( string $slug, array $state ): void {
 /**
  * Atomically increment the lightweight per-slug failure tally.
  *
- * This single small row — not the full tc_peer_site_health option, which holds
+ * This single small row — not the full tconn_peer_site_health option, which holds
  * every peer site's state — is the true count of consecutive failures since
  * the last success. Incrementing it is a single indexed UPDATE, cheap enough to
- * do on every failure, so the throttling in tc_peer_site_health_record_failure()
+ * do on every failure, so the throttling in tconn_peer_site_health_record_failure()
  * (which skips the much larger full-state write) never has to discard a count
  * to stay cheap.
  *
@@ -96,9 +101,9 @@ function tc_peer_site_health_save( string $slug, array $state ): void {
  * @param string $slug Link-type slug.
  * @return int New tally value.
  */
-function tc_peer_health_tally_increment( string $slug ): int {
+function tconn_peer_health_tally_increment( string $slug ): int {
     global $wpdb;
-    $name = 'tc_ph_tally_' . $slug;
+    $name = 'tconn_ph_tally_' . $slug;
     $wpdb->query( $wpdb->prepare(
         "INSERT INTO {$wpdb->options} (option_name, option_value, autoload)
          VALUES (%s, '1', 'no')
@@ -117,9 +122,9 @@ function tc_peer_health_tally_increment( string $slug ): int {
  * @since 1.0.0
  * @param string $slug Link-type slug.
  */
-function tc_peer_health_tally_reset( string $slug ): void {
+function tconn_peer_health_tally_reset( string $slug ): void {
     global $wpdb;
-    $wpdb->delete( $wpdb->options, array( 'option_name' => 'tc_ph_tally_' . $slug ) );
+    $wpdb->delete( $wpdb->options, array( 'option_name' => 'tconn_ph_tally_' . $slug ) );
 }
 
 /**
@@ -130,21 +135,21 @@ function tc_peer_health_tally_reset( string $slug ): void {
  * writes on every request, but the failure tally is always cleared regardless
  * — it can hold a nonzero count the full state was never written with, while
  * failures stayed throttled below the write threshold (see
- * tc_peer_site_health_record_failure()).
+ * tconn_peer_site_health_record_failure()).
  *
  * @since 1.0.0
  * @param string $slug Link-type slug.
  */
-function tc_peer_site_health_record_success( string $slug ): void {
+function tconn_peer_site_health_record_success( string $slug ): void {
     if ( '' === $slug ) {
         return;
     }
-    tc_peer_health_tally_reset( $slug );
-    $state = tc_peer_site_health_get( $slug );
+    tconn_peer_health_tally_reset( $slug );
+    $state = tconn_peer_site_health_get( $slug );
     if ( 'ok' === $state['status'] && 0 === $state['consecutive_failures'] ) {
         return;
     }
-    tc_peer_site_health_save( $slug, array(
+    tconn_peer_site_health_save( $slug, array(
         'status'               => 'ok',
         'consecutive_failures' => 0,
         'last_failure'         => $state['last_failure'],
@@ -162,12 +167,12 @@ function tc_peer_site_health_record_success( string $slug ): void {
  * DEGRADED_THRESHOLD the backoff window grows to DEGRADED_MULTIPLIER × normal_ttl.
  * At UNREACHABLE_THRESHOLD it switches to a fixed UNREACHABLE_TTL.
  *
- * The true consecutive-failure count comes from tc_peer_health_tally_increment()
+ * The true consecutive-failure count comes from tconn_peer_health_tally_increment()
  * — a small row incremented atomically on every single failure — not from the
- * full tc_peer_site_health option. That full-state write IS throttled while
+ * full tconn_peer_site_health option. That full-state write IS throttled while
  * status stays 'ok': nothing functionally depends on persisting every single
  * failure immediately in that case (no backoff change happens), so it's skipped
- * unless at least TC_PEER_HEALTH_MIN_WRITE_INTERVAL seconds have passed since
+ * unless at least TCONN_PEER_HEALTH_MIN_WRITE_INTERVAL seconds have passed since
  * the last persisted failure — avoiding a DB write of the (potentially large,
  * multi-peer) full state on every failed request from a chronically flaky peer
  * under regular traffic. Because the tally is always current regardless of this
@@ -181,26 +186,26 @@ function tc_peer_site_health_record_success( string $slug ): void {
  * @param string $error      Short error description (HTTP status or WP_Error message).
  * @param int    $normal_ttl Normal cache TTL in seconds, used to compute backoff window.
  */
-function tc_peer_site_health_record_failure( string $slug, string $error, int $normal_ttl = 3600 ): void {
+function tconn_peer_site_health_record_failure( string $slug, string $error, int $normal_ttl = 3600 ): void {
     if ( '' === $slug ) {
         return;
     }
-    $state             = tc_peer_site_health_get( $slug );
+    $state             = tconn_peer_site_health_get( $slug );
     $prev_status       = $state['status'];
     $prev_last_failure = $state['last_failure'];
 
-    $consecutive_failures = tc_peer_health_tally_increment( $slug );
+    $consecutive_failures = tconn_peer_health_tally_increment( $slug );
 
     $state['consecutive_failures'] = $consecutive_failures;
     $state['last_failure']         = time();
     $state['last_error']           = $error;
 
-    if ( $consecutive_failures >= TC_PEER_UNREACHABLE_THRESHOLD ) {
+    if ( $consecutive_failures >= TCONN_PEER_UNREACHABLE_THRESHOLD ) {
         $state['status']       = 'unreachable';
-        $state['next_allowed'] = time() + TC_PEER_UNREACHABLE_TTL;
-    } elseif ( $consecutive_failures >= TC_PEER_DEGRADED_THRESHOLD ) {
+        $state['next_allowed'] = time() + TCONN_PEER_UNREACHABLE_TTL;
+    } elseif ( $consecutive_failures >= TCONN_PEER_DEGRADED_THRESHOLD ) {
         $state['status']       = 'degraded';
-        $state['next_allowed'] = time() + ( $normal_ttl * TC_PEER_DEGRADED_MULTIPLIER );
+        $state['next_allowed'] = time() + ( $normal_ttl * TCONN_PEER_DEGRADED_MULTIPLIER );
     } else {
         // Transient failure — track count, no backoff yet.
         $state['status']       = 'ok';
@@ -209,10 +214,10 @@ function tc_peer_site_health_record_failure( string $slug, string $error, int $n
 
     $should_write = $state['status'] !== $prev_status
         || 'ok' !== $state['status']
-        || ( time() - (int) $prev_last_failure ) >= TC_PEER_HEALTH_MIN_WRITE_INTERVAL;
+        || ( time() - (int) $prev_last_failure ) >= TCONN_PEER_HEALTH_MIN_WRITE_INTERVAL;
 
     if ( $should_write ) {
-        tc_peer_site_health_save( $slug, $state );
+        tconn_peer_site_health_save( $slug, $state );
     }
 }
 
@@ -227,11 +232,11 @@ function tc_peer_site_health_record_failure( string $slug, string $error, int $n
  * @param string $slug Link-type slug.
  * @return bool
  */
-function tc_peer_site_health_is_blocked( string $slug ): bool {
+function tconn_peer_site_health_is_blocked( string $slug ): bool {
     if ( '' === $slug ) {
         return false;
     }
-    $state = tc_peer_site_health_get( $slug );
+    $state = tconn_peer_site_health_get( $slug );
     return $state['next_allowed'] > 0 && time() < $state['next_allowed'];
 }
 
@@ -248,11 +253,11 @@ function tc_peer_site_health_is_blocked( string $slug ): bool {
  * @since 1.0.0
  * @return array
  */
-function tc_peer_site_health_get_unhealthy(): array {
+function tconn_peer_site_health_get_unhealthy(): array {
     $unhealthy = array();
-    foreach ( tc_peer_site_health_get_all() as $slug => $state ) {
+    foreach ( tconn_peer_site_health_get_all() as $slug => $state ) {
         if ( 'ok' !== ( $state['status'] ?? 'ok' ) ) {
-            $type               = tc_get_link_type( $slug );
+            $type               = tconn_get_link_type( $slug );
             $state['label']     = $type ? ( $type['label'] ?? $slug ) : $slug;
             $unhealthy[ $slug ] = $state;
         }
@@ -265,9 +270,9 @@ function tc_peer_site_health_get_unhealthy(): array {
 // ==============================================================================
 
 add_filter( 'site_status_tests', function ( array $tests ): array {
-    $tests['direct']['tc_peer_sites'] = array(
+    $tests['direct']['tconn_peer_sites'] = array(
         'label' => __( 'TermConnect peer sites', 'termconnect' ),
-        'test'  => 'tc_peer_site_health_check',
+        'test'  => 'tconn_peer_site_health_check',
     );
     return $tests;
 } );
@@ -278,8 +283,8 @@ add_filter( 'site_status_tests', function ( array $tests ): array {
  * @since 1.0.0
  * @return array Site Health result array.
  */
-function tc_peer_site_health_check(): array {
-    $unhealthy = tc_peer_site_health_get_unhealthy();
+function tconn_peer_site_health_check(): array {
+    $unhealthy = tconn_peer_site_health_get_unhealthy();
 
     if ( empty( $unhealthy ) ) {
         return array(
@@ -287,7 +292,7 @@ function tc_peer_site_health_check(): array {
             'status'      => 'good',
             'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
             'description' => '',
-            'test'        => 'tc_peer_sites',
+            'test'        => 'tconn_peer_sites',
         );
     }
 
@@ -317,6 +322,6 @@ function tc_peer_site_health_check(): array {
         'status'      => 'recommended',
         'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'orange' ),
         'description' => '<ul>' . implode( '', $rows ) . '</ul>',
-        'test'        => 'tc_peer_sites',
+        'test'        => 'tconn_peer_sites',
     );
 }

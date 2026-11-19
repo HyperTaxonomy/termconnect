@@ -14,8 +14,8 @@ Deactivating TermConnect deletes nothing: link types, external links, delegated 
 
 - **Scheduled tasks stop.** Delegated terms are no longer refreshed from their source sites, Shared Vocabularies no longer sync, and feeds are no longer polled. Delegated terms keep the names and descriptions they last synced.
 - **Term archives** no longer show "See also" links or the form for suggesting a link.
-- **The `[tc_peer_posts]` and `[tc_peer_browse]` shortcodes** appear as plain text in your content, and the **Peer Posts** and **Peer Browse** blocks show nothing.
-- **Other sites** no longer see this site as a TermConnect site: its REST responses lose the `tc_links` field and the `X-TermConnect` header, so peers can't match its terms by external identifier. Its posts can still be fetched as from any WordPress site.
+- **The `[tconn_peer_posts]` and `[tconn_peer_browse]` shortcodes** appear as plain text in your content, and the **Peer Posts** and **Peer Browse** blocks show nothing.
+- **Other sites** no longer see this site as a TermConnect site: its REST responses lose the `tconn_links` field and the `X-TermConnect` header, so peers can't match its terms by external identifier. Its posts can still be fetched as from any WordPress site.
 - **HyperTaxonomy**, if active, no longer gets external identifiers or peer posts from TermConnect: plugins that read peer posts through HyperTaxonomy, such as WP-SKOS's document search, get none, and term identifier URIs (and WP-SKOS `skos:closeMatch` links) are empty.
 - **TermConnect Social**, which requires TermConnect, stops working and shows a notice.
 - **Pending link suggestions** are stored as comments. TermConnect normally keeps them out of the **Comments** screen; while it's deactivated, they appear there, attached to no post, and count toward the pending-comments number.
@@ -28,4 +28,4 @@ Reactivating TermConnect schedules its tasks again, so delegated terms, Shared V
 
 Deleting it from the **Plugins** screen always removes TermConnect's settings, scheduled tasks, cached data, review queues and its database index.
 
-Everything else stays, so a reinstall works as before, unless **Delete all data** is on (**Settings → TermConnect → Advanced**). With it on, deleting the plugin also removes link types, enabled taxonomies, Shared Vocabulary sources, per-term identifiers, delegated identity, and visitor link suggestions.
+Everything else stays, so a reinstall works as before, unless **Delete all data** is on (**Settings&nbsp;→ TermConnect&nbsp;→ Advanced**). With it on, deleting the plugin also removes link types, enabled taxonomies, Shared Vocabulary sources, per-term identifiers, delegated identity, and visitor link suggestions.

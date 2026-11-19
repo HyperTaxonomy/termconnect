@@ -1,4 +1,4 @@
-=== TermConnect – External Links for Taxonomy Terms – peer posts, RSS/Atom feed aggregation, FOAF-style related content discovery ===
+=== TermConnect – External Links for Taxonomy Terms ===
 Tags: taxonomy, peer sites, external links, external service, Wikidata, RSS, feeds, related posts
 Contributors: eugenevv
 Author: Eugene Weinstein
@@ -64,7 +64,7 @@ Works with any WordPress site. HyperTaxonomy adds relevance scoring and synonym 
 
 **FOAF Peer Discovery**
 * When a HyperTaxonomy-enabled peer returns `htax_term_peers` in post responses, TermConnect caches those peer connections
-* `foaf_depth` attribute on `[tc_peer_posts]` follows discovered connections up to a configurable global cap
+* `foaf_depth` attribute on `[tconn_peer_posts]` follows discovered connections up to a configurable global cap
 * Passively builds a richer peer network from a single configured starting point
 
 **External Posts for HyperTaxonomy Consumers**
@@ -80,33 +80,33 @@ Works with any WordPress site. HyperTaxonomy adds relevance scoring and synonym 
 
 = Shortcodes & Blocks =
 
-**`[tc_peer_posts]`** — Fetch and display related posts from configured peer WordPress sites and RSS/Atom feeds. Only renders on singular pages. Set `scope="all"` to also blend in this site's own matching posts (local site as a pseudo-peer); when HyperTaxonomy is active the local side is relevance-ranked via its search index.
+**`[tconn_peer_posts]`** — Fetch and display related posts from configured peer WordPress sites and RSS/Atom feeds. Only renders on singular pages. Set `scope="all"` to also blend in this site's own matching posts (local site as a pseudo-peer); when HyperTaxonomy is active the local side is relevance-ranked via its search index.
 
 ```
-[tc_peer_posts]
+[tconn_peer_posts]
 
-[tc_peer_posts orderby="date" per_page="3"]
+[tconn_peer_posts orderby="date" per_page="3"]
 
-[tc_peer_posts foaf_depth="1" show_thumbnail="true"]
+[tconn_peer_posts foaf_depth="1" show_thumbnail="true"]
 
-[tc_peer_posts link_types="my-blog" taxonomy="post_tag"]
+[tconn_peer_posts link_types="my-blog" taxonomy="post_tag"]
 ```
 
-**`[tc_peer_browse]`** — An interactive topic browser: visitors pick terms and see matching posts from this site and configured peers/feeds, updating live with a Load-more button. Match Any (OR) or All (AND); local site is just another source. Works on any page; on a term archive it starts with that term selected.
+**`[tconn_peer_browse]`** — An interactive topic browser: visitors pick terms and see matching posts from this site and configured peers/feeds, updating live with a Load-more button. Match Any (OR) or All (AND); local site is just another source. Works on any page; on a term archive it starts with that term selected.
 
 ```
-[tc_peer_browse taxonomy="post_tag"]
+[tconn_peer_browse taxonomy="post_tag"]
 
-[tc_peer_browse taxonomy="post_tag" terms="javascript,react" match="all"]
+[tconn_peer_browse taxonomy="post_tag" terms="javascript,react" match="all"]
 
-[tc_peer_browse columns="3" show_scope="true" show_sort="true"]
+[tconn_peer_browse columns="3" show_scope="true" show_sort="true"]
 ```
 
-To blend peer/feed posts together with this site's own related posts in one block, set `scope="all"` on `[tc_peer_posts]` (or the Peer Posts block's Source = Local + peers). When HyperTaxonomy is active the local side is relevance-ranked via its search index.
+To blend peer/feed posts together with this site's own related posts in one block, set `scope="all"` on `[tconn_peer_posts]` (or the Peer Posts block's Source = Local + peers). When HyperTaxonomy is active the local side is relevance-ranked via its search index.
 
-The **Peer Posts** and **Peer Browse** Gutenberg blocks are the block-editor equivalents of `[tc_peer_posts]` and `[tc_peer_browse]`, available in the block inserter under **TermConnect**.
+The **Peer Posts** and **Peer Browse** Gutenberg blocks are the block-editor equivalents of `[tconn_peer_posts]` and `[tconn_peer_browse]`, available in the block inserter under **TermConnect**.
 
-= Key Attributes for [tc_peer_posts] =
+= Key Attributes for [tconn_peer_posts] =
 
 Key attributes: `link_types`, `taxonomy`, `match`, `scope` (`peers` or `all` to also blend in this site's own matching posts), `orderby` (including `peer:asc,relevance:desc` to group results by source), `foaf_depth`, `require_ht`, `peer_expand`, `days_before` and `days_after` (only posts published or updated within that many days before or after the current post), plus standard display attributes (`format`, `columns`, `show_thumbnail`, `meta`, etc.).
 
@@ -160,7 +160,7 @@ When a HyperTaxonomy-enabled peer returns post results, each post's response inc
 
 = Can I use feed types without WordPress peers? =
 
-Yes. Create a feed link type (Platform = RSS / Atom feed), map your terms to feed categories, and use `[tc_peer_posts]` — it queries both WordPress peers and feed caches in the same request and merges results.
+Yes. Create a feed link type (Platform = RSS / Atom feed), map your terms to feed categories, and use `[tconn_peer_posts]` — it queries both WordPress peers and feed caches in the same request and merges results.
 
 == Troubleshooting ==
 
@@ -194,7 +194,7 @@ Other built-in link types (Grokipedia, Merriam-Webster, GeoNames, ORCID, VIAF, M
 
 == Screenshots ==
 
-1. [tc_peer_browse] in action on the frontend — picking terms and browsing matching posts from this site and configured peers/feeds
+1. [tconn_peer_browse] in action on the frontend — picking terms and browsing matching posts from this site and configured peers/feeds
 2. TermConnect blocks in the post editor — a Peer Posts block with its settings and a live preview of a peer site's post
 3. "See also" links and the link-suggestion button on a term archive
 4. Term edit screen — the External Links panel with knowledge-base and peer-site identifiers

@@ -37,6 +37,6 @@ When Site A maps its "Python" tag to Wikidata Q28865, and Site B maps its "Pytho
 
 ## Max FOAF Depth
 
-`foaf_depth="0"` (the default for [`[tc_peer_posts]`](displaying-peer-posts.html#tc_peer_posts-shortcode)) queries only explicitly configured peers. Increasing it discovers posts from peers-of-peers automatically — useful for a wider community but only as reliable as your direct peers' own peer configurations. The shortcode value is capped by **Max FOAF Depth** in Settings, which defaults to 1, so raise that setting to go further.
+`foaf_depth="0"` (the default for [`[tconn_peer_posts]`](displaying-peer-posts.html#tconn_peer_posts-shortcode)) queries only explicitly configured peers. Increasing it discovers posts from peers-of-peers automatically — useful for a wider community but only as reliable as your direct peers' own peer configurations. The shortcode value is capped by **Max FOAF Depth** in Settings, which defaults to 1, so raise that setting to go further.
 
 Use depth 1 for a small group of editorially disciplined sites. Stay at 0 for a loosely curated network and map peers explicitly instead.

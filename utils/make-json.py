@@ -8,7 +8,7 @@
 # Block scripts are discovered from blocks/*/block.json (`editorScript`); the entry is the
 # block's src/index.js, or index.js when there is no src/ directory. Scripts that aren't
 # blocks are passed as handle=path pairs in EXTRA_HANDLES (comma-separated), e.g.
-#   EXTRA_HANDLES='sh-editor=assets/js/sh-editor.js'
+#   EXTRA_HANDLES='tcsoc-editor=assets/js/tcsoc-editor.js'
 #
 # Usage: python make-json.py <plugin_root> <domain> [locale]
 import io, re, os, json, sys, glob, datetime

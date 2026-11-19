@@ -1,18 +1,18 @@
 /**
- * Styles for [tc_peer_browse] — the interactive topic browser.
+ * Styles for [tconn_peer_browse] — the interactive topic browser.
  *
  * Only the facet controls (pills, suggestions, match/source/sort, pager) live
- * here, scoped under .tc-peer-browse. The result grid, cards, and uniform
- * thumbnails come from the shared tc-post-list.css base (a dependency).
+ * here, scoped under .tconn-peer-browse. The result grid, cards, and uniform
+ * thumbnails come from the shared tconn-post-list.css base (a dependency).
  */
 
-.tc-peer-browse {
+.tconn-peer-browse {
 	margin: 1.5em 0;
 }
 
 /* --- Controls bar --------------------------------------------------------- */
 
-.tc-pb-controls {
+.tconn-pb-controls {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-end;
@@ -20,19 +20,19 @@
 	margin-bottom: 1.25em;
 }
 
-.tc-pb-field {
+.tconn-pb-field {
 	display: flex;
 	flex-direction: column;
 	gap: 0.35em;
 }
 
-.tc-pb-pills-field {
+.tconn-pb-pills-field {
 	position: relative;
 	flex: 1 1 16em;
 	min-width: 12em;
 }
 
-.tc-pb-label {
+.tconn-pb-label {
 	font-size: 0.8em;
 	font-weight: 600;
 	text-transform: uppercase;
@@ -41,7 +41,7 @@
 }
 
 /* Pillbox + input */
-.tc-pb-pillbox {
+.tconn-pb-pillbox {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -52,7 +52,7 @@
 	min-height: 2.2em;
 }
 
-.tc-pb-pill {
+.tconn-pb-pill {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.3em;
@@ -64,7 +64,7 @@
 	white-space: nowrap;
 }
 
-.tc-pb-remove {
+.tconn-pb-remove {
 	border: 0;
 	background: none;
 	cursor: pointer;
@@ -76,12 +76,12 @@
 	color: inherit;
 }
 
-.tc-pb-remove:hover,
-.tc-pb-remove:focus {
+.tconn-pb-remove:hover,
+.tconn-pb-remove:focus {
 	opacity: 1;
 }
 
-.tc-pb-input {
+.tconn-pb-input {
 	flex: 1 1 6em;
 	min-width: 6em;
 	border: 0;
@@ -93,7 +93,7 @@
 }
 
 /* Suggestions dropdown */
-.tc-pb-suggest {
+.tconn-pb-suggest {
 	position: absolute;
 	z-index: 20;
 	top: 100%;
@@ -110,22 +110,22 @@
 	box-shadow: 0 4px 14px rgba( 0, 0, 0, 0.12 );
 }
 
-.tc-pb-suggest-item {
+.tconn-pb-suggest-item {
 	padding: 0.45em 0.7em;
 	cursor: pointer;
 }
 
-.tc-pb-suggest-item.is-active,
-.tc-pb-suggest-item:hover {
+.tconn-pb-suggest-item.is-active,
+.tconn-pb-suggest-item:hover {
 	background: rgba( 127, 127, 127, 0.15 );
 }
 
 /* Match radio group */
-.tc-pb-match-field {
+.tconn-pb-match-field {
 	gap: 0.2em;
 }
 
-.tc-pb-radio {
+.tconn-pb-radio {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.3em;
@@ -133,33 +133,33 @@
 	margin-right: 0.6em;
 }
 
-.tc-pb-scope,
-.tc-pb-sort {
+.tconn-pb-scope,
+.tconn-pb-sort {
 	font: inherit;
 	padding: 0.3em 0.4em;
 }
 
 /* --- Results -------------------------------------------------------------- */
 
-.tc-peer-browse.tc-pb-loading .tc-pb-results {
+.tconn-peer-browse.tconn-pb-loading .tconn-pb-results {
 	opacity: 0.55;
 	transition: opacity 0.15s ease;
 }
 
-.tc-pb-empty,
-.tc-pb-no-results {
+.tconn-pb-empty,
+.tconn-pb-no-results {
 	opacity: 0.7;
 	font-style: italic;
 }
 
 /* --- Pager ---------------------------------------------------------------- */
 
-.tc-pb-pager {
+.tconn-pb-pager {
 	margin-top: 1.25em;
 	text-align: center;
 }
 
-.tc-pb-more {
+.tconn-pb-more {
 	font: inherit;
 	cursor: pointer;
 	padding: 0.5em 1.4em;
@@ -169,7 +169,7 @@
 	color: inherit;
 }
 
-.tc-pb-more:hover,
-.tc-pb-more:focus {
+.tconn-pb-more:hover,
+.tconn-pb-more:focus {
 	background: rgba( 127, 127, 127, 0.12 );
 }

@@ -3,17 +3,17 @@
  * TermConnect Export / Import handlers.
  *
  * Export: downloads a JSON file containing:
- *   - link type definitions (tc_link_types option)
- *   - per-term external identifier values (_tc_link_{slug} term meta)
- *   - delegated identity sources (_tc_identity_source term meta)
- *   - original names and descriptions for delegated terms (_tc_original_name,
- *     _tc_original_description)
+ *   - link type definitions (tconn_link_types option)
+ *   - per-term external identifier values (_tconn_link_{slug} term meta)
+ *   - delegated identity sources (_tconn_identity_source term meta)
+ *   - original names and descriptions for delegated terms (_tconn_original_name,
+ *     _tconn_original_description)
  *
  * Import: restores all of the above. Link type definitions are merged (existing
  * custom types are preserved unless the file redefines them). Per-term values
  * are upserted — existing values are overwritten.
  *
- * Delegated links data (_tc_delegated_links_data) and the URI index (_tc_uris)
+ * Delegated links data (_tconn_delegated_links_data) and the URI index (_tconn_uris)
  * are not included — they are caches rebuilt automatically after import.
  *
  * @package TermConnect
@@ -24,33 +24,33 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-add_action( 'admin_post_tc_export_links', 'tc_handle_export_links' );
-add_action( 'admin_post_tc_import_links', 'tc_handle_import_links' );
+add_action( 'admin_post_tconn_export_links', 'tconn_handle_export_links' );
+add_action( 'admin_post_tconn_import_links', 'tconn_handle_import_links' );
 
 /**
  * Download every link type, term link and delegation as a TermConnect export file.
  *
  * @since 1.0.0
  */
-function tc_handle_export_links(): void {
-    check_admin_referer( 'tc_export_links' );
+function tconn_handle_export_links(): void {
+    check_admin_referer( 'tconn_export_links' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_die( esc_html__( 'Permission denied.', 'termconnect' ) );
     }
 
     global $wpdb;
 
-    // Collect all _tc_link_* term meta rows.
+    // Collect all _tconn_link_* term meta rows.
     $rows = $wpdb->get_results(
         "SELECT term_id, meta_key, meta_value
          FROM {$wpdb->termmeta}
-         WHERE meta_key LIKE '\_tc\_link\_%'
+         WHERE meta_key LIKE '\_tconn\_link\_%'
          ORDER BY term_id, meta_key"
     );
 
     $term_links = array();
     foreach ( $rows as $row ) {
-        $slug = substr( $row->meta_key, strlen( '_tc_link_' ) );
+        $slug = substr( $row->meta_key, strlen( '_tconn_link_' ) );
         $term = get_term( (int) $row->term_id );
         if ( ! $term || is_wp_error( $term ) ) {
             continue;
@@ -83,10 +83,10 @@ function tc_handle_export_links(): void {
         "SELECT i.term_id, i.meta_value AS source, o.meta_value AS original_description, n.meta_value AS original_name
          FROM {$wpdb->termmeta} i
          LEFT JOIN {$wpdb->termmeta} o
-           ON o.term_id = i.term_id AND o.meta_key = '_tc_original_description'
+           ON o.term_id = i.term_id AND o.meta_key = '_tconn_original_description'
          LEFT JOIN {$wpdb->termmeta} n
-           ON n.term_id = i.term_id AND n.meta_key = '_tc_original_name'
-         WHERE i.meta_key = '_tc_identity_source'
+           ON n.term_id = i.term_id AND n.meta_key = '_tconn_original_name'
+         WHERE i.meta_key = '_tconn_identity_source'
          ORDER BY i.term_id"
     );
 
@@ -112,10 +112,10 @@ function tc_handle_export_links(): void {
     $export = array(
         'version'              => '1.0',
         'exported'             => gmdate( 'Y-m-d\TH:i:s\Z' ),
-        'link_types'           => get_option( 'tc_link_types', array() ),
+        'link_types'           => get_option( 'tconn_link_types', array() ),
         'term_links'           => $term_links,
         'delegations'          => $delegations,
-        'shared_vocabularies'  => get_option( 'tc_shared_vocabularies', array() ),
+        'shared_vocabularies'  => get_option( 'tconn_shared_vocabularies', array() ),
     );
 
     $filename = 'termconnect-' . gmdate( 'Y-m-d' ) . '.json';
@@ -129,7 +129,7 @@ function tc_handle_export_links(): void {
 /**
  * Sanitize a single imported link type definition.
  *
- * Mirrors the field handling in tc_handle_peer_site_add() so imported
+ * Mirrors the field handling in tconn_handle_peer_site_add() so imported
  * definitions are validated the same way as ones created through the UI,
  * rather than trusting raw input from the uploaded file.
  *
@@ -137,7 +137,7 @@ function tc_handle_export_links(): void {
  * @param mixed $type Raw link type definition from the import file.
  * @return array|null Sanitized definition, or null when invalid.
  */
-function tc_import_sanitize_link_type( $type ): ?array {
+function tconn_import_sanitize_link_type( $type ): ?array {
     if ( ! is_array( $type ) ) {
         return null;
     }
@@ -178,38 +178,41 @@ function tc_import_sanitize_link_type( $type ): ?array {
  *
  * @since 1.0.0
  */
-function tc_handle_import_links(): void {
-    check_admin_referer( 'tc_import_links', 'tc_import_nonce' );
+function tconn_handle_import_links(): void {
+    check_admin_referer( 'tconn_import_links', 'tconn_import_nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_die( esc_html__( 'Permission denied.', 'termconnect' ) );
     }
 
-    if ( empty( $_FILES['tc_import_file']['tmp_name'] ) || ! is_uploaded_file( $_FILES['tc_import_file']['tmp_name'] ) ) {
-        wp_safe_redirect( add_query_arg( 'tc-import', 'no-file', admin_url( 'options-general.php?page=termconnect-settings' ) ) );
+    if ( empty( $_FILES['tconn_import_file']['tmp_name'] ) || ! is_uploaded_file( $_FILES['tconn_import_file']['tmp_name'] ) ) {
+        wp_safe_redirect( add_query_arg( 'tconn-import', 'no-file', admin_url( 'options-general.php?page=termconnect-settings' ) ) );
         exit;
     }
 
-    $raw  = file_get_contents( $_FILES['tc_import_file']['tmp_name'] );
+    $raw  = file_get_contents( $_FILES['tconn_import_file']['tmp_name'] );
     if ( false === $raw ) {
-        wp_safe_redirect( add_query_arg( 'tc-import', 'invalid', admin_url( 'options-general.php?page=termconnect-settings' ) ) );
+        wp_safe_redirect( add_query_arg( 'tconn-import', 'invalid', admin_url( 'options-general.php?page=termconnect-settings' ) ) );
         exit;
     }
-    $data = tc_external_json_decode( $raw );
+    $data = tconn_decode_json_request( $raw );
 
     if ( ! is_array( $data ) || empty( $data['version'] ) ) {
-        wp_safe_redirect( add_query_arg( 'tc-import', 'invalid', admin_url( 'options-general.php?page=termconnect-settings' ) ) );
+        wp_safe_redirect( add_query_arg( 'tconn-import', 'invalid', admin_url( 'options-general.php?page=termconnect-settings' ) ) );
         exit;
     }
 
-    $terms_updated = 0;
-    $types_updated  = false;
+    $terms_updated        = 0;
+    $types_updated        = false;
+    $vocabularies_skipped = false;
 
     // Restore link type definitions — merge by slug so existing custom types
     // survive and re-imports overwrite (rather than duplicate) the same slug.
     if ( ! empty( $data['link_types'] ) && is_array( $data['link_types'] ) ) {
         // Build a slug-keyed map of existing types.
         $by_slug = array();
-        foreach ( get_option( 'tc_link_types', array() ) as $type ) {
+        // Merged into the link types as they are now, under the Peer Sites lock.
+        tconn_hold_lock_for_request( 'tconn_link_types_lock', 'tconn_link_types' );
+        foreach ( get_option( 'tconn_link_types', array() ) as $type ) {
             if ( is_array( $type ) && ! empty( $type['slug'] ) ) {
                 $by_slug[ $type['slug'] ] = $type;
             }
@@ -217,13 +220,13 @@ function tc_handle_import_links(): void {
 
         // Overlay imported types, sanitizing each field.
         foreach ( $data['link_types'] as $type ) {
-            $sanitized = tc_import_sanitize_link_type( $type );
+            $sanitized = tconn_import_sanitize_link_type( $type );
             if ( null !== $sanitized ) {
                 $by_slug[ $sanitized['slug'] ] = $sanitized;
             }
         }
 
-        update_option( 'tc_link_types', array_values( $by_slug ) );
+        update_option( 'tconn_link_types', array_values( $by_slug ) );
         $types_updated = true;
     }
 
@@ -246,7 +249,7 @@ function tc_handle_import_links(): void {
                 continue;
             }
 
-            tc_set_term_link( $term->term_id, $link_slug, $identifier, $label, $fetched_at );
+            tconn_set_term_link( $term->term_id, $link_slug, $identifier, $label, $fetched_at );
             $terms_updated++;
         }
     }
@@ -267,7 +270,7 @@ function tc_handle_import_links(): void {
                 continue;
             }
 
-            // Reconstruct the _tc_identity_source meta array with all required fields.
+            // Reconstruct the _tconn_identity_source meta array with all required fields.
             $clean_source = array(
                 'peer_site_slug'   => sanitize_key( $source['peer_site_slug'] ),
                 'site_url'         => esc_url_raw( $source['site_url'] ?? '' ),
@@ -284,14 +287,14 @@ function tc_handle_import_links(): void {
                 $clean_source['sv_source_id'] = sanitize_key( $source['sv_source_id'] );
             }
 
-            update_term_meta( $term->term_id, TC_META_IDENTITY_SOURCE, $clean_source );
+            update_term_meta( $term->term_id, TCONN_META_IDENTITY_SOURCE, $clean_source );
 
             if ( isset( $entry['original_name'] ) ) {
-                update_term_meta( $term->term_id, TC_META_ORIGINAL_NAME, sanitize_text_field( $entry['original_name'] ) );
+                update_term_meta( $term->term_id, TCONN_META_ORIGINAL_NAME, sanitize_text_field( $entry['original_name'] ) );
             }
 
             if ( isset( $entry['original_description'] ) ) {
-                update_term_meta( $term->term_id, TC_META_ORIGINAL_DESCRIPTION, wp_kses_post( $entry['original_description'] ) );
+                update_term_meta( $term->term_id, TCONN_META_ORIGINAL_DESCRIPTION, wp_kses_post( $entry['original_description'] ) );
             }
 
             $terms_updated++;
@@ -349,28 +352,37 @@ function tc_handle_import_links(): void {
             }
             $clean_sources[] = $clean_src;
         }
-        if ( ! empty( $clean_sources ) ) {
-            // Merge with existing sources — match on id to avoid duplicates.
-            $existing_svs  = get_option( 'tc_shared_vocabularies', array() );
-            $existing_by_id = array();
-            foreach ( $existing_svs as $sv ) {
-                if ( ! empty( $sv['id'] ) ) {
-                    $existing_by_id[ $sv['id'] ] = $sv;
+        // Like every other writer, hold the write lock, so a sync or a source edit running
+        // now can't overwrite the import (or the import it). The rest is already imported,
+        // so without the lock only the vocabularies are skipped, and the page says so.
+        if ( ! empty( $clean_sources ) && ! tconn_acquire_mysql_lock( 'tconn_sv_write_lock', 10 ) ) {
+            $vocabularies_skipped = true;
+        } elseif ( ! empty( $clean_sources ) ) {
+            try {
+                // Merge with existing sources — match on id to avoid duplicates.
+                $existing_svs   = tconn_get_option_fresh( 'tconn_shared_vocabularies', array() );
+                $existing_by_id = array();
+                foreach ( $existing_svs as $sv ) {
+                    if ( ! empty( $sv['id'] ) ) {
+                        $existing_by_id[ $sv['id'] ] = $sv;
+                    }
                 }
+                foreach ( $clean_sources as $src ) {
+                    $existing_by_id[ $src['id'] ] = $src;
+                }
+                // Sort by scope priority before saving, matching every other writer —
+                // scope order determines first-wins delegation priority.
+                $merged = array_values( $existing_by_id );
+                update_option( 'tconn_shared_vocabularies', function_exists( 'tconn_sv_sort_sources' ) ? tconn_sv_sort_sources( $merged ) : $merged );
+            } finally {
+                tconn_release_mysql_lock( 'tconn_sv_write_lock' );
             }
-            foreach ( $clean_sources as $src ) {
-                $existing_by_id[ $src['id'] ] = $src;
-            }
-            // Sort by scope priority before saving, matching every other writer —
-            // scope order determines first-wins delegation priority.
-            $merged = array_values( $existing_by_id );
-            update_option( 'tc_shared_vocabularies', function_exists( 'tc_sv_sort_sources' ) ? tc_sv_sort_sources( $merged ) : $merged );
         }
     }
 
 
     wp_safe_redirect( add_query_arg(
-        array( 'tc-import' => 'ok', 'tc-import-count' => $terms_updated ),
+        array( 'tconn-import' => $vocabularies_skipped ? 'no-vocabularies' : 'ok', 'tconn-import-count' => $terms_updated ),
         admin_url( 'options-general.php?page=termconnect-settings' )
     ) );
     exit;

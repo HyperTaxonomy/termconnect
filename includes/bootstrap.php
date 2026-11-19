@@ -10,43 +10,49 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Core
-require_once TC_PLUGIN_DIR . 'includes/core/helpers.php';
-require_once TC_PLUGIN_DIR . 'includes/core/settings.php';
-require_once TC_PLUGIN_DIR . 'includes/core/term-links.php';
-require_once TC_PLUGIN_DIR . 'includes/core/feed-platform.php';
-require_once TC_PLUGIN_DIR . 'includes/core/peer-site-health.php';
-require_once TC_PLUGIN_DIR . 'includes/core/external-posts.php';
-require_once TC_PLUGIN_DIR . 'includes/core/display.php';
-require_once TC_PLUGIN_DIR . 'includes/core/rest-api.php';
-require_once TC_PLUGIN_DIR . 'includes/core/delegated-identity.php';
-require_once TC_PLUGIN_DIR . 'includes/core/suggested-links.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/helpers.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/settings.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/term-links.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/feed-platform.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/peer-site-health.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/external-posts.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/display.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/rest-api.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/delegated-identity.php';
+require_once TCONN_PLUGIN_DIR . 'includes/core/suggested-links.php';
 
 // Vocabulary sync — needed in admin, AJAX, and cron contexts (not on frontend page requests).
 if ( is_admin() || wp_doing_ajax() || ( defined( 'DOING_CRON' ) && DOING_CRON ) ) {
-    require_once TC_PLUGIN_DIR . 'includes/admin/shared-vocabulary-sync.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/shared-vocabulary-sync.php';
 }
 
 // Admin
 if ( is_admin() || wp_doing_ajax() ) {
-    require_once TC_PLUGIN_DIR . 'includes/admin/settings.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/class-admin.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/peer-sites-admin.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/term-edit.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/delegated-identity-edit.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/delegated-identity-ajax.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/delegated-identity-health.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/shared-vocabularies.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/shared-vocabularies-ajax.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/term-list.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/export-import.php';
-    require_once TC_PLUGIN_DIR . 'includes/admin/suggested-links-admin.php';
-    TC_Admin::register();
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/settings.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/class-admin.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/peer-sites-admin.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/term-edit.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/delegated-identity-edit.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/delegated-identity-ajax.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/delegated-identity-health.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/shared-vocabularies.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/shared-vocabularies-ajax.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/term-list.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/export-import.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/admin/suggested-links-admin.php';
+    TConn_Admin::register();
 }
 
 // Integrations
-require_once TC_PLUGIN_DIR . 'includes/integration/class-hypertaxonomy-integration.php';
-TC_HT_Integration::init();
+require_once TCONN_PLUGIN_DIR . 'includes/integration/class-hypertaxonomy-integration.php';
+require_once TCONN_PLUGIN_DIR . 'includes/integration/class-vocabulary-coverage.php';
+require_once TCONN_PLUGIN_DIR . 'includes/integration/class-operation-identity.php';
+require_once TCONN_PLUGIN_DIR . 'includes/integration/class-merge-identity.php';
+require_once TCONN_PLUGIN_DIR . 'includes/integration/class-convert-identity.php';
+TConn_HT_Integration::init();
+TConn_Merge_Identity::init();
+TConn_Convert_Identity::init();
 
 // Shortcodes
-require_once TC_PLUGIN_DIR . 'includes/shortcodes/class-external-post-list.php';
-require_once TC_PLUGIN_DIR . 'includes/shortcodes/class-peer-browse.php';
+require_once TCONN_PLUGIN_DIR . 'includes/shortcodes/class-external-post-list.php';
+require_once TCONN_PLUGIN_DIR . 'includes/shortcodes/class-peer-browse.php';

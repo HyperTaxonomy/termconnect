@@ -5,17 +5,26 @@ nav_order: 3
 ---
 
 # Plugin Settings
+{: .no_toc }
 
-Every setting at **Settings → TermConnect**, and the cache tools on its Cache tab. Peer sites and feeds themselves are set up at **Terms → Peer Sites**; see [Peer Sites & Feeds](peer-sites-feeds.html).
+Every setting at **Settings&nbsp;→ TermConnect**, and the cache tools on its Cache tab. Peer sites and feeds themselves are set up at **Terms&nbsp;→ Peer Sites**; see [Peer Sites & Feeds](peer-sites-feeds.html).
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## General
 
 ![TermConnect's General settings: enabled taxonomies, See Also and identifier suggestions](../assets/images/screenshots/settings-general.png)
-
-**General**
 
 - **Enabled Taxonomies** — see [Getting started](../#enabled-taxonomies).
 - **See Also** and **Identifier Suggestions** — see [Archives & Suggestions](archives-suggestions.html).
 
-**Peer Sites**
+## Peer Sites
 
 | Setting | Description | Default |
 |---------|-------------|---------|
@@ -24,7 +33,7 @@ Every setting at **Settings → TermConnect**, and the cache tools on its Cache 
 
 ![TermConnect's Peer Sites tab: maximum FOAF depth and blocked sites](../assets/images/screenshots/settings-peer-sites.png)
 
-**Shared Vocabularies**
+## Shared Vocabularies
 
 | Setting | Description | Default |
 |---------|-------------|---------|
@@ -36,7 +45,7 @@ The tab also links to the **redirect review queue** in **Site Health**, where re
 
 ![TermConnect's Shared Vocabularies tab: the redirect review queue link and the redirect options](../assets/images/screenshots/settings-shared-vocabularies.png)
 
-**Cache**
+## Cache
 
 | Setting | Description | Default |
 |---------|-------------|---------|
@@ -46,13 +55,13 @@ The tab also links to the **redirect review queue** in **Site Health**, where re
 
 The Cache tab also has these tools:
 
-- **Clear All Peer Cache** purges all peer-related cached data: post lists, term ID lookups, HyperTaxonomy status detection, and FOAF discovery data. Individual peer site and feed caches can be cleared from **Terms → Peer Sites**.
+- **Clear All Peer Cache** purges all peer-related cached data: post lists, term ID lookups, HyperTaxonomy status detection, and FOAF discovery data. Individual peer site and feed caches can be cleared from **Terms&nbsp;→ Peer Sites**.
 - **Clear FOAF Cache** purges only FOAF discovery data. FOAF connections are rediscovered automatically on the next peer post fetch.
 - **Re-sync All** immediately refreshes names, descriptions and external links for all delegated terms, ignoring the cache setting.
 
 ![TermConnect's Cache tab: three cache durations with the Clear All Peer Cache, Clear FOAF Cache and Re-sync All buttons](../assets/images/screenshots/settings-cache.png)
 
-**Advanced**
+## Advanced
 
 | Setting | Description | Default |
 |---------|-------------|---------|

@@ -2,10 +2,10 @@
 /**
  * Suggested Links — admin UI
  *
- * Manages the tc_suggested_link comment type in the WordPress admin:
+ * Manages the tconn_suggested_link comment type in the WordPress admin:
  * - Excludes suggestions from default comment queries and badge counts.
  * - Registers the Comments → Link Suggestions submenu.
- * - Customizes the comments list table for tc_suggested_link type.
+ * - Customizes the comments list table for tconn_suggested_link type.
  * - Handles the Approve transition: resolves the URL, creates the link, auto-trashes.
  * - Adds a per-term collapsible panel in the External Links section.
  *
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ============================================================================
-// CAPABILITY: allow edit_comment on tc_suggested_link comments
+// CAPABILITY: allow edit_comment on tconn_suggested_link comments
 // ============================================================================
 
 // WP's edit_comment capability check requires editing the post attached to the comment.
@@ -29,7 +29,7 @@ add_filter( 'map_meta_cap', static function ( array $caps, string $cap, int $use
         return $caps;
     }
     $comment = get_comment( $args[0] ?? 0 );
-    if ( $comment && 'tc_suggested_link' === $comment->comment_type ) {
+    if ( $comment && 'tconn_suggested_link' === $comment->comment_type ) {
         return array( 'manage_options' );
     }
     return $caps;
@@ -41,8 +41,8 @@ add_filter( 'map_meta_cap', static function ( array $caps, string $cap, int $use
 // Force the primary column to our first content column on the suggestions page.
 add_filter( 'list_table_primary_column', static function ( string $column, string $screen_id ): string {
     if ( 'edit-comments' === $screen_id
-        && 'tc_suggested_link' === sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
-        return 'tc_proposed_url';
+        && 'tconn_suggested_link' === sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
+        return 'tconn_proposed_url';
     }
     return $column;
 }, 10, 2 );
@@ -52,14 +52,14 @@ add_filter( 'list_table_primary_column', static function ( string $column, strin
 // ============================================================================
 
 add_filter( 'pre_get_comments', static function ( WP_Comment_Query $q ): void {
-    if ( 'tc_suggested_link' === ( $q->query_vars['type'] ?? '' ) ) {
+    if ( 'tconn_suggested_link' === ( $q->query_vars['type'] ?? '' ) ) {
         return;
     }
-    if ( 'tc_suggested_link' === sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
+    if ( 'tconn_suggested_link' === sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
         return;
     }
     $not_in   = (array) ( $q->query_vars['type__not_in'] ?? array() );
-    $not_in[] = 'tc_suggested_link';
+    $not_in[] = 'tconn_suggested_link';
     $q->set( 'type__not_in', $not_in );
 } );
 
@@ -67,33 +67,33 @@ add_filter( 'pre_get_comments', static function ( WP_Comment_Query $q ): void {
 add_filter( 'comments_clauses', static function ( array $clauses, WP_Comment_Query $q ): array {
     $type = sanitize_key( wp_unslash( $_GET['type'] ?? '' ) );
     global $wpdb;
-    if ( 'tc_suggested_link' === $type ) {
-        // Inclusion: force only tc_suggested_link rows.
-        if ( false === strpos( $clauses['where'], "comment_type = 'tc_suggested_link'" ) ) {
-            $clauses['where'] .= $wpdb->prepare( ' AND comment_type = %s', 'tc_suggested_link' );
+    if ( 'tconn_suggested_link' === $type ) {
+        // Inclusion: force only tconn_suggested_link rows.
+        if ( false === strpos( $clauses['where'], "comment_type = 'tconn_suggested_link'" ) ) {
+            $clauses['where'] .= $wpdb->prepare( ' AND comment_type = %s', 'tconn_suggested_link' );
         }
     } elseif ( is_admin() ) {
-        // Exclusion: keep tc_suggested_link out of every other admin view.
-        if ( false === strpos( $clauses['where'], 'tc_suggested_link' ) ) {
-            $clauses['where'] .= $wpdb->prepare( ' AND comment_type <> %s', 'tc_suggested_link' );
+        // Exclusion: keep tconn_suggested_link out of every other admin view.
+        if ( false === strpos( $clauses['where'], 'tconn_suggested_link' ) ) {
+            $clauses['where'] .= $wpdb->prepare( ' AND comment_type <> %s', 'tconn_suggested_link' );
         }
     }
     return $clauses;
 }, 10, 2 );
 
 // ============================================================================
-// VIEWS: rewrite filter-links to preserve ?type=tc_suggested_link
+// VIEWS: rewrite filter-links to preserve ?type=tconn_suggested_link
 // ============================================================================
 
 add_filter( 'views_edit-comments', static function ( array $views ): array {
-    if ( 'tc_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
+    if ( 'tconn_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
         return $views;
     }
     foreach ( $views as $status => $link ) {
         $views[ $status ] = preg_replace_callback(
             '/href="([^"]+)"/',
             static function ( array $m ): string {
-                return 'href="' . esc_url( add_query_arg( 'type', 'tc_suggested_link', $m[1] ) ) . '"';
+                return 'href="' . esc_url( add_query_arg( 'type', 'tconn_suggested_link', $m[1] ) ) . '"';
             },
             $link
         );
@@ -106,7 +106,7 @@ add_filter( 'views_edit-comments', static function ( array $views ): array {
 // ============================================================================
 
 add_filter( 'bulk_actions-edit-comments', static function ( array $actions ): array {
-    if ( 'tc_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
+    if ( 'tconn_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
         return $actions;
     }
     unset( $actions['approve'], $actions['unapprove'] );
@@ -122,7 +122,7 @@ add_action( 'admin_menu', static function (): void {
 
     $suggestion_pending = (int) $wpdb->get_var(
         "SELECT COUNT(*) FROM {$wpdb->comments}
-         WHERE comment_type = 'tc_suggested_link' AND comment_approved = '0'"
+         WHERE comment_type = 'tconn_suggested_link' AND comment_approved = '0'"
     );
 
     $badge = static function ( int $n ): string {
@@ -138,7 +138,7 @@ add_action( 'admin_menu', static function (): void {
         __( 'Link Suggestions', 'termconnect' ),
         __( 'Link Suggestions', 'termconnect' ) . $badge( $suggestion_pending ),
         'manage_options',
-        'edit-comments.php?type=tc_suggested_link',
+        'edit-comments.php?type=tconn_suggested_link',
         ''
     );
 }, 20 );
@@ -149,7 +149,7 @@ add_action( 'admin_menu', static function (): void {
 
     $native_pending = (int) $wpdb->get_var(
         "SELECT COUNT(*) FROM {$wpdb->comments}
-         WHERE comment_approved = '0' AND comment_type <> 'tc_suggested_link'"
+         WHERE comment_approved = '0' AND comment_type <> 'tconn_suggested_link'"
     );
 
     if ( $native_pending < 1 || empty( $submenu['edit-comments.php'] ) ) {
@@ -170,7 +170,7 @@ add_action( 'admin_menu', static function (): void {
 // ============================================================================
 
 add_filter( 'manage_edit-comments_columns', static function ( array $cols ): array {
-    if ( sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) !== 'tc_suggested_link' ) {
+    if ( sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) !== 'tconn_suggested_link' ) {
         return $cols;
     }
     // Replace built-in columns entirely to avoid WP's native rendering of 'response'/'comment'.
@@ -178,24 +178,24 @@ add_filter( 'manage_edit-comments_columns', static function ( array $cols ): arr
     if ( isset( $cols['cb'] ) ) {
         $new['cb'] = $cols['cb'];
     }
-    $new['tc_sender']       = __( 'Sender', 'termconnect' );
-    $new['tc_proposed_url'] = __( 'Proposed URL', 'termconnect' );
-    $new['tc_comment']      = __( 'Note', 'termconnect' );
-    $new['tc_term']         = __( 'Term', 'termconnect' );
+    $new['tconn_sender']       = __( 'Sender', 'termconnect' );
+    $new['tconn_proposed_url'] = __( 'Proposed URL', 'termconnect' );
+    $new['tconn_comment']      = __( 'Note', 'termconnect' );
+    $new['tconn_term']         = __( 'Term', 'termconnect' );
     $new['date']            = $cols['date'] ?? __( 'Submitted on', 'termconnect' );
     return $new;
 } );
 
 add_action( 'manage_comments_custom_column', static function ( string $col, int $comment_id ): void {
-    if ( sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) !== 'tc_suggested_link' ) {
+    if ( sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) !== 'tconn_suggested_link' ) {
         return;
     }
     $comment = get_comment( $comment_id );
-    if ( ! $comment || 'tc_suggested_link' !== $comment->comment_type ) {
+    if ( ! $comment || 'tconn_suggested_link' !== $comment->comment_type ) {
         return;
     }
 
-    if ( 'tc_sender' === $col ) {
+    if ( 'tconn_sender' === $col ) {
         // Avatar — native comments pass the comment object; WP falls back to email.
         echo get_avatar( $comment, 32, 'mystery', '', array( 'class' => 'avatar' ) );
 
@@ -220,15 +220,15 @@ add_action( 'manage_comments_custom_column', static function ( string $col, int 
         // IP address — linked to filter suggestions by that IP, same pattern as native comments.
         if ( $comment->comment_author_IP ) {
             $ip_url = add_query_arg(
-                array( 's' => $comment->comment_author_IP, 'comment_status' => 'all', 'type' => 'tc_suggested_link' ),
+                array( 's' => $comment->comment_author_IP, 'comment_status' => 'all', 'type' => 'tconn_suggested_link' ),
                 admin_url( 'edit-comments.php' )
             );
             echo '<br><a href="' . esc_url( $ip_url ) . '">' . esc_html( $comment->comment_author_IP ) . '</a>';
         }
     }
 
-    if ( 'tc_term' === $col ) {
-        $term = get_term( tc_suggested_link_term_id( $comment ) );
+    if ( 'tconn_term' === $col ) {
+        $term = get_term( tconn_suggested_link_term_id( $comment ) );
         if ( $term && ! is_wp_error( $term ) ) {
             $edit_url = get_edit_term_link( $term->term_id, $term->taxonomy );
             echo '<strong><a href="' . esc_url( $edit_url ) . '">' . esc_html( $term->name ) . '</a></strong>';
@@ -238,12 +238,12 @@ add_action( 'manage_comments_custom_column', static function ( string $col, int 
         }
     }
 
-    if ( 'tc_proposed_url' === $col ) {
+    if ( 'tconn_proposed_url' === $col ) {
         $url = $comment->comment_author_url;
         echo '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html( $url ) . '</a>';
 
         // Auto-match against configured link types.
-        $match = tc_suggested_link_match_url( $url );
+        $match = tconn_suggested_link_match_url( $url );
         if ( $match ) {
             echo '<br><span style="color:#2271b1">' . esc_html( $match['label'] . ': ' . $match['value'] ) . '</span>';
         } else {
@@ -251,7 +251,7 @@ add_action( 'manage_comments_custom_column', static function ( string $col, int 
         }
     }
 
-    if ( 'tc_comment' === $col ) {
+    if ( 'tconn_comment' === $col ) {
         if ( $comment->comment_content ) {
             echo '<span style="color:#555">' . esc_html( $comment->comment_content ) . '</span>';
         }
@@ -267,7 +267,7 @@ add_action( 'manage_comments_custom_column', static function ( string $col, int 
 // ============================================================================
 
 add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment $comment ): array {
-    if ( 'tc_suggested_link' !== $comment->comment_type ) {
+    if ( 'tconn_suggested_link' !== $comment->comment_type ) {
         return $actions;
     }
 
@@ -275,14 +275,14 @@ add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment 
     unset( $actions['reply'] );
 
     $url   = $comment->comment_author_url;
-    $term  = get_term( tc_suggested_link_term_id( $comment ) );
+    $term  = get_term( tconn_suggested_link_term_id( $comment ) );
 
-    // Determine primary action. tc_is_self_origin() expects a bare scheme://host origin,
+    // Determine primary action. tconn_is_self_origin() expects a bare scheme://host origin,
     // so extract just that portion before comparing.
     $url_origin = wp_parse_url( $url, PHP_URL_SCHEME ) . '://' . wp_parse_url( $url, PHP_URL_HOST );
-    if ( '://' !== $url_origin && tc_is_self_origin( $url_origin ) ) {
+    if ( '://' !== $url_origin && tconn_is_self_origin( $url_origin ) ) {
         // Local URL — link to term edit if resolvable.
-        $local_term = tc_suggested_link_resolve_local_term( $url );
+        $local_term = tconn_suggested_link_resolve_local_term( $url );
         if ( $local_term ) {
             $edit_url = get_edit_term_link( $local_term->term_id, $local_term->taxonomy );
             // If HT is active, pass the receiving term's ID so its pill is highlighted
@@ -290,16 +290,16 @@ add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment 
             if ( $term && ! is_wp_error( $term ) && function_exists( 'htax_get_included_terms' ) ) {
                 $edit_url = add_query_arg( 'context_term_id', $term->term_id, $edit_url );
             }
-            $actions['tc_edit_term'] = '<a href="' . esc_url( $edit_url ) . '">'
+            $actions['tconn_edit_term'] = '<a href="' . esc_url( $edit_url ) . '">'
                 . esc_html__( 'Edit term', 'termconnect' ) . '</a>';
         } else {
-            $actions['tc_edit_term'] = '<a href="' . esc_url( admin_url( 'edit-tags.php' ) ) . '">'
+            $actions['tconn_edit_term'] = '<a href="' . esc_url( admin_url( 'edit-tags.php' ) ) . '">'
                 . esc_html__( 'Edit term', 'termconnect' ) . '</a>';
         }
         unset( $actions['approve'] );
     } elseif ( $term && ! is_wp_error( $term ) ) {
-        $match     = tc_suggested_link_match_url( $url );
-        $link_exists = $match && tc_suggested_link_exists( $term->term_id, $match['peer_site_slug'], $match['value'] );
+        $match     = tconn_suggested_link_match_url( $url );
+        $link_exists = $match && tconn_suggested_link_exists( $term->term_id, $match['peer_site_slug'], $match['value'] );
 
         if ( $link_exists ) {
             unset( $actions['approve'] );
@@ -307,24 +307,24 @@ add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment 
             $accept_url = add_query_arg( array(
                 'taxonomy'  => $term->taxonomy,
                 'tag_ID'    => $term->term_id,
-                'tc_lt'     => $match['peer_site_slug'],
-                'tc_value'  => $match['value'],
+                'tconn_lt'     => $match['peer_site_slug'],
+                'tconn_value'  => $match['value'],
             ), admin_url( 'term.php' ) );
-            $actions['tc_accept'] = '<a href="' . esc_url( $accept_url ) . '">'
+            $actions['tconn_accept'] = '<a href="' . esc_url( $accept_url ) . '">'
                 . esc_html__( 'Accept', 'termconnect' ) . '</a>';
             unset( $actions['approve'] );
         } elseif ( $match ) {
             // Known link type but not yet enabled — prompt admin to enable it.
-            $enable_url = admin_url( 'admin.php?page=tc-peer-sites' );
-            $actions['tc_enable_lt'] = '<a href="' . esc_url( $enable_url ) . '">'
+            $enable_url = admin_url( 'admin.php?page=tconn-peer-sites' );
+            $actions['tconn_enable_lt'] = '<a href="' . esc_url( $enable_url ) . '">'
                 . esc_html__( 'Enable link type', 'termconnect' ) . '</a>';
             unset( $actions['approve'] );
         } else {
-            $label = ( function_exists( 'tc_external_is_ht_enabled' ) && tc_external_is_ht_enabled( rtrim( wp_parse_url( $url, PHP_URL_SCHEME ) . '://' . wp_parse_url( $url, PHP_URL_HOST ), '/' ) ) )
+            $label = ( function_exists( 'tconn_external_is_ht_enabled' ) && tconn_external_is_ht_enabled( rtrim( wp_parse_url( $url, PHP_URL_SCHEME ) . '://' . wp_parse_url( $url, PHP_URL_HOST ), '/' ) ) )
                 ? __( 'Add WordPress peer', 'termconnect' )
                 : __( 'Add link type', 'termconnect' );
-            $add_url = add_query_arg( 'tc_suggest_url', rawurlencode( $url ), admin_url( 'admin.php?page=tc-peer-sites' ) );
-            $actions['tc_add_lt'] = '<a href="' . esc_url( $add_url ) . '">' . esc_html( $label ) . '</a>';
+            $add_url = add_query_arg( 'tconn_suggest_url', rawurlencode( $url ), admin_url( 'admin.php?page=tconn-peer-sites' ) );
+            $actions['tconn_add_lt'] = '<a href="' . esc_url( $add_url ) . '">' . esc_html( $label ) . '</a>';
             unset( $actions['approve'] );
         }
     }
@@ -337,26 +337,26 @@ add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment 
 // ============================================================================
 
 add_action( 'comment_unapproved_to_approved', static function ( WP_Comment $comment ): void {
-    if ( 'tc_suggested_link' !== $comment->comment_type ) {
+    if ( 'tconn_suggested_link' !== $comment->comment_type ) {
         return;
     }
 
-    $term = get_term( tc_suggested_link_term_id( $comment ) );
+    $term = get_term( tconn_suggested_link_term_id( $comment ) );
     if ( ! $term || is_wp_error( $term ) ) {
         wp_trash_comment( $comment->comment_ID );
         return;
     }
 
     $url   = $comment->comment_author_url;
-    $match = tc_suggested_link_match_url( $url );
+    $match = tconn_suggested_link_match_url( $url );
 
     if ( ! $match ) {
         // No match — revert to pending and leave a note.
         wp_set_comment_status( $comment->comment_ID, 'hold' );
         wp_insert_comment( array(
             'comment_post_ID'  => 0,
-            'comment_meta'     => array( TC_META_SUGGESTION_TERM_ID => $term->term_id ),
-            'comment_type'     => 'tc_suggested_link',
+            'comment_meta'     => array( TCONN_META_SUGGESTION_TERM_ID => $term->term_id ),
+            'comment_type'     => 'tconn_suggested_link',
             'comment_content'  => __( 'No matching link type found. Create one at Terms → Peer Sites and try again.', 'termconnect' ),
             'comment_approved' => '0',
             'comment_parent'   => $comment->comment_ID,
@@ -364,13 +364,13 @@ add_action( 'comment_unapproved_to_approved', static function ( WP_Comment $comm
         return;
     }
 
-    if ( tc_suggested_link_exists( $term->term_id, $match['peer_site_slug'], $match['value'] ) ) {
+    if ( tconn_suggested_link_exists( $term->term_id, $match['peer_site_slug'], $match['value'] ) ) {
         // Link already exists — task is done, trash the suggestion.
         wp_trash_comment( $comment->comment_ID );
         return;
     }
 
-    tc_set_term_link( $term->term_id, $match['peer_site_slug'], $match['value'] );
+    tconn_set_term_link( $term->term_id, $match['peer_site_slug'], $match['value'] );
 
     wp_trash_comment( $comment->comment_ID );
 } );
@@ -384,8 +384,8 @@ add_action( 'comment_unapproved_to_approved', static function ( WP_Comment $comm
  *
  * @since 1.0.0
  */
-function tc_suggested_link_exists( int $term_id, string $peer_site_slug, string $value ): bool {
-    $existing = tc_get_term_links( $term_id, false );
+function tconn_suggested_link_exists( int $term_id, string $peer_site_slug, string $value ): bool {
+    $existing = tconn_get_term_links( $term_id, false );
     return isset( $existing[ $peer_site_slug ] ) && $existing[ $peer_site_slug ] === $value;
 }
 
@@ -396,13 +396,13 @@ function tc_suggested_link_exists( int $term_id, string $peer_site_slug, string 
  * @param string $url
  * @return WP_Term|null
  */
-function tc_suggested_link_resolve_local_term( string $url ): ?WP_Term {
+function tconn_suggested_link_resolve_local_term( string $url ): ?WP_Term {
     $path = trim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
     if ( ! $path ) {
         return null;
     }
     $slug = basename( $path );
-    foreach ( TC_Settings::get_enabled_taxonomies() as $taxonomy ) {
+    foreach ( TConn_Settings::get_enabled_taxonomies() as $taxonomy ) {
         $term = get_term_by( 'slug', $slug, $taxonomy );
         if ( $term && ! is_wp_error( $term ) ) {
             return $term;
@@ -416,42 +416,42 @@ function tc_suggested_link_resolve_local_term( string $url ): ?WP_Term {
 // ============================================================================
 
 add_filter( 'manage_edit-comments_sortable_columns', static function ( array $cols ): array {
-    if ( 'tc_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
+    if ( 'tconn_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
         return $cols;
     }
-    $cols['tc_sender'] = 'comment_author';
-    $cols['tc_term']   = 'tc_term_name'; // Custom; requires JOIN added in comments_clauses.
+    $cols['tconn_sender'] = 'comment_author';
+    $cols['tconn_term']   = 'tconn_term_name'; // Custom; requires JOIN added in comments_clauses.
     $cols['date']      = array( 'comment_date', false );
     return $cols;
 } );
 
-// Store tc_term_name intent before WP_Comment_Query rejects the unknown orderby value.
+// Store tconn_term_name intent before WP_Comment_Query rejects the unknown orderby value.
 add_action( 'pre_get_comments', static function ( WP_Comment_Query $q ): void {
-    if ( 'tc_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
+    if ( 'tconn_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
         return;
     }
     $orderby = sanitize_key( wp_unslash( $_GET['orderby'] ?? '' ) );
-    if ( 'tc_term_name' === $orderby ) {
-        $q->query_vars['_tc_term_name_order'] = sanitize_key( wp_unslash( $_GET['order'] ?? 'asc' ) );
+    if ( 'tconn_term_name' === $orderby ) {
+        $q->query_vars['_tconn_term_name_order'] = sanitize_key( wp_unslash( $_GET['order'] ?? 'asc' ) );
         $q->query_vars['orderby']             = 'comment_date'; // Valid placeholder so WP won't reject it.
     }
 }, 1 );
 
 // Inject LEFT JOIN and override ORDER BY for term-name sorting.
 add_filter( 'comments_clauses', static function ( array $clauses, WP_Comment_Query $q ): array {
-    if ( empty( $q->query_vars['_tc_term_name_order'] ) ) {
+    if ( empty( $q->query_vars['_tconn_term_name_order'] ) ) {
         return $clauses;
     }
     global $wpdb;
-    if ( false === strpos( $clauses['join'], 'tc_sort_terms' ) ) {
+    if ( false === strpos( $clauses['join'], 'tconn_sort_terms' ) ) {
         $clauses['join'] .= $wpdb->prepare(
-            " LEFT JOIN {$wpdb->commentmeta} AS tc_sort_meta ON tc_sort_meta.comment_id = {$wpdb->comments}.comment_ID AND tc_sort_meta.meta_key = %s"
-            . " LEFT JOIN {$wpdb->terms} AS tc_sort_terms ON tc_sort_terms.term_id = CAST( tc_sort_meta.meta_value AS UNSIGNED )",
-            TC_META_SUGGESTION_TERM_ID
+            " LEFT JOIN {$wpdb->commentmeta} AS tconn_sort_meta ON tconn_sort_meta.comment_id = {$wpdb->comments}.comment_ID AND tconn_sort_meta.meta_key = %s"
+            . " LEFT JOIN {$wpdb->terms} AS tconn_sort_terms ON tconn_sort_terms.term_id = CAST( tconn_sort_meta.meta_value AS UNSIGNED )",
+            TCONN_META_SUGGESTION_TERM_ID
         );
     }
-    $order              = 'desc' === $q->query_vars['_tc_term_name_order'] ? 'DESC' : 'ASC';
-    $clauses['orderby'] = "tc_sort_terms.name {$order}";
+    $order              = 'desc' === $q->query_vars['_tconn_term_name_order'] ? 'DESC' : 'ASC';
+    $clauses['orderby'] = "tconn_sort_terms.name {$order}";
     return $clauses;
 }, 20, 2 );
 
@@ -460,11 +460,11 @@ add_filter( 'comments_clauses', static function ( array $clauses, WP_Comment_Que
 // ============================================================================
 
 add_action( 'admin_head', static function (): void {
-    if ( 'tc_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
+    if ( 'tconn_suggested_link' !== sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) ) {
         return;
     }
     ?>
-    <style>
+    <?php ob_start(); ?>
     /* Alternating row colors at cell level — overrides WP's flat .unapproved td background. */
     #the-comment-list tr:nth-child(odd) td,
     #the-comment-list tr:nth-child(odd) th { background-color: #f6f7f7; }
@@ -473,6 +473,6 @@ add_action( 'admin_head', static function (): void {
     /* Remove the pending status indicator border — suggestions are always pending on arrival,
        so the solid red left stripe carries no information and looks wrong. */
     #the-comment-list th.check-column { border-left: none !important; }
-    </style>
+    <?php tconn_print_inline_style( 'tconn-suggested-links', ob_get_clean() ); ?>
     <?php
 } );

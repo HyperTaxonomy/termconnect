@@ -25,7 +25,7 @@ The remote site only needs to be a standard WordPress site for most of this feat
 
 ## Setting up a vocabulary source
 
-1. Go to **Terms → Shared Vocabularies**
+1. Go to **Terms&nbsp;→ Shared Vocabularies**
 2. Choose a scope tab and click **+ Add source** — the form opens as a floating panel over the table.
 3. Optionally enter a **Name** and **Description** for the source — these help you distinguish sources in the table, especially when multiple sources reference the same peer site or taxonomy.
 4. Select a peer site. The **Remote taxonomy** dropdown populates automatically from the peer's available taxonomies.
@@ -88,10 +88,10 @@ When the peer runs TermConnect, the form also shows **Sync external links from p
 
 New terms are matched by slug. WordPress keeps slugs unique per taxonomy, so the match is always unambiguous. When a remote term is processed:
 
-1. A local term already delegated to that remote term → update it, renaming its slug if the remote slug changed
-2. A local term with the same slug and no existing delegation → link it, set up delegation
-3. A local term with the same slug already claimed by another source → skip (first-wins)
-4. No local term with that slug → create one, set up delegation
+1. A local term already delegated to that remote term&nbsp;→ update it, renaming its slug if the remote slug changed
+2. A local term with the same slug and no existing delegation&nbsp;→ link it, set up delegation
+3. A local term with the same slug already claimed by another source&nbsp;→ skip (first-wins)
+4. No local term with that slug&nbsp;→ create one, set up delegation
 
 TermConnect stores each remote term's integer ID, which is how a sync recognizes a renamed term. If a remote term keeps its slug but gets a different ID (for example, after a peer database migration), a term refresh updates the stored ID. Term refreshes between syncs look terms up by slug, so a renamed term can briefly show as not found. See [Delegated Identity](delegated-identity.html#site-health-source-term-not-found).
 
@@ -116,7 +116,7 @@ When a delegated term's remote counterpart is not found in the sync fetch, TermC
 | **Delete if no local posts or relationships** | Term deleted only when it has no tagged posts, no HyperTaxonomy relationship rows, and no direct child term that is itself a delegated mirror; otherwise flagged |
 | **Delete unconditionally** | Term deleted regardless of usage, including when it has delegated children (which are reparented to the grandparent, as normal for `wp_delete_term()`) |
 
-Configure per source in **Terms → Shared Vocabularies → Edit source → Missing terms**.
+Configure per source in **Terms&nbsp;→ Shared Vocabularies&nbsp;→ Edit source&nbsp;→ Missing terms**.
 
 ## Parent mismatch handling
 
@@ -137,7 +137,7 @@ When a Taxonomies source is configured and the peer runs HyperTaxonomy, two addi
 - **Sync relationship types and relationships from this peer** — imports [custom relationship type](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html#custom-relationship-types) definitions from the peer and writes relationship rows (term inclusions and custom-type relationships) alongside term sync. Off by default because it adds time to each sync on large taxonomies: terms are still fetched in pages of 100, but each relationship is written separately.
 - **Include cross-taxonomy relationships** — additionally writes relationships whose target term is in a different taxonomy. Only processes targets that are themselves delegated to the same peer site. Requires a prior full sync of each involved taxonomy.
 
-Relationship type definitions can also be imported on demand from **Terms → Term Relationship Types** (when HyperTaxonomy is active), using the **Discover Relationship Types from Peer** section at the bottom of the page.
+Relationship type definitions can also be imported on demand from **Terms&nbsp;→ Term Relationship Types** (when HyperTaxonomy is active), using the **Discover Relationship Types from Peer** section at the bottom of the page.
 
 ## Stale relationship rows
 
@@ -154,10 +154,10 @@ Stale warnings clear automatically when the peer restores the relationship and a
 
 When a sync run orphans a local term and a newly-active term from the same peer shares the same external identifier (Wikidata ID, GeoNames code, etc.), TermConnect detects that the concept was likely renamed or replaced. A merge proposal appears on the Shared Vocabularies page:
 
-- **Merge**: reassigns all posts from the orphaned term to the replacement, transfers its HyperTaxonomy relationships, custom relationships and sticky posts, deletes the orphan, and creates an archive [redirect](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html#redirects) from the old slug. Requires HyperTaxonomy.
+- **Merge**: reassigns all posts from the orphaned term to the replacement, transfers its HyperTaxonomy relationships, custom relationships and sticky posts, deletes the orphan, and creates an archive [redirect](https://hypertaxonomy.org/hypertaxonomy/user-guide/term-relationships.html#redirects) from the old slug. The orphan's external links move to the replacement too (link types it doesn't have yet), and so does data other plugins keep on terms, when they follow HyperTaxonomy's shared choice for it; the redirect keeps none of it. When the orphan was a root of a **Term Hierarchies** source or an entry of an **Individual Terms** source, the replacement takes its place there, so the vocabulary keeps mirroring the concept (unless the source already covers the replacement). Requires HyperTaxonomy.
 - **Dismiss**: removes the proposal without merging; the orphaned term remains.
 
-If **Auto-accept redirects** is on (**Settings → TermConnect → Shared Vocabularies**) and the proposal comes from a sync you run with **Sync now**, the merge runs automatically without review. Scheduled syncs always queue it for review.
+If **Auto-accept redirects** is on (**Settings&nbsp;→ TermConnect&nbsp;→ Shared Vocabularies**) and the proposal comes from a sync you run with **Sync now**, the merge runs automatically without review. Scheduled syncs always queue it for review.
 
 ## Delegation from the term edit screen
 
@@ -180,10 +180,10 @@ The **TermConnect shared vocabularies** Site Health test reports:
 
 Each source has a configurable **Sync interval** (twice daily, daily, weekly). TermConnect checks hourly for sources that are due, so a sync can run up to an hour after its interval is up. If several sources are due in the same hourly check and it runs long, TermConnect stops at a time budget and syncs the rest on the next check. Syncs also run:
 
-- Automatically after saving a **new** source, or after saving an edit where the root/individual term pill list changed — the **Actions** column shows a spinner while in progress; the result (e.g. "✓ 12 synced, 3 created, 0 renamed") appears below the action buttons and persists across page reloads. Saving an edit without changing the pill list reloads the page without triggering a sync, so existing stats are preserved.
+- Automatically after saving a **new** source, or after saving an edit where the root/individual term pill list changed — the **Actions** column shows a spinner while in progress; the result (e.g. "✓&nbsp;12 synced, 3 created, 0 renamed") appears below the action buttons and persists across page reloads. Saving an edit without changing the pill list reloads the page without triggering a sync, so existing stats are preserved.
 - On demand via **Sync now** in the Actions column. Edit and Remove are disabled for that row while a sync is running.
 
-There's no single "sync all sources" button, so use **Sync now** on each source row for an immediate sync. **Re-sync All** in **Settings → TermConnect → Cache** is different: it refreshes the data of terms that are already delegated, without adding terms or changing the hierarchy.
+There's no single "sync all sources" button, so use **Sync now** on each source row for an immediate sync. **Re-sync All** in **Settings&nbsp;→ TermConnect&nbsp;→ Cache** is different: it refreshes the data of terms that are already delegated, without adding terms or changing the hierarchy.
 
 ## Export / Import
 

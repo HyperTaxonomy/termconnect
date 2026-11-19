@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-18 17:52-0500\n"
+"POT-Creation-Date: 2026-11-25 16:09-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,8 +26,8 @@ msgstr ""
 msgid "Terms"
 msgstr ""
 
-#: includes/admin/class-admin.php:82 includes/admin/peer-sites-admin.php:938
-#: includes/admin/settings.php:80
+#: includes/admin/class-admin.php:82 includes/admin/peer-sites-admin.php:950
+#: includes/admin/settings.php:87
 msgid "Peer Sites"
 msgstr ""
 
@@ -36,7 +36,7 @@ msgid "TermConnect Peer Sites"
 msgstr ""
 
 #: includes/admin/class-admin.php:91 includes/admin/class-admin.php:92
-#: includes/admin/settings.php:81 includes/admin/settings.php:523
+#: includes/admin/settings.php:88 includes/admin/settings.php:530
 #: includes/admin/shared-vocabularies.php:90
 msgid "Shared Vocabularies"
 msgstr ""
@@ -47,22 +47,23 @@ msgstr ""
 #: includes/admin/delegated-identity-health.php:217
 #: includes/admin/delegated-identity-health.php:356
 #: includes/admin/delegated-identity-health.php:369
-#: includes/core/display.php:90 includes/core/peer-site-health.php:288
-#: includes/core/peer-site-health.php:318
+#: includes/core/display.php:90 includes/core/peer-site-health.php:293
+#: includes/core/peer-site-health.php:323
+#: includes/integration/class-operation-identity.php:253
 msgid "TermConnect"
 msgstr ""
 
 #: includes/admin/delegated-identity-ajax.php:42
-#: includes/admin/delegated-identity-ajax.php:520
-#: includes/admin/delegated-identity-ajax.php:574
-#: includes/admin/delegated-identity-ajax.php:612
+#: includes/admin/delegated-identity-ajax.php:526
+#: includes/admin/delegated-identity-ajax.php:580
+#: includes/admin/delegated-identity-ajax.php:618
 msgid "Invalid parameters."
 msgstr ""
 
 #: includes/admin/delegated-identity-ajax.php:47
-#: includes/admin/delegated-identity-ajax.php:530
+#: includes/admin/delegated-identity-ajax.php:536
 #: includes/core/delegated-identity.php:103
-#: includes/core/delegated-identity.php:654
+#: includes/core/delegated-identity.php:653
 msgid "Term not found."
 msgstr ""
 
@@ -73,15 +74,15 @@ msgstr ""
 #: includes/admin/delegated-identity-ajax.php:70
 #: includes/admin/delegated-identity-ajax.php:90
 #: includes/admin/delegated-identity-ajax.php:220
-#: includes/admin/delegated-identity-ajax.php:321
-#: includes/admin/delegated-identity-ajax.php:384
-#: includes/admin/delegated-identity-ajax.php:410
-#: includes/admin/delegated-identity-ajax.php:439
-#: includes/admin/delegated-identity-ajax.php:513
-#: includes/admin/delegated-identity-ajax.php:564
-#: includes/admin/delegated-identity-ajax.php:603
-#: includes/admin/delegated-identity-ajax.php:660
-#: includes/admin/delegated-identity-ajax.php:697
+#: includes/admin/delegated-identity-ajax.php:327
+#: includes/admin/delegated-identity-ajax.php:390
+#: includes/admin/delegated-identity-ajax.php:416
+#: includes/admin/delegated-identity-ajax.php:445
+#: includes/admin/delegated-identity-ajax.php:519
+#: includes/admin/delegated-identity-ajax.php:570
+#: includes/admin/delegated-identity-ajax.php:609
+#: includes/admin/delegated-identity-ajax.php:666
+#: includes/admin/delegated-identity-ajax.php:703
 #: includes/admin/export-import.php:38 includes/admin/export-import.php:184
 #: includes/admin/peer-sites-admin.php:62
 #: includes/admin/peer-sites-admin.php:120
@@ -95,26 +96,26 @@ msgstr ""
 #: includes/admin/peer-sites-admin.php:539 includes/admin/settings.php:24
 #: includes/admin/settings.php:49
 #: includes/admin/shared-vocabularies-ajax.php:33
-#: includes/admin/shared-vocabularies-ajax.php:231
-#: includes/admin/shared-vocabularies-ajax.php:309
-#: includes/admin/shared-vocabularies-ajax.php:336
-#: includes/admin/shared-vocabularies-ajax.php:391
-#: includes/admin/shared-vocabularies-ajax.php:443
-#: includes/admin/shared-vocabularies-ajax.php:475
-#: includes/admin/shared-vocabularies-ajax.php:524
-#: includes/admin/shared-vocabularies-ajax.php:570
-#: includes/admin/shared-vocabularies-ajax.php:618
+#: includes/admin/shared-vocabularies-ajax.php:230
+#: includes/admin/shared-vocabularies-ajax.php:306
+#: includes/admin/shared-vocabularies-ajax.php:329
+#: includes/admin/shared-vocabularies-ajax.php:384
+#: includes/admin/shared-vocabularies-ajax.php:439
+#: includes/admin/shared-vocabularies-ajax.php:471
+#: includes/admin/shared-vocabularies-ajax.php:519
+#: includes/admin/shared-vocabularies-ajax.php:564
+#: includes/admin/shared-vocabularies-ajax.php:612
 #: includes/admin/shared-vocabularies.php:23
-#: includes/integration/class-hypertaxonomy-integration.php:387
+#: includes/integration/class-hypertaxonomy-integration.php:395
 msgid "Permission denied."
 msgstr ""
 
 #: includes/admin/delegated-identity-ajax.php:158
-#: includes/admin/shared-vocabularies-ajax.php:155
-#: includes/admin/shared-vocabularies-ajax.php:240
-#: includes/admin/shared-vocabularies-ajax.php:351
-#: includes/admin/shared-vocabularies-ajax.php:401
-#: includes/admin/shared-vocabularies-ajax.php:624
+#: includes/admin/shared-vocabularies-ajax.php:154
+#: includes/admin/shared-vocabularies-ajax.php:239
+#: includes/admin/shared-vocabularies-ajax.php:344
+#: includes/admin/shared-vocabularies-ajax.php:394
+#: includes/admin/shared-vocabularies-ajax.php:618
 msgid "Another update is in progress. Please try again."
 msgstr ""
 
@@ -123,9 +124,9 @@ msgid "Identity delegated successfully."
 msgstr ""
 
 #: includes/admin/delegated-identity-ajax.php:229
-#: includes/admin/delegated-identity-ajax.php:392
-#: includes/admin/delegated-identity-ajax.php:415
-#: includes/admin/delegated-identity-ajax.php:444
+#: includes/admin/delegated-identity-ajax.php:398
+#: includes/admin/delegated-identity-ajax.php:421
+#: includes/admin/delegated-identity-ajax.php:450
 msgid "Invalid term ID."
 msgstr ""
 
@@ -136,93 +137,93 @@ msgid ""
 "source instead."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:309
+#: includes/admin/delegated-identity-ajax.php:315
 msgid "Delegation ended."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:352
+#: includes/admin/delegated-identity-ajax.php:358
 #, php-format
 msgid ""
 "Stopped at the time limit: %1$d of %2$d term(s) refreshed. Click Re-sync All "
 "again to continue."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:369
+#: includes/admin/delegated-identity-ajax.php:375
 #, php-format
 msgid "%1$d term(s) refreshed, %2$d error(s)."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:396
-#: includes/admin/delegated-identity-ajax.php:449
-#: includes/admin/delegated-identity-ajax.php:525
+#: includes/admin/delegated-identity-ajax.php:402
+#: includes/admin/delegated-identity-ajax.php:455
+#: includes/admin/delegated-identity-ajax.php:531
 msgid "No delegation found for this term."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:399
+#: includes/admin/delegated-identity-ajax.php:405
 msgid "Settings updated."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:424
+#: includes/admin/delegated-identity-ajax.php:430
 msgid "Identity data refreshed."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:454
+#: includes/admin/delegated-identity-ajax.php:460
 msgid "No remote term ID stored — cannot probe by ID."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:459
+#: includes/admin/delegated-identity-ajax.php:465
 msgid "Local term not found."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:468
+#: includes/admin/delegated-identity-ajax.php:474
 msgid "Remote term not found by ID — it may have been deleted."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:552
+#: includes/admin/delegated-identity-ajax.php:558
 msgid "Term re-linked and renamed."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:580
+#: includes/admin/delegated-identity-ajax.php:586
 msgid "Unknown link type."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:585
+#: includes/admin/delegated-identity-ajax.php:591
 msgid "Failed to add link."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:591
+#: includes/admin/delegated-identity-ajax.php:597
 msgid "Link added."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:617
+#: includes/admin/delegated-identity-ajax.php:623
 msgid "Target term not found."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:626
-#: includes/admin/delegated-identity-ajax.php:679
+#: includes/admin/delegated-identity-ajax.php:632
+#: includes/admin/delegated-identity-ajax.php:685
 msgid "Remote term has moved again. Retry from Site Health."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:645
+#: includes/admin/delegated-identity-ajax.php:651
 msgid "Delegation transferred."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:668
-#: includes/core/delegated-identity.php:1073
+#: includes/admin/delegated-identity-ajax.php:674
+#: includes/core/delegated-identity.php:1180
 msgid "There is no pending redirect for this term."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:671
+#: includes/admin/delegated-identity-ajax.php:677
 msgid ""
 "This term is managed by a shared vocabulary; update the vocabulary source "
 "instead."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:686
+#: includes/admin/delegated-identity-ajax.php:692
 msgid "Delegation now follows the new remote term."
 msgstr ""
 
-#: includes/admin/delegated-identity-ajax.php:704
+#: includes/admin/delegated-identity-ajax.php:710
 msgid "Redirect declined; the current delegation is kept."
 msgstr ""
 
@@ -251,7 +252,7 @@ msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:167
 #: includes/admin/shared-vocabularies.php:130
-#: includes/integration/class-hypertaxonomy-integration.php:300
+#: includes/integration/class-hypertaxonomy-integration.php:308
 msgid "Select peer site"
 msgstr ""
 
@@ -271,12 +272,12 @@ msgid ""
 msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:196
-#: includes/admin/delegated-identity-edit.php:575
+#: includes/admin/delegated-identity-edit.php:568
 msgid "Sync name from remote (makes field read-only while delegated)"
 msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:200
-#: includes/admin/delegated-identity-edit.php:581
+#: includes/admin/delegated-identity-edit.php:574
 msgid "Sync description from remote (makes field read-only while delegated)"
 msgstr ""
 
@@ -289,15 +290,15 @@ msgid "Delegate"
 msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:215
-#: includes/admin/delegated-identity-edit.php:562
-#: includes/admin/delegated-identity-edit.php:589
-#: includes/admin/peer-sites-admin.php:1404
+#: includes/admin/delegated-identity-edit.php:555
+#: includes/admin/delegated-identity-edit.php:582
+#: includes/admin/peer-sites-admin.php:1416
 #: includes/admin/shared-vocabularies.php:257
 msgid "Cancel"
 msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:224
-#: includes/admin/settings.php:385
+#: includes/admin/settings.php:392
 msgid ""
 "Terms can delegate their title, description, external links and/or "
 "relationships to an externally defined term on a peer WordPress site, "
@@ -305,7 +306,7 @@ msgid ""
 msgstr ""
 
 #: includes/admin/delegated-identity-edit.php:226
-#: includes/admin/settings.php:387
+#: includes/admin/settings.php:394
 msgid ""
 "Terms can delegate their title and/or description to an externally defined "
 "term on a peer WordPress site, matched by slug."
@@ -331,8 +332,8 @@ msgstr ""
 msgid "Remote term redirected — current delegation kept"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:301
-#: includes/admin/peer-sites-admin.php:1002 includes/admin/settings.php:161
+#: includes/admin/delegated-identity-edit.php:294
+#: includes/admin/peer-sites-admin.php:1014 includes/admin/settings.php:168
 #: includes/admin/shared-vocabularies.php:45
 #: includes/admin/shared-vocabularies.php:313
 #: includes/admin/shared-vocabularies.php:327
@@ -340,21 +341,21 @@ msgstr ""
 msgid "Taxonomies"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:302
+#: includes/admin/delegated-identity-edit.php:295
 #: includes/admin/shared-vocabularies.php:49
 #: includes/admin/shared-vocabularies.php:314
 #: includes/admin/shared-vocabularies.php:451
 msgid "Remote Groups"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:303
+#: includes/admin/delegated-identity-edit.php:296
 #: includes/admin/shared-vocabularies.php:53
 #: includes/admin/shared-vocabularies.php:315
 #: includes/admin/shared-vocabularies.php:452
 msgid "Local Groups"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:304
+#: includes/admin/delegated-identity-edit.php:297
 #: includes/admin/shared-vocabularies.php:57
 #: includes/admin/shared-vocabularies.php:316
 #: includes/admin/shared-vocabularies.php:328
@@ -362,7 +363,7 @@ msgstr ""
 msgid "Term Hierarchies"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:305
+#: includes/admin/delegated-identity-edit.php:298
 #: includes/admin/shared-vocabularies.php:61
 #: includes/admin/shared-vocabularies.php:317
 #: includes/admin/shared-vocabularies.php:329
@@ -370,63 +371,63 @@ msgstr ""
 msgid "Individual Terms"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:309
+#: includes/admin/delegated-identity-edit.php:302
 msgid "taxonomy"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:310
-#: includes/admin/delegated-identity-edit.php:311
+#: includes/admin/delegated-identity-edit.php:303
+#: includes/admin/delegated-identity-edit.php:304
 msgid "group"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:312
+#: includes/admin/delegated-identity-edit.php:305
 msgid "hierarchy"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:313
+#: includes/admin/delegated-identity-edit.php:306
 msgid "individual terms"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:385
-#: includes/admin/delegated-identity-edit.php:559
+#: includes/admin/delegated-identity-edit.php:378
+#: includes/admin/delegated-identity-edit.php:552
 #: includes/admin/delegated-identity-health.php:34
 msgid "End delegation"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:401
+#: includes/admin/delegated-identity-edit.php:394
 #, php-format
 msgid "cached %s ago"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:411
+#: includes/admin/delegated-identity-edit.php:404
 msgid "Refresh now"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:421
-#: includes/admin/delegated-identity-edit.php:569
+#: includes/admin/delegated-identity-edit.php:414
+#: includes/admin/delegated-identity-edit.php:562
 msgid "Sync settings"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:436
+#: includes/admin/delegated-identity-edit.php:429
 #, php-format
 msgid ""
 "Shared vocabulary: %1$s (%2$s &middot; %3$s) &nbsp;&mdash;&nbsp; <a "
 "href=\"%4$s\">Manage</a>"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:448
+#: includes/admin/delegated-identity-edit.php:441
 #, php-format
 msgid ""
 "Shared vocabulary (%1$s): %2$s &middot; %3$s &nbsp;&mdash;&nbsp; <a "
 "href=\"%4$s\">Manage</a>"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:474
+#: includes/admin/delegated-identity-edit.php:467
 #: includes/admin/delegated-identity-health.php:331
 msgid "Stale relationship rows"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:480
+#: includes/admin/delegated-identity-edit.php:473
 #, php-format
 msgid ""
 "%d relationship row exists locally but was not present on the peer site "
@@ -437,40 +438,40 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/delegated-identity-edit.php:505
+#: includes/admin/delegated-identity-edit.php:498
 #, php-format
 msgid "first detected %s ago"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:536
+#: includes/admin/delegated-identity-edit.php:529
 msgid "End delegation?"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:537
+#: includes/admin/delegated-identity-edit.php:530
 msgid ""
 "Delegation to the remote term will end. Remote-synced name and description "
 "will be replaced with local values."
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:541
+#: includes/admin/delegated-identity-edit.php:534
 msgid "Restore local name"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:547
+#: includes/admin/delegated-identity-edit.php:540
 msgid "Restore local description"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:553
+#: includes/admin/delegated-identity-edit.php:546
 msgid "Keep external links for existing peer sites"
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:555
+#: includes/admin/delegated-identity-edit.php:548
 msgid ""
 "Delegated links for locally-configured platforms become local links. Any "
 "existing local link for the same platform will be replaced."
 msgstr ""
 
-#: includes/admin/delegated-identity-edit.php:586
+#: includes/admin/delegated-identity-edit.php:579
 msgid "Save"
 msgstr ""
 
@@ -479,9 +480,9 @@ msgid "Checking…"
 msgstr ""
 
 #: includes/admin/delegated-identity-health.php:33
-#: includes/admin/settings.php:560 includes/admin/shared-vocabularies.php:1004
+#: includes/admin/settings.php:567 includes/admin/shared-vocabularies.php:1004
 #: includes/admin/shared-vocabularies.php:1111 includes/admin/term-edit.php:53
-#: includes/integration/class-hypertaxonomy-integration.php:337
+#: includes/integration/class-hypertaxonomy-integration.php:345
 msgid "Request failed."
 msgstr ""
 
@@ -723,55 +724,55 @@ msgstr ""
 msgid "No slugs provided."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:594
-#: includes/admin/peer-sites-admin.php:699
+#: includes/admin/peer-sites-admin.php:596
+#: includes/admin/peer-sites-admin.php:705
 msgid ""
 "Invalid URI prefix. Only http and https are allowed, and loopback or link-"
 "local addresses are not permitted."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:609
+#: includes/admin/peer-sites-admin.php:611
 msgid ""
 "Cannot add this site as a WordPress peer. Linking to yourself produces "
 "redundant HTTP self-requests and duplicate post results."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:721
+#: includes/admin/peer-sites-admin.php:727
 msgid ""
 "Cannot set this site as a WordPress peer. Linking to yourself produces "
 "redundant HTTP self-requests and duplicate post results."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:940
+#: includes/admin/peer-sites-admin.php:952
 msgid ""
 "Manage external sites, feeds and services where your terms can have "
 "identifiers. Enable the namespaces relevant to your content; once enabled, "
 "you can add identifiers to individual terms from their edit screens."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:942
+#: includes/admin/peer-sites-admin.php:954
 msgid ""
 "When a local term shares an identifier with a term on a peer WordPress site, "
 "TermConnect can delegate its identity to the peer — keeping the name, "
 "description, and external links in sync automatically."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:946
+#: includes/admin/peer-sites-admin.php:958
 #, php-format
 msgid ""
 "A collection of terms whose identity is delegated to a peer site is called a "
 "%s."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:947
+#: includes/admin/peer-sites-admin.php:959
 msgid "Shared Vocabulary"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:965
+#: includes/admin/peer-sites-admin.php:977
 msgid "Enabled"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:967
+#: includes/admin/peer-sites-admin.php:979
 msgid ""
 "Drag rows up or down to change their display order. Links to the identifiers "
 "from enabled namespaces will appear in this order in the \"See also\" "
@@ -779,320 +780,320 @@ msgid ""
 "the namespace has \"Show on archives\" checked."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:999
-#: includes/admin/peer-sites-admin.php:1234
-#: includes/admin/peer-sites-admin.php:1316
+#: includes/admin/peer-sites-admin.php:1011
+#: includes/admin/peer-sites-admin.php:1246
+#: includes/admin/peer-sites-admin.php:1328
 msgid "Label"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1000
-#: includes/admin/peer-sites-admin.php:1323
-#: includes/admin/peer-sites-admin.php:1422
+#: includes/admin/peer-sites-admin.php:1012
+#: includes/admin/peer-sites-admin.php:1335
+#: includes/admin/peer-sites-admin.php:1434
 msgid "URI Prefix"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1001
-#: includes/admin/peer-sites-admin.php:1237
-#: includes/admin/peer-sites-admin.php:1357
+#: includes/admin/peer-sites-admin.php:1013
+#: includes/admin/peer-sites-admin.php:1249
+#: includes/admin/peer-sites-admin.php:1369
 msgid "Platform"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1003
+#: includes/admin/peer-sites-admin.php:1015
 msgid "Archives"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1004
+#: includes/admin/peer-sites-admin.php:1016
 msgid "Status"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1005
-#: includes/admin/peer-sites-admin.php:1238
+#: includes/admin/peer-sites-admin.php:1017
+#: includes/admin/peer-sites-admin.php:1250
 #: includes/admin/shared-vocabularies.php:378
 msgid "Actions"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1013
+#: includes/admin/peer-sites-admin.php:1025
 #: includes/admin/shared-vocabularies.php:405
 msgid "Drag to reorder"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1017
-#: includes/admin/peer-sites-admin.php:1246
+#: includes/admin/peer-sites-admin.php:1029
+#: includes/admin/peer-sites-admin.php:1258
 msgid "Built-in"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1024
-#: includes/admin/peer-sites-admin.php:1255
+#: includes/admin/peer-sites-admin.php:1036
+#: includes/admin/peer-sites-admin.php:1267
 msgid "WordPress"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1026
-#: includes/admin/peer-sites-admin.php:1257
+#: includes/admin/peer-sites-admin.php:1038
+#: includes/admin/peer-sites-admin.php:1269
 msgid "Feed"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1066
+#: includes/admin/peer-sites-admin.php:1078
 msgid "Degraded"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1069
+#: includes/admin/peer-sites-admin.php:1081
 #, php-format
 msgid "%d failure"
 msgid_plural "%d failures"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1078
+#: includes/admin/peer-sites-admin.php:1090
 msgid "OK"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1086
-#: includes/admin/peer-sites-admin.php:1100
+#: includes/admin/peer-sites-admin.php:1098
+#: includes/admin/peer-sites-admin.php:1112
 #, php-format
 msgid "%d term mapped"
 msgid_plural "%d terms mapped"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1087
-#: includes/admin/peer-sites-admin.php:1182
+#: includes/admin/peer-sites-admin.php:1099
+#: includes/admin/peer-sites-admin.php:1194
 #, php-format
 msgid "%d post cached"
 msgid_plural "%d posts cached"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1089
+#: includes/admin/peer-sites-admin.php:1101
 #, php-format
 msgid "Fetched %s ago"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1104
+#: includes/admin/peer-sites-admin.php:1116
 #, php-format
 msgid "%1$d post, %2$d categories"
 msgid_plural "%1$d posts, %2$d categories"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/peer-sites-admin.php:1110
+#: includes/admin/peer-sites-admin.php:1122
 #, php-format
 msgid "Last poll performed %s ago"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1113
+#: includes/admin/peer-sites-admin.php:1125
 #, php-format
 msgid "Next poll in %s"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1115
+#: includes/admin/peer-sites-admin.php:1127
 msgid "Not scheduled"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1121
-#: includes/admin/peer-sites-admin.php:1204
-#: includes/admin/peer-sites-admin.php:1215
+#: includes/admin/peer-sites-admin.php:1133
+#: includes/admin/peer-sites-admin.php:1216
+#: includes/admin/peer-sites-admin.php:1227
 msgid "Poll Now"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1131
+#: includes/admin/peer-sites-admin.php:1143
 msgid "Restrict"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1131
-#: includes/admin/peer-sites-admin.php:1275
+#: includes/admin/peer-sites-admin.php:1143
+#: includes/admin/peer-sites-admin.php:1287
 #: includes/admin/shared-vocabularies.php:421
 msgid "Edit"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1138
-#: includes/admin/peer-sites-admin.php:1146
+#: includes/admin/peer-sites-admin.php:1150
+#: includes/admin/peer-sites-admin.php:1158
 msgid "Clear Cache"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1156
+#: includes/admin/peer-sites-admin.php:1168
 msgid "Disable"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1184
-#: includes/admin/peer-sites-admin.php:1209
+#: includes/admin/peer-sites-admin.php:1196
+#: includes/admin/peer-sites-admin.php:1221
 msgid "posts"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1184
-#: includes/admin/peer-sites-admin.php:1209
+#: includes/admin/peer-sites-admin.php:1196
+#: includes/admin/peer-sites-admin.php:1221
 msgid "categories"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1195
+#: includes/admin/peer-sites-admin.php:1207
 msgid "Polling…"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1211
+#: includes/admin/peer-sites-admin.php:1223
 msgid "Last poll performed just now"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1221
+#: includes/admin/peer-sites-admin.php:1233
 msgid "No peer sites enabled yet. Enable peer sites from the list below."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1225
+#: includes/admin/peer-sites-admin.php:1237
 msgid "+ Add peer site"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1229
+#: includes/admin/peer-sites-admin.php:1241
 msgid "Available"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1235
-#: includes/admin/peer-sites-admin.php:1312
+#: includes/admin/peer-sites-admin.php:1247
+#: includes/admin/peer-sites-admin.php:1324
 msgid "Slug"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1236
-#: includes/admin/peer-sites-admin.php:1331
+#: includes/admin/peer-sites-admin.php:1248
+#: includes/admin/peer-sites-admin.php:1343
 #: includes/admin/shared-vocabularies.php:120
 msgid "Description"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1269 includes/admin/settings.php:189
-#: includes/admin/settings.php:616
+#: includes/admin/peer-sites-admin.php:1281 includes/admin/settings.php:196
+#: includes/admin/settings.php:623
 msgid "Enable"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1279
+#: includes/admin/peer-sites-admin.php:1291
 msgid "Delete this peer site and remove all its term meta values?"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1284
+#: includes/admin/peer-sites-admin.php:1296
 msgid "Delete"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1303
-#: includes/admin/peer-sites-admin.php:1403
-#: includes/admin/peer-sites-admin.php:1510
-#: includes/admin/peer-sites-admin.php:1511
+#: includes/admin/peer-sites-admin.php:1315
+#: includes/admin/peer-sites-admin.php:1415
+#: includes/admin/peer-sites-admin.php:1522
+#: includes/admin/peer-sites-admin.php:1523
 msgid "Add Peer Site"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1319
+#: includes/admin/peer-sites-admin.php:1331
 msgid "Display name. Slug is auto-derived and cannot be changed later."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1327
-#: includes/admin/peer-sites-admin.php:1434
+#: includes/admin/peer-sites-admin.php:1339
+#: includes/admin/peer-sites-admin.php:1446
 msgid "URL prefix prepended to the identifier to form the full URI."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1337
+#: includes/admin/peer-sites-admin.php:1349
 msgid "Show on Archives"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1341
+#: includes/admin/peer-sites-admin.php:1353
 msgid "Include in \"See also\" section on term archive pages"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1347
+#: includes/admin/peer-sites-admin.php:1359
 msgid "Restrict to taxonomies"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1352
+#: includes/admin/peer-sites-admin.php:1364
 msgid "Leave all unchecked to allow any taxonomy."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1361
+#: includes/admin/peer-sites-admin.php:1373
 msgid "WordPress peer (REST API)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1365
+#: includes/admin/peer-sites-admin.php:1377
 msgid "RSS / Atom feed"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1369
+#: includes/admin/peer-sites-admin.php:1381
 msgid "MediaWiki (identifier + autocomplete)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1373
+#: includes/admin/peer-sites-admin.php:1385
 msgid "Custom identifier"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1375
+#: includes/admin/peer-sites-admin.php:1387
 msgid ""
 "WordPress peers fetch related posts via REST API. Feed types poll an RSS/"
 "Atom feed URL. MediaWiki sites provide autocomplete via OpenSearch. Custom "
 "identifier stores external identifiers only."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1379
+#: includes/admin/peer-sites-admin.php:1391
 msgid "Remote taxonomy REST base"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1382
+#: includes/admin/peer-sites-admin.php:1394
 msgid ""
 "e.g. topics (leave blank to use remote taxonomies with same slug as local "
 "ones)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1383
+#: includes/admin/peer-sites-admin.php:1395
 msgid ""
 "REST base of the taxonomy on the peer site. Leave blank when the peer uses "
 "the same taxonomy slug as your site."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1387
+#: includes/admin/peer-sites-admin.php:1399
 msgid "Poll interval (seconds)"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1390
+#: includes/admin/peer-sites-admin.php:1402
 msgid ""
 "How often to poll the feed. Minimum 300 seconds, maximum 86400 (24 hours)."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1394
+#: includes/admin/peer-sites-admin.php:1406
 msgid "Max cached posts"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1397
+#: includes/admin/peer-sites-admin.php:1409
 msgid ""
 "Maximum posts to accumulate across polls. Oldest are pruned when exceeded."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1419
+#: includes/admin/peer-sites-admin.php:1431
 msgid "Peer site URL"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1420
+#: includes/admin/peer-sites-admin.php:1432
 msgid "Feed URL"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1421
+#: includes/admin/peer-sites-admin.php:1433
 msgid "Wiki URL"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1431
+#: includes/admin/peer-sites-admin.php:1443
 msgid ""
 "The peer site root URL. No path needed — the taxonomy archive path is "
 "derived automatically from the Remote taxonomy REST base."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1432
+#: includes/admin/peer-sites-admin.php:1444
 msgid "The full RSS or Atom feed URL."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1433
+#: includes/admin/peer-sites-admin.php:1445
 msgid ""
 "The wiki article URL prefix (e.g. https://wiki.example.com/wiki/). "
 "Autocomplete is provided automatically via the OpenSearch API."
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1542
+#: includes/admin/peer-sites-admin.php:1554
 msgid "Restrict to Taxonomies"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1543
+#: includes/admin/peer-sites-admin.php:1555
 msgid "Edit Peer Site Settings"
 msgstr ""
 
-#: includes/admin/peer-sites-admin.php:1544
+#: includes/admin/peer-sites-admin.php:1556
 msgid "Save Changes"
 msgstr ""
 
@@ -1105,144 +1106,152 @@ msgstr ""
 msgid "Import complete — %d records restored."
 msgstr ""
 
-#: includes/admin/settings.php:68
+#: includes/admin/settings.php:71
+#, php-format
+msgid ""
+"Import partly complete — %d records restored, but the Shared Vocabularies "
+"were not imported because another update was in progress. Import the file "
+"again to add them."
+msgstr ""
+
+#: includes/admin/settings.php:75
 msgid "Import failed — no file was uploaded."
 msgstr ""
 
-#: includes/admin/settings.php:69
+#: includes/admin/settings.php:76
 msgid "Import failed — the file could not be parsed."
 msgstr ""
 
-#: includes/admin/settings.php:79
+#: includes/admin/settings.php:86
 msgid "General"
 msgstr ""
 
-#: includes/admin/settings.php:82
+#: includes/admin/settings.php:89
 msgid "Cache"
 msgstr ""
 
-#: includes/admin/settings.php:83
+#: includes/admin/settings.php:90
 msgid "Export / Import"
 msgstr ""
 
-#: includes/admin/settings.php:84
+#: includes/admin/settings.php:91
 msgid "Advanced"
 msgstr ""
 
-#: includes/admin/settings.php:129
+#: includes/admin/settings.php:136
 msgid "Save Settings"
 msgstr ""
 
-#: includes/admin/settings.php:153 includes/core/display.php:201
+#: includes/admin/settings.php:160 includes/core/display.php:201
 msgid "See also:"
 msgstr ""
 
-#: includes/admin/settings.php:155 includes/core/suggested-links.php:398
+#: includes/admin/settings.php:162 includes/core/suggested-links.php:398
 msgid "Suggest a related concept"
 msgstr ""
 
-#: includes/admin/settings.php:158
+#: includes/admin/settings.php:165
 msgid "Enabled Taxonomies"
 msgstr ""
 
-#: includes/admin/settings.php:164
+#: includes/admin/settings.php:171
 msgid ""
 "Enabling a taxonomy shows the Delegated Identity and External Links panels "
 "on its term edit screens, and turns on peer site term matching."
 msgstr ""
 
-#: includes/admin/settings.php:177
+#: includes/admin/settings.php:184
 msgid "enabled by a companion plugin"
 msgstr ""
 
-#: includes/admin/settings.php:186
+#: includes/admin/settings.php:193
 msgid "See Also"
 msgstr ""
 
-#: includes/admin/settings.php:194
+#: includes/admin/settings.php:201
 msgid "Show \"See also\" section on term archive pages"
 msgstr ""
 
-#: includes/admin/settings.php:197
+#: includes/admin/settings.php:204
 msgid ""
 "Appends external links to term archive descriptions for enabled taxonomies."
 msgstr ""
 
-#: includes/admin/settings.php:202 blocks/peer-posts/src/index.js:280
+#: includes/admin/settings.php:209 blocks/peer-posts/src/index.js:280
 msgid "Format"
 msgstr ""
 
-#: includes/admin/settings.php:207
+#: includes/admin/settings.php:214
 msgid "Inline — \"See also: Wikidata · GeoNames\""
 msgstr ""
 
-#: includes/admin/settings.php:212
+#: includes/admin/settings.php:219
 msgid "List — unordered list of links"
 msgstr ""
 
-#: includes/admin/settings.php:215
+#: includes/admin/settings.php:222
 msgid "Inline label"
 msgstr ""
 
-#: includes/admin/settings.php:218
+#: includes/admin/settings.php:225
 msgid "Text prepended to links in inline format."
 msgstr ""
 
-#: includes/admin/settings.php:238
+#: includes/admin/settings.php:245
 msgid "Identifier Suggestions"
 msgstr ""
 
-#: includes/admin/settings.php:241
+#: includes/admin/settings.php:248
 msgid "Allow suggestions"
 msgstr ""
 
-#: includes/admin/settings.php:246
+#: includes/admin/settings.php:253
 msgid ""
 "Show a suggestion form on term archive pages (below \"See also\"). Skipped "
 "on terms with delegated identity."
 msgstr ""
 
-#: includes/admin/settings.php:249
+#: includes/admin/settings.php:256
 msgid "Form label"
 msgstr ""
 
-#: includes/admin/settings.php:267
+#: includes/admin/settings.php:274
 msgid "Notify admin"
 msgstr ""
 
-#: includes/admin/settings.php:272
+#: includes/admin/settings.php:279
 msgid "Send admin email when a suggestion is submitted."
 msgstr ""
 
-#: includes/admin/settings.php:287
+#: includes/admin/settings.php:294
 #, php-format
 msgid "Configure peer WordPress sites and RSS/Atom feeds in %s."
 msgstr ""
 
-#: includes/admin/settings.php:288
+#: includes/admin/settings.php:295
 msgid "Terms → Peer Sites"
 msgstr ""
 
-#: includes/admin/settings.php:293
+#: includes/admin/settings.php:300
 msgid "Max FOAF Depth"
 msgstr ""
 
-#: includes/admin/settings.php:303
+#: includes/admin/settings.php:310
 msgid ""
 "Number of hops beyond directly configured peer sites. 0 = configured sites "
 "only. Individual shortcodes can request fewer hops but never more than this "
 "cap."
 msgstr ""
 
-#: includes/admin/settings.php:308
+#: includes/admin/settings.php:315
 msgid "Blocked Sites"
 msgstr ""
 
-#: includes/admin/settings.php:313
+#: includes/admin/settings.php:320
 msgid "One domain per line. Blocks the site and all its subdomains."
 msgstr ""
 
-#: includes/admin/settings.php:348
+#: includes/admin/settings.php:355
 #, php-format
 msgid ""
 "%1$d delegated identity source has a pending redirect that needs review."
@@ -1251,11 +1260,11 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/settings.php:355
+#: includes/admin/settings.php:362
 msgid "Review in Site Health →"
 msgstr ""
 
-#: includes/admin/settings.php:367
+#: includes/admin/settings.php:374
 #, php-format
 msgid ""
 "%1$d shared vocabulary issue needs attention. <a href=\"%2$s\">Open Shared "
@@ -1266,189 +1275,189 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/settings.php:395
+#: includes/admin/settings.php:402
 #, php-format
 msgid ""
 "Mirror individual terms, groups, hierarchy branches or full taxonomies from "
 "peer sites in %s."
 msgstr ""
 
-#: includes/admin/settings.php:397
+#: includes/admin/settings.php:404
 #, php-format
 msgid ""
 "Mirror individual terms, hierarchy branches or full taxonomies from peer "
 "sites in %s."
 msgstr ""
 
-#: includes/admin/settings.php:398
+#: includes/admin/settings.php:405
 msgid "Terms → Shared Vocabularies"
 msgstr ""
 
-#: includes/admin/settings.php:403
+#: includes/admin/settings.php:410
 msgid "Redirect review queue"
 msgstr ""
 
-#: includes/admin/settings.php:408
+#: includes/admin/settings.php:415
 #, php-format
 msgid ""
 "When a remote identity source becomes a redirect, it is added to a review "
 "queue. %s"
 msgstr ""
 
-#: includes/admin/settings.php:409
+#: includes/admin/settings.php:416
 msgid "Review in Site Health"
 msgstr ""
 
-#: includes/admin/settings.php:415
+#: includes/admin/settings.php:422
 msgid "Auto-accept redirects"
 msgstr ""
 
-#: includes/admin/settings.php:420
+#: includes/admin/settings.php:427
 msgid ""
 "Automatically update delegated identity when the remote term becomes a "
 "redirect (skips the review queue)."
 msgstr ""
 
-#: includes/admin/settings.php:423
+#: includes/admin/settings.php:430
 msgid ""
 "Only resolves one hop. If the redirect target is itself a redirect, enable "
 "Auto-follow chain redirects below."
 msgstr ""
 
-#: includes/admin/settings.php:428
+#: includes/admin/settings.php:435
 msgid "Auto-follow chain redirects"
 msgstr ""
 
-#: includes/admin/settings.php:433
+#: includes/admin/settings.php:440
 msgid ""
 "When your direct identity source has itself been redirected (chain "
 "scenario), automatically update your delegation to point to the new ultimate "
 "target."
 msgstr ""
 
-#: includes/admin/settings.php:436
+#: includes/admin/settings.php:443
 msgid ""
 "When the redirect target is itself a redirect on the same peer site, follow "
 "the chain up to the max depth. If any hop crosses to a different taxonomy or "
 "is unreachable, the chain stops and the redirect is queued for review."
 msgstr ""
 
-#: includes/admin/settings.php:452
+#: includes/admin/settings.php:459
 msgid "Max chain depth"
 msgstr ""
 
-#: includes/admin/settings.php:462
+#: includes/admin/settings.php:469
 msgid ""
 "Maximum number of delegation hops to follow before stopping. Prevents "
 "infinite loops."
 msgstr ""
 
-#: includes/admin/settings.php:480
+#: includes/admin/settings.php:487
 #, php-format
 msgid ""
 "Individual peer site and feed post caches are cleared per-entry from <a "
 "href=\"%s\">Terms &rarr; Peer Sites</a>."
 msgstr ""
 
-#: includes/admin/settings.php:489
+#: includes/admin/settings.php:496
 msgid "Peer Site Status"
 msgstr ""
 
-#: includes/admin/settings.php:493 includes/admin/settings.php:516
-#: includes/admin/settings.php:527
+#: includes/admin/settings.php:500 includes/admin/settings.php:523
+#: includes/admin/settings.php:534
 msgid "seconds"
 msgstr ""
 
-#: includes/admin/settings.php:497
+#: includes/admin/settings.php:504
 msgid "Clear All Peer Cache"
 msgstr ""
 
-#: includes/admin/settings.php:503
+#: includes/admin/settings.php:510
 msgid "Clear FOAF Cache"
 msgstr ""
 
-#: includes/admin/settings.php:507
+#: includes/admin/settings.php:514
 msgid ""
 "Whether each peer site has HyperTaxonomy active. Used for scored post "
 "fetching, FOAF discovery, proximity term matching, and relationship "
 "delegation."
 msgstr ""
 
-#: includes/admin/settings.php:512
+#: includes/admin/settings.php:519
 msgid "External Post Lists"
 msgstr ""
 
-#: includes/admin/settings.php:518
+#: includes/admin/settings.php:525
 msgid ""
-"Post lists fetched from peer sites for [tc_peer_posts] and HyperTaxonomy "
+"Post lists fetched from peer sites for [tconn_peer_posts] and HyperTaxonomy "
 "related posts."
 msgstr ""
 
-#: includes/admin/settings.php:531
+#: includes/admin/settings.php:538
 msgid "Re-sync All"
 msgstr ""
 
-#: includes/admin/settings.php:535
+#: includes/admin/settings.php:542
 msgid ""
 "How often delegated term data is refreshed from source sites. Terms are "
 "checked twice daily, so values under 12 hours have no further effect. Re-"
 "sync All ignores this setting and fetches immediately."
 msgstr ""
 
-#: includes/admin/settings.php:557 includes/admin/shared-vocabularies.php:1084
+#: includes/admin/settings.php:564 includes/admin/shared-vocabularies.php:1084
 msgid "Syncing…"
 msgstr ""
 
-#: includes/admin/settings.php:559
+#: includes/admin/settings.php:566
 msgid "Done."
 msgstr ""
 
-#: includes/admin/settings.php:559 includes/admin/shared-vocabularies.php:1001
-#: includes/integration/class-hypertaxonomy-integration.php:334
+#: includes/admin/settings.php:566 includes/admin/shared-vocabularies.php:1001
+#: includes/integration/class-hypertaxonomy-integration.php:342
 msgid "Error."
 msgstr ""
 
-#: includes/admin/settings.php:571
+#: includes/admin/settings.php:578
 msgid "Export"
 msgstr ""
 
-#: includes/admin/settings.php:574
+#: includes/admin/settings.php:581
 msgid "Export data"
 msgstr ""
 
-#: includes/admin/settings.php:577
+#: includes/admin/settings.php:584
 msgid "Export Link Data (JSON)"
 msgstr ""
 
-#: includes/admin/settings.php:580
+#: includes/admin/settings.php:587
 msgid ""
 "Includes link type definitions, per-term external identifier values, "
 "delegated identity sources, and Shared Vocabularies source configurations."
 msgstr ""
 
-#: includes/admin/settings.php:586
+#: includes/admin/settings.php:593
 msgctxt "settings section heading"
 msgid "Import"
 msgstr ""
 
-#: includes/admin/settings.php:592
+#: includes/admin/settings.php:599
 msgid "Import file"
 msgstr ""
 
-#: includes/admin/settings.php:596
+#: includes/admin/settings.php:603
 msgctxt "submit button verb"
 msgid "Import"
 msgstr ""
 
-#: includes/admin/settings.php:608
+#: includes/admin/settings.php:615
 msgid "REST API"
 msgstr ""
 
-#: includes/admin/settings.php:611
+#: includes/admin/settings.php:618
 msgid "Share external links"
 msgstr ""
 
-#: includes/admin/settings.php:619
+#: includes/admin/settings.php:626
 msgid ""
 "When enabled, each term's external identifiers and peer site links are "
 "included in REST responses for requests carrying an X-TermConnect header. "
@@ -1457,78 +1466,78 @@ msgid ""
 "traversal. Disable to stop exposing this data to all peer TermConnect sites."
 msgstr ""
 
-#: includes/admin/settings.php:625
+#: includes/admin/settings.php:632
 msgid "Uninstall"
 msgstr ""
 
-#: includes/admin/settings.php:628
+#: includes/admin/settings.php:635
 msgid "Delete all data"
 msgstr ""
 
-#: includes/admin/settings.php:633
+#: includes/admin/settings.php:640
 msgid ""
 "Delete all TermConnect data (link types, enabled taxonomies, shared "
 "vocabulary sources, per-term identifiers, delegated identity) when the "
 "plugin is deleted. Other settings are always removed."
 msgstr ""
 
-#: includes/admin/settings.php:636
+#: includes/admin/settings.php:643
 msgid ""
 "Deactivating the plugin never deletes data. Deletion only occurs when you "
 "use WordPress \"Delete\" on the Plugins screen."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:63
+#: includes/admin/shared-vocabularies-ajax.php:62
 msgid "Invalid data."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:68
+#: includes/admin/shared-vocabularies-ajax.php:67
 msgid "Peer site is required."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:72
+#: includes/admin/shared-vocabularies-ajax.php:71
 msgid "Taxonomy is required."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:75
+#: includes/admin/shared-vocabularies-ajax.php:74
 #: includes/admin/shared-vocabularies.php:931
 msgid "Select a HyperTaxonomy group."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:78
+#: includes/admin/shared-vocabularies-ajax.php:77
 #: includes/admin/shared-vocabularies.php:934
 msgid "Select a remote group."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:92
+#: includes/admin/shared-vocabularies-ajax.php:91
 #: includes/admin/shared-vocabularies.php:928
 msgid "Add at least one term."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:133
+#: includes/admin/shared-vocabularies-ajax.php:132
 msgid ""
 "Switching to full taxonomy will consolidate all individually configured "
 "terms. Existing delegations will be kept."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:135
+#: includes/admin/shared-vocabularies-ajax.php:134
 msgid ""
 "Switching to individual terms will stop tracking terms that are not "
 "explicitly listed. Existing delegations will be kept until manually removed."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:137
+#: includes/admin/shared-vocabularies-ajax.php:136
 msgid ""
 "Switching to individual terms (no descendants) will stop syncing descendants "
 "of configured roots. Existing descendant delegations will be kept until "
 "manually removed."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:180
+#: includes/admin/shared-vocabularies-ajax.php:179
 msgid "A source for this peer site and group (or taxonomy) already exists."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:273
+#: includes/admin/shared-vocabularies-ajax.php:270
 #, php-format
 msgid ""
 "Source removed, but the original name/description could not be restored for "
@@ -1541,44 +1550,44 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/shared-vocabularies-ajax.php:320
+#: includes/admin/shared-vocabularies-ajax.php:313
 msgid "Source not found."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:395
-#: includes/admin/shared-vocabulary-sync.php:1257
+#: includes/admin/shared-vocabularies-ajax.php:388
+#: includes/admin/shared-vocabulary-sync.php:1283
 msgid "HyperTaxonomy is required to merge terms."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:410
-#: includes/admin/shared-vocabularies-ajax.php:631
+#: includes/admin/shared-vocabularies-ajax.php:403
+#: includes/admin/shared-vocabularies-ajax.php:625
 msgid "Proposal not found."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:483
-#: includes/admin/shared-vocabularies-ajax.php:532
-#: includes/integration/class-hypertaxonomy-integration.php:395
+#: includes/admin/shared-vocabularies-ajax.php:478
+#: includes/admin/shared-vocabularies-ajax.php:526
+#: includes/integration/class-hypertaxonomy-integration.php:402
 msgid "Invalid peer site."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:491
+#: includes/admin/shared-vocabularies-ajax.php:486
 msgid "Could not fetch taxonomies from peer."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:496
-#: includes/admin/shared-vocabularies-ajax.php:549
+#: includes/admin/shared-vocabularies-ajax.php:491
+#: includes/admin/shared-vocabularies-ajax.php:543
 msgid "Invalid response from peer."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:544
+#: includes/admin/shared-vocabularies-ajax.php:538
 msgid "Could not fetch groups from peer."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:583
+#: includes/admin/shared-vocabularies-ajax.php:577
 msgid "Link type not found."
 msgstr ""
 
-#: includes/admin/shared-vocabularies-ajax.php:588
+#: includes/admin/shared-vocabularies-ajax.php:582
 msgid "Cannot resolve peer URL."
 msgstr ""
 
@@ -2041,7 +2050,7 @@ msgid "Link type not found: %s"
 msgstr ""
 
 #: includes/admin/shared-vocabulary-sync.php:138
-#: includes/admin/shared-vocabulary-sync.php:857
+#: includes/admin/shared-vocabulary-sync.php:851
 msgid "Cannot resolve peer site URL."
 msgstr ""
 
@@ -2051,56 +2060,56 @@ msgid ""
 "active."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:519
+#: includes/admin/shared-vocabulary-sync.php:531
 #, php-format
 msgid "Failed to create term \"%1$s\": %2$s"
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:549
+#: includes/admin/shared-vocabulary-sync.php:561
 msgid "Remote group scope requires HyperTaxonomy to be active."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:563
+#: includes/admin/shared-vocabulary-sync.php:574
 msgid "Missing peer site or remote group slug."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:579
+#: includes/admin/shared-vocabulary-sync.php:597
+msgid "Could not create local group: "
+msgstr ""
+
+#: includes/admin/shared-vocabulary-sync.php:764
+msgid "Group scope requires HyperTaxonomy to be active."
+msgstr ""
+
+#: includes/admin/shared-vocabulary-sync.php:774
+msgid "Group scope: no group_id configured."
+msgstr ""
+
+#: includes/admin/shared-vocabulary-sync.php:1043
 #, php-format
 msgid "Remote group endpoint returned HTTP %d."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:586
+#: includes/admin/shared-vocabulary-sync.php:1047
 msgid "Invalid response from remote group endpoint."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:602
-msgid "Could not create local group: "
-msgstr ""
-
-#: includes/admin/shared-vocabulary-sync.php:769
-msgid "Group scope requires HyperTaxonomy to be active."
-msgstr ""
-
-#: includes/admin/shared-vocabulary-sync.php:779
-msgid "Group scope: no group_id configured."
-msgstr ""
-
-#: includes/admin/shared-vocabulary-sync.php:1067
-#: includes/core/delegated-identity.php:579
-#: includes/core/delegated-identity.php:921
+#: includes/admin/shared-vocabulary-sync.php:1087
+#: includes/core/delegated-identity.php:578
+#: includes/core/delegated-identity.php:1028
 #, php-format
 msgid "Remote site returned HTTP %d."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:1357
+#: includes/admin/shared-vocabulary-sync.php:1448
 msgid "HyperTaxonomy not active — cannot register remote relationship types."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:1371
+#: includes/admin/shared-vocabulary-sync.php:1462
 msgid "Peer site does not have HyperTaxonomy active."
 msgstr ""
 
-#: includes/admin/shared-vocabulary-sync.php:1372
+#: includes/admin/shared-vocabulary-sync.php:1463
 msgid "Relationship types endpoint returned an unexpected status."
 msgstr ""
 
@@ -2352,13 +2361,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: includes/core/delegated-identity.php:108
-#: includes/core/delegated-identity.php:546
-#: includes/core/delegated-identity.php:896
+#: includes/core/delegated-identity.php:545
+#: includes/core/delegated-identity.php:1003
 msgid "Not a WordPress peer link type."
 msgstr ""
 
 #: includes/core/delegated-identity.php:113
-#: includes/core/delegated-identity.php:901
+#: includes/core/delegated-identity.php:1008
 msgid "Could not determine peer site URL."
 msgstr ""
 
@@ -2366,52 +2375,52 @@ msgstr ""
 msgid "Cannot delegate a term's identity to local site."
 msgstr ""
 
-#: includes/core/delegated-identity.php:345
+#: includes/core/delegated-identity.php:343
 msgid "Term could not be re-read after restoring."
 msgstr ""
 
-#: includes/core/delegated-identity.php:358
+#: includes/core/delegated-identity.php:356
 #, php-format
 msgid "Restored value was not saved (%s)."
 msgstr ""
 
-#: includes/core/delegated-identity.php:551
+#: includes/core/delegated-identity.php:550
 msgid "Could not determine peer site URL from link type."
 msgstr ""
 
-#: includes/core/delegated-identity.php:574
-#: includes/core/delegated-identity.php:591
-#: includes/core/delegated-identity.php:916
+#: includes/core/delegated-identity.php:573
+#: includes/core/delegated-identity.php:590
+#: includes/core/delegated-identity.php:1023
 msgid "Remote term not found."
 msgstr ""
 
-#: includes/core/delegated-identity.php:585
-#: includes/core/delegated-identity.php:927
+#: includes/core/delegated-identity.php:584
+#: includes/core/delegated-identity.php:1034
 msgid "Invalid response from remote site."
 msgstr ""
 
-#: includes/core/delegated-identity.php:649
+#: includes/core/delegated-identity.php:648
 msgid "No identity source set for this term."
 msgstr ""
 
-#: includes/core/delegated-identity.php:1025
+#: includes/core/delegated-identity.php:1132
 msgid "This term has no delegated identity."
 msgstr ""
 
-#: includes/core/feed-platform.php:428
+#: includes/core/feed-platform.php:424
 #, php-format
 msgid "Every %d seconds (TermConnect feed)"
 msgstr ""
 
-#: includes/core/peer-site-health.php:269
+#: includes/core/peer-site-health.php:274
 msgid "TermConnect peer sites"
 msgstr ""
 
-#: includes/core/peer-site-health.php:286
+#: includes/core/peer-site-health.php:291
 msgid "All TermConnect peer sites are reachable"
 msgstr ""
 
-#: includes/core/peer-site-health.php:310
+#: includes/core/peer-site-health.php:315
 #, php-format
 msgid "%d TermConnect peer site is unreachable or degraded"
 msgid_plural "%d TermConnect peer sites are unreachable or degraded"
@@ -2529,46 +2538,279 @@ msgstr ""
 msgid "Optional note"
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:296
+#: includes/integration/class-convert-identity.php:103
+#, php-format
+msgid "The stub in %1$s stays delegated to %2$s on %3$s."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:105
+#, php-format
+msgid ""
+"The stub in %1$s keeps its place in %2$s, mirroring %3$s. Nothing is "
+"recreated."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:108
+msgid "The delegation ends."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:117
+#: includes/integration/class-merge-identity.php:97
+msgid "Keep it on the redirect stub"
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:122
+#: includes/integration/class-merge-identity.php:141
+msgid "Let it end"
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:198
+#, php-format
+msgid "%1$s in %2$s"
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:203
+#, php-format
+msgid "Delegate it to %1$s in %2$s on %3$s"
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:204
+#: includes/integration/class-merge-identity.php:120
+msgid ""
+"Its name and description follow the remote term; its own are kept, to "
+"restore if the delegation ends."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:208
+msgid "Leave it undelegated"
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:227
+#, php-format
+msgid ""
+"The next sync of %1$s delegates these new terms in %2$s to the terms with "
+"the same slugs on %3$s, and replaces their names and descriptions: %4$s."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:352
+#: includes/integration/class-merge-identity.php:362
+#, php-format
+msgid "%1$s: the delegation to %2$s ended."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:355
+#: includes/integration/class-merge-identity.php:348
+#, php-format
+msgid "%1$s: its redirect stub keeps the delegation to %2$s."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:358
+#, php-format
+msgid "%1$s: the delegation to %2$s ended with the old term."
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:375
+#, php-format
+msgid "%1$s: the new term could not be delegated: %2$s"
+msgstr ""
+
+#: includes/integration/class-convert-identity.php:377
+#, php-format
+msgid "%1$s: the new term is delegated to %2$s in %3$s."
+msgstr ""
+
+#: includes/integration/class-hypertaxonomy-integration.php:304
 msgid "Discover Relationship Types from Peer"
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:297
+#: includes/integration/class-hypertaxonomy-integration.php:305
 msgid ""
 "Fetch storage-only custom relationship type definitions from a peer site "
 "running HyperTaxonomy and import them as delegated types."
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:306
+#: includes/integration/class-hypertaxonomy-integration.php:314
 msgid "Discover types"
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:321
+#: includes/integration/class-hypertaxonomy-integration.php:329
 msgid "Discovering…"
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:327
+#: includes/integration/class-hypertaxonomy-integration.php:335
 msgid "Peer site has HyperTaxonomy but no custom relationship types."
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:329
+#: includes/integration/class-hypertaxonomy-integration.php:337
 msgid "created"
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:329
+#: includes/integration/class-hypertaxonomy-integration.php:337
 msgid "updated"
 msgstr ""
 
-#: includes/integration/class-hypertaxonomy-integration.php:370
+#: includes/integration/class-hypertaxonomy-integration.php:378
 #, php-format
 msgid "Sync complete: %1$d created, %2$d updated."
 msgstr ""
 
-#: includes/shortcodes/class-external-post-list.php:674
+#: includes/integration/class-hypertaxonomy-integration.php:574
+#, php-format
+msgid "%1$s gets the link types it doesn't have: %2$s."
+msgstr ""
+
+#: includes/integration/class-hypertaxonomy-integration.php:576
+#, php-format
+msgid "The new terms get these link types: %s."
+msgstr ""
+
+#: includes/integration/class-hypertaxonomy-integration.php:581
+#, php-format
+msgid ""
+"%1$s keeps its own %2$s links; the merged terms' stay on the redirect stubs, "
+"or are deleted without stubs."
+msgstr ""
+
+#: includes/integration/class-hypertaxonomy-integration.php:583
+#, php-format
+msgid ""
+"Link types that %1$s doesn't allow (%2$s) stay on the redirect stubs, or are "
+"deleted without stubs."
+msgstr ""
+
+#: includes/integration/class-hypertaxonomy-integration.php:589
+#, php-format
+msgid "External links: %s"
+msgstr ""
+
+#: includes/integration/class-hypertaxonomy-integration.php:593
+msgid "Each stub keeps the links of the term it replaces."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:100
+#, php-format
+msgid ""
+"The stub keeps its place in %1$s, mirroring %2$s, and redirects visitors to "
+"the target. Nothing is recreated."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:102
+#, php-format
+msgid ""
+"The stub stays delegated to %1$s on %2$s and redirects visitors to the "
+"target."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:114
+#, php-format
+msgid ""
+"%1$s mirrors %2$s instead, so its slug becomes %3$s (its archive address "
+"changes)."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:117
+#, php-format
+msgid "%1$s is delegated to %2$s on %3$s instead."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:124
+#, php-format
+msgid "Then the next sync of %1$s delegates it to %2$s on %3$s instead."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:127
+msgid "Move it to the target"
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:135
+msgid ""
+"The delegation ends with the term. Its group membership moves to the target."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:187
+#, php-format
+msgid "%1$s keeps its own delegation, to %2$s on %3$s."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:211
+#, php-format
+msgid ""
+"%1$s joins the group %2$s, which %3$s mirrors. Unless it takes this "
+"delegation, the next sync delegates it to the term with the slug %4$s on "
+"%5$s, if there is one, and replaces its name and description."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:356
+#, php-format
+msgid "%1$s: the target is now delegated to %2$s."
+msgstr ""
+
+#: includes/integration/class-merge-identity.php:358
+#, php-format
+msgid "%1$s: the delegation to %2$s could not be moved to the target: %3$s"
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:163
+#, php-format
+msgid ""
+"The next sync of %1$s creates the term again (with no posts) and delegates "
+"it to %2$s on %3$s."
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:167
+#, php-format
+msgid "%1$s no longer exists on %2$s, so nothing brings it back."
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:171
+#, php-format
+msgid ""
+"%s stops mirroring this hierarchy: on its next sync, the terms under it lose "
+"their delegation, unless another source covers them."
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:175
+#, php-format
+msgid "It is removed from the terms %s mirrors."
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:177
+msgid "The delegation ends with the term."
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:206
+#, php-format
+msgid "%1$s is delegated to %2$s on %3$s"
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:208
+#, php-format
+msgid "%1$s mirrors %2$s on %3$s (%4$s)"
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:225
+#, php-format
+msgid ""
+"%1$s could not be reached to check whether %2$s still exists. The choices "
+"below assume it does."
+msgstr ""
+
+#: includes/integration/class-operation-identity.php:237
+msgid "A redirect stub would be delegated again, so this needs no stub."
+msgstr ""
+
+#: includes/integration/class-vocabulary-coverage.php:90
+#, php-format
+msgid ""
+"Could not reach %s to check what its Shared Vocabularies cover. The choices "
+"below leave those out."
+msgstr ""
+
+#: includes/shortcodes/class-external-post-list.php:671
 msgid "Invalid post."
 msgstr ""
 
-#: includes/shortcodes/class-external-post-list.php:1561
+#: includes/shortcodes/class-external-post-list.php:1558
 #: includes/shortcodes/class-peer-browse.php:319
 #: includes/shortcodes/class-peer-browse.php:717
 msgid "Load more"
@@ -2963,7 +3205,7 @@ msgid "Template (style variant)"
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:291
-msgid "CSS class suffix added as tc-result-{template}."
+msgid "CSS class suffix added as tconn-result-{template}."
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:296
