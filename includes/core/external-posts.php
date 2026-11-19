@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $origin scheme://host to validate.
  * @return bool True when the origin is a publicly reachable HTTP(S) host.
  */
-function tc_external_validate_origin( string $origin ): bool {
+function tconn_external_validate_origin( string $origin ): bool {
     if ( '' === $origin ) {
         return false;
     }
@@ -62,7 +62,7 @@ function tc_external_validate_origin( string $origin ): bool {
  * @param string $origin scheme://host to check.
  * @return bool
  */
-function tc_is_self_origin( string $origin ): bool {
+function tconn_is_self_origin( string $origin ): bool {
     $normalize = static function ( string $url ): string {
         return rtrim( strtolower( preg_replace( '#^https?://#i', '', $url ) ), '/' );
     };
@@ -79,8 +79,8 @@ function tc_is_self_origin( string $origin ): bool {
  * @param string $origin scheme://host to check.
  * @return bool
  */
-function tc_external_is_blacklisted( string $origin ): bool {
-    $settings = get_option( 'tc_settings', array() );
+function tconn_external_is_blacklisted( string $origin ): bool {
+    $settings = get_option( 'tconn_settings', array() );
     $host     = strtolower( (string) wp_parse_url( $origin, PHP_URL_HOST ) );
     if ( '' === $host ) {
         return false;
@@ -112,8 +112,8 @@ function tc_external_is_blacklisted( string $origin ): bool {
  * @param string $origin scheme://host.
  * @return bool
  */
-function tc_external_is_ht_enabled( string $origin ): bool {
-    return tc_external_detect_plugin_header( $origin, 'tc_ext_ht_', 'X-HyperTaxonomy' );
+function tconn_external_is_ht_enabled( string $origin ): bool {
+    return tconn_external_detect_plugin_header( $origin, 'tconn_ext_ht_', 'X-HyperTaxonomy' );
 }
 
 /**
@@ -126,8 +126,8 @@ function tc_external_is_ht_enabled( string $origin ): bool {
  * @param string $origin scheme://host.
  * @return bool
  */
-function tc_external_is_tc_enabled( string $origin ): bool {
-    return tc_external_detect_plugin_header( $origin, 'tc_ext_tc_', 'X-TermConnect' );
+function tconn_external_is_tc_enabled( string $origin ): bool {
+    return tconn_external_detect_plugin_header( $origin, 'tconn_ext_tc_', 'X-TermConnect' );
 }
 
 /**
@@ -139,19 +139,19 @@ function tc_external_is_tc_enabled( string $origin ): bool {
  * @param string $header       Response header the plugin sends.
  * @return bool
  */
-function tc_external_detect_plugin_header( string $origin, string $cache_prefix, string $header ): bool {
+function tconn_external_detect_plugin_header( string $origin, string $cache_prefix, string $header ): bool {
     $cache_key = $cache_prefix . md5( $origin );
     $cached    = get_transient( $cache_key );
     if ( false !== $cached ) {
         return (bool) $cached;
     }
 
-    $settings = get_option( 'tc_settings', array() );
+    $settings = get_option( 'tconn_settings', array() );
     $ttl      = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
 
     $response = wp_remote_head(
         $origin . '/wp-json/',
-        tc_external_request_args( 3 )
+        tconn_external_request_args( 3 )
     );
 
     if ( is_wp_error( $response ) ) {
@@ -178,7 +178,7 @@ function tc_external_detect_plugin_header( string $origin, string $cache_prefix,
  * @param string $taxonomy Taxonomy slug.
  * @return string REST base used in /wp-json/wp/v2/{base}.
  */
-function tc_external_get_taxonomy_rest_base( string $taxonomy ): string {
+function tconn_external_get_taxonomy_rest_base( string $taxonomy ): string {
     $map = array(
         'post_tag' => 'tags',
         'category' => 'categories',
@@ -203,30 +203,30 @@ function tc_external_get_taxonomy_rest_base( string $taxonomy ): string {
  * @param string $slug     Term slug to resolve.
  * @return int|null Remote term ID, or null if not found.
  */
-function tc_external_resolve_term_id( string $origin, string $taxonomy, string $slug ): ?int {
-    $cache_key = 'tc_ext_tid_' . md5( "$origin|$taxonomy|$slug" );
+function tconn_external_resolve_term_id( string $origin, string $taxonomy, string $slug ): ?int {
+    $cache_key = 'tconn_ext_tid_' . md5( "$origin|$taxonomy|$slug" );
     $cached    = get_transient( $cache_key );
     if ( false !== $cached ) {
         return -1 === (int) $cached ? null : (int) $cached;
     }
 
-    $is_ht = tc_external_is_ht_enabled( $origin );
+    $is_ht = tconn_external_is_ht_enabled( $origin );
 
-    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+    $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
     $url       = $origin . '/wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
         'slug'    => $slug,
         '_fields' => 'id',
     ) );
 
-    $headers  = tc_external_peer_headers( $is_ht, false );
-    $response = wp_remote_get( $url, tc_external_request_args( 5, $headers ) );
+    $headers  = tconn_external_peer_headers( $is_ht, false );
+    $response = wp_remote_get( $url, tconn_external_request_args( 5, $headers ) );
 
     if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
         set_transient( $cache_key, -1, 300 );
         return null;
     }
 
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+    $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
     if ( ! is_array( $body ) || empty( $body[0]['id'] ) ) {
         set_transient( $cache_key, -1, 300 );
         return null;
@@ -251,12 +251,12 @@ function tc_external_resolve_term_id( string $origin, string $taxonomy, string $
  * @param int    $per_page Maximum results.
  * @return array[] Each entry: { id, name, slug }.
  */
-function tc_external_search_terms( string $origin, string $taxonomy, string $search, int $per_page = 5 ): array {
-    if ( tc_is_self_origin( $origin ) ) {
+function tconn_external_search_terms( string $origin, string $taxonomy, string $search, int $per_page = 5 ): array {
+    if ( tconn_is_self_origin( $origin ) ) {
         return array();
     }
 
-    $cache_key = 'tc_ext_tsrch_' . md5( "$origin|$taxonomy|$search|$per_page" );
+    $cache_key = 'tconn_ext_tsrch_' . md5( "$origin|$taxonomy|$search|$per_page" );
     $cached    = get_transient( $cache_key );
     if ( false !== $cached ) {
         return (array) $cached;
@@ -269,14 +269,14 @@ function tc_external_search_terms( string $origin, string $taxonomy, string $sea
     $search_decoded = html_entity_decode( $search, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
     $search_for_api = htmlspecialchars( $search_decoded, ENT_NOQUOTES, 'UTF-8' );
 
-    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+    $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
     $url       = $origin . '/wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
         'search'   => $search_for_api,
         'per_page' => $per_page,
         '_fields'  => 'id,name,slug',
     ) );
 
-    $body = tc_external_get_json( $url, tc_external_request_args( 5 ) );
+    $body = tconn_external_get_json( $url, tconn_external_request_args( 5 ) );
     if ( null === $body ) {
         set_transient( $cache_key, array(), 300 );
         return array();
@@ -304,7 +304,7 @@ function tc_external_search_terms( string $origin, string $taxonomy, string $sea
  * REST requests; non-authors require authentication, and a peer may disable the
  * endpoint entirely — so results are best-effort. Runs server-side (CORS-safe) and is
  * cached. Used by the WordPress-peer author autocomplete on people taxonomies (see
- * tc_taxonomy_peer_authors()).
+ * tconn_taxonomy_peer_authors()).
  *
  * @since 1.0.0
  * @param string $origin   Peer site origin (scheme://host).
@@ -312,12 +312,12 @@ function tc_external_search_terms( string $origin, string $taxonomy, string $sea
  * @param int    $per_page Maximum results.
  * @return array[] Each entry: { id, name, slug, url }.
  */
-function tc_external_search_users( string $origin, string $search, int $per_page = 8 ): array {
-    if ( '' === $search || tc_is_self_origin( $origin ) ) {
+function tconn_external_search_users( string $origin, string $search, int $per_page = 8 ): array {
+    if ( '' === $search || tconn_is_self_origin( $origin ) ) {
         return array();
     }
 
-    $cache_key = 'tc_ext_usrch_' . md5( "$origin|$search|$per_page" );
+    $cache_key = 'tconn_ext_usrch_' . md5( "$origin|$search|$per_page" );
     $cached    = get_transient( $cache_key );
     if ( false !== $cached ) {
         return (array) $cached;
@@ -329,7 +329,7 @@ function tc_external_search_users( string $origin, string $search, int $per_page
         '_fields'  => 'id,name,slug,link',
     ) );
 
-    $body = tc_external_get_json( $url, tc_external_request_args( 5 ) );
+    $body = tconn_external_get_json( $url, tconn_external_request_args( 5 ) );
     if ( null === $body ) {
         set_transient( $cache_key, array(), 300 );
         return array();
@@ -352,7 +352,7 @@ function tc_external_search_users( string $origin, string $search, int $per_page
 }
 
 /**
- * Fetch htax_includes and tc_links for a specific term on a peer TC site.
+ * Fetch htax_includes and tconn_links for a specific term on a peer TC site.
  *
  * Used by FOAF mechanism A: targeted pull of peer connections for a known term.
  *
@@ -360,33 +360,33 @@ function tc_external_search_users( string $origin, string $search, int $per_page
  * @param string $origin   Peer site origin.
  * @param string $taxonomy Taxonomy slug.
  * @param int    $term_id  Remote term ID.
- * @return array { htax_includes: array, tc_links: array<int, array{url:string, platform:string, label:string, fetched_at:int}> }
+ * @return array { htax_includes: array, tconn_links: array<int, array{url:string, platform:string, label:string, fetched_at:int}> }
  */
-function tc_external_get_term_data( string $origin, string $taxonomy, int $term_id ): array {
-    $cache_key = 'tc_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
+function tconn_external_get_term_data( string $origin, string $taxonomy, int $term_id ): array {
+    $cache_key = 'tconn_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
     $cached    = get_transient( $cache_key );
     if ( false !== $cached ) {
         return (array) $cached;
     }
 
-    $settings = get_option( 'tc_settings', array() );
+    $settings = get_option( 'tconn_settings', array() );
     $ttl      = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
 
-    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+    $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
     $url       = $origin . '/wp-json/wp/v2/' . $rest_base . '/' . $term_id . '?' . http_build_query( array(
-        '_fields' => 'htax_includes,tc_links',
+        '_fields' => 'htax_includes,tconn_links',
     ) );
 
-    $response = wp_remote_get( $url, tc_external_request_args( 5, tc_external_peer_headers() ) );
+    $response = wp_remote_get( $url, tconn_external_request_args( 5, tconn_external_peer_headers() ) );
 
-    $empty = array( 'htax_includes' => array(), 'tc_links' => array() );
+    $empty = array( 'htax_includes' => array(), 'tconn_links' => array() );
 
     if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
         set_transient( $cache_key, $empty, 300 );
         return $empty;
     }
 
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+    $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
     if ( ! is_array( $body ) ) {
         set_transient( $cache_key, $empty, 300 );
         return $empty;
@@ -394,7 +394,7 @@ function tc_external_get_term_data( string $origin, string $taxonomy, int $term_
 
     $data = array(
         'htax_includes' => is_array( $body['htax_includes'] ?? null ) ? $body['htax_includes'] : array(),
-        'tc_links'      => is_array( $body['tc_links'] ?? null )      ? $body['tc_links']      : array(),
+        'tconn_links'      => is_array( $body['tconn_links'] ?? null )      ? $body['tconn_links']      : array(),
     );
 
     set_transient( $cache_key, $data, $ttl );
@@ -402,31 +402,31 @@ function tc_external_get_term_data( string $origin, string $taxonomy, int $term_
 }
 
 /**
- * Batched counterpart to tc_external_get_term_data() for FOAF discovery: fetches
- * htax_includes/tc_links for many terms in the same taxonomy on one peer with one
+ * Batched counterpart to tconn_external_get_term_data() for FOAF discovery: fetches
+ * htax_includes/tconn_links for many terms in the same taxonomy on one peer with one
  * HTTP request per up-to-100 term IDs, instead of one request per term.
  *
  * Uses the REST collection endpoint's `include` param (WP core since 4.7) rather
  * than the single-term endpoint. Shares the exact same per-term transient cache
- * keys as tc_external_get_term_data(), so: (a) any term already cached from a
+ * keys as tconn_external_get_term_data(), so: (a) any term already cached from a
  * prior single or batched fetch is served from cache and never requested again,
  * and (b) a term fetched here is cached under the same key a later single-term
- * tc_external_get_term_data() call for it would also read.
+ * tconn_external_get_term_data() call for it would also read.
  *
  * @since 1.0.0
  * @param string $origin   Peer site origin.
  * @param string $taxonomy Taxonomy slug (same for every ID in $term_ids).
  * @param int[]  $term_ids Remote term IDs to fetch.
- * @return array<int, array{htax_includes: array, tc_links: array}> term_id => data,
+ * @return array<int, array{htax_includes: array, tconn_links: array}> term_id => data,
  *         one entry for every requested ID (empty defaults for any not resolved).
  */
-function tc_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array {
-    $empty  = array( 'htax_includes' => array(), 'tc_links' => array() );
+function tconn_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array {
+    $empty  = array( 'htax_includes' => array(), 'tconn_links' => array() );
     $result = array();
 
     $missing = array();
     foreach ( array_unique( array_map( 'intval', $term_ids ) ) as $term_id ) {
-        $cache_key = 'tc_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
+        $cache_key = 'tconn_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
         $cached    = get_transient( $cache_key );
         if ( false !== $cached ) {
             $result[ $term_id ] = (array) $cached;
@@ -439,24 +439,24 @@ function tc_external_get_term_data_batch( string $origin, string $taxonomy, arra
         return $result;
     }
 
-    $settings = get_option( 'tc_settings', array() );
+    $settings = get_option( 'tconn_settings', array() );
     $ttl      = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
-    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+    $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
 
     // REST collections cap per_page at 100 by default; chunk accordingly.
     foreach ( array_chunk( $missing, 100 ) as $chunk ) {
         $url = $origin . '/wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
             'include'  => $chunk,
-            '_fields'  => 'id,htax_includes,tc_links',
+            '_fields'  => 'id,htax_includes,tconn_links',
             'per_page' => count( $chunk ),
         ) );
 
         // HyperTaxonomy omits htax_includes from collection responses without its own header.
-        $response = wp_remote_get( $url, tc_external_request_args( 5, tc_external_peer_headers( true ) ) );
+        $response = wp_remote_get( $url, tconn_external_request_args( 5, tconn_external_peer_headers( true ) ) );
 
         $by_id = array();
         if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
-            $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+            $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
             if ( is_array( $body ) ) {
                 foreach ( $body as $item ) {
                     if ( ! is_array( $item ) || empty( $item['id'] ) ) {
@@ -464,17 +464,17 @@ function tc_external_get_term_data_batch( string $origin, string $taxonomy, arra
                     }
                     $by_id[ (int) $item['id'] ] = array(
                         'htax_includes' => is_array( $item['htax_includes'] ?? null ) ? $item['htax_includes'] : array(),
-                        'tc_links'      => is_array( $item['tc_links'] ?? null )      ? $item['tc_links']      : array(),
+                        'tconn_links'      => is_array( $item['tconn_links'] ?? null )      ? $item['tconn_links']      : array(),
                     );
                 }
             }
         }
         // $by_id stays empty on any request-level failure — every ID in this
         // chunk falls through to the negative-cache branch below, same as a
-        // failed single-term tc_external_get_term_data() call.
+        // failed single-term tconn_external_get_term_data() call.
 
         foreach ( $chunk as $term_id ) {
-            $cache_key = 'tc_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
+            $cache_key = 'tconn_ext_tdata_' . md5( "$origin|$taxonomy|$term_id" );
             $data      = $by_id[ $term_id ] ?? $empty;
             set_transient( $cache_key, $data, isset( $by_id[ $term_id ] ) ? $ttl : 300 );
             $result[ $term_id ] = $data;
@@ -498,7 +498,7 @@ function tc_external_get_term_data_batch( string $origin, string $taxonomy, arra
  * @param array $term_id_map [ primary_id => [include_id, ...], ... ]
  * @return string
  */
-function tc_external_serialize_term_id_map( array $term_id_map ): string {
+function tconn_external_serialize_term_id_map( array $term_id_map ): string {
     $sorted = array();
     foreach ( $term_id_map as $primary_id => $include_ids ) {
         $inc = array_map( 'intval', (array) $include_ids );
@@ -514,7 +514,7 @@ function tc_external_serialize_term_id_map( array $term_id_map ): string {
  *
  * Every post-record producer (REST peers, RSS/Atom feeds, local posts) routes its
  * date fields through this so that values from different sources compare lexically
- * as chronological in tc_*::sort_posts(). WP stores dates as 'Y-m-d H:i:s' (space
+ * as chronological in tconn_*::sort_posts(). WP stores dates as 'Y-m-d H:i:s' (space
  * separator); the REST API emits 'Y-m-d\TH:i:s' ('T'). Mixing the two breaks
  * strcmp ordering because 'T' (0x54) sorts after ' ' (0x20).
  *
@@ -524,7 +524,7 @@ function tc_external_serialize_term_id_map( array $term_id_map ): string {
  * @param mixed $value Raw GMT datetime string.
  * @return string ISO-8601 GMT datetime, or '' when unknown.
  */
-function tc_normalize_gmt_date( $value ): string {
+function tconn_normalize_gmt_date( $value ): string {
     $value = trim( (string) $value );
     if ( '' === $value || 0 === strpos( $value, '0000-00-00' ) ) {
         return '';
@@ -542,7 +542,7 @@ function tc_normalize_gmt_date( $value ): string {
  * Build the canonical normalized post record consumed by the peer-post sorter and renderer.
  *
  * This is the single source of truth for the record shape. Every producer — REST peers
- * (tc_external_normalize_post) and feeds (tc_feed_normalize_item) — MUST build its record
+ * (tconn_external_normalize_post) and feeds (tconn_feed_normalize_item) — MUST build its record
  * through this function so all sources agree on the exact key set, value types, and date
  * format. HyperTaxonomy's [ht_related_posts] external mode consumes these records and
  * normalizes its own local posts to the same shape independently.
@@ -553,7 +553,7 @@ function tc_normalize_gmt_date( $value ): string {
  * @param array $data Raw field values.
  * @return array Fully normalized record.
  */
-function tc_normalize_post_record( array $data ): array {
+function tconn_normalize_post_record( array $data ): array {
     $defaults = array(
         'id'                 => 0,
         'url'                => '',
@@ -582,8 +582,8 @@ function tc_normalize_post_record( array $data ): array {
     $rec['url']                = (string) $rec['url'];
     $rec['title']              = (string) $rec['title'];
     $rec['excerpt']            = (string) $rec['excerpt'];
-    $rec['date_gmt']           = tc_normalize_gmt_date( $rec['date_gmt'] );
-    $rec['modified_gmt']       = tc_normalize_gmt_date( $rec['modified_gmt'] );
+    $rec['date_gmt']           = tconn_normalize_gmt_date( $rec['date_gmt'] );
+    $rec['modified_gmt']       = tconn_normalize_gmt_date( $rec['modified_gmt'] );
     $rec['tag_ids']            = array_map( 'intval', (array) $rec['tag_ids'] );
     $rec['cat_ids']            = array_map( 'intval', (array) $rec['cat_ids'] );
     $rec['sticky']             = (bool) $rec['sticky'];
@@ -613,7 +613,7 @@ function tc_normalize_post_record( array $data ): array {
  * @param string $size Registered image size slug.
  * @return string e.g. "300 / 300", or '' when unknown/unbounded.
  */
-function tc_image_size_ratio( string $size ): string {
+function tconn_image_size_ratio( string $size ): string {
     if ( '' === $size ) {
         return '';
     }
@@ -629,8 +629,8 @@ function tc_image_size_ratio( string $size ): string {
 }
 
 /**
- * Build the inline style for a .tc-post-list-items container: column count and
- * uniform thumbnail aspect ratio. Shared by [tc_peer_posts] and [tc_peer_browse]
+ * Build the inline style for a .tconn-post-list-items container: column count and
+ * uniform thumbnail aspect ratio. Shared by [tconn_peer_posts] and [tconn_peer_browse]
  * so both render multi-column grids with consistent thumbnails.
  *
  * @since 1.0.0
@@ -638,12 +638,12 @@ function tc_image_size_ratio( string $size ): string {
  * @param string $image_size Registered image size driving the thumbnail aspect.
  * @return string Inline style declarations (no leading/trailing space), or ''.
  */
-function tc_post_list_items_style( int $columns, string $image_size ): string {
+function tconn_post_list_items_style( int $columns, string $image_size ): string {
     $style = '';
     if ( $columns > 1 ) {
         $style .= '--tc-columns:' . (int) $columns . ';';
     }
-    $ratio = tc_image_size_ratio( $image_size );
+    $ratio = tconn_image_size_ratio( $image_size );
     if ( '' !== $ratio ) {
         $style .= '--tc-thumb-ratio:' . $ratio . ';';
     }
@@ -657,7 +657,7 @@ function tc_post_list_items_style( int $columns, string $image_size ): string {
  * @param array $records
  * @return array
  */
-function tc_dedupe_posts_by_url( array $records ): array {
+function tconn_dedupe_posts_by_url( array $records ): array {
     $seen = array();
     $out  = array();
     foreach ( $records as $rec ) {
@@ -683,7 +683,7 @@ function tc_dedupe_posts_by_url( array $records ): array {
  * @param array $tax_terms Map of taxonomy slug => term IDs.
  * @return array Same map with hidden-and-unviewable terms removed (and empty taxonomies dropped).
  */
-function tc_filter_hidden_terms( array $tax_terms ): array {
+function tconn_filter_hidden_terms( array $tax_terms ): array {
     if ( ! function_exists( 'htax_is_term_hidden' ) ) {
         return $tax_terms;
     }
@@ -721,7 +721,7 @@ function tc_filter_hidden_terms( array $tax_terms ): array {
  * @param array $tax_terms Map of taxonomy slug => term IDs.
  * @return array Map of term_id => expanded term IDs (empty when HyperTaxonomy is inactive).
  */
-function tc_local_term_expansions( array $tax_terms ): array {
+function tconn_local_term_expansions( array $tax_terms ): array {
     if ( ! function_exists( 'htax_get_expanded_term_ids' ) ) {
         return array();
     }
@@ -747,7 +747,7 @@ function tc_local_term_expansions( array $tax_terms ): array {
  * Collect local posts matching selected terms, normalized to the shared record
  * shape (is_local => true). Uses a plain WP_Query — no HyperTaxonomy dependency.
  *
- * Shared by [tc_peer_browse] (visitor-selected terms) and [tc_peer_posts]
+ * Shared by [tconn_peer_browse] (visitor-selected terms) and [tconn_peer_posts]
  * scope="all" (current post's terms), so the local side of a blended list is
  * built identically in both.
  *
@@ -764,11 +764,11 @@ function tc_local_term_expansions( array $tax_terms ): array {
  *                            matches via its expanded set so relationship-related
  *                            posts are selected, not just directly-tagged ones.
  *                            Empty = literal term IDs only (no HyperTaxonomy).
- * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
+ * @param array  $window Date window, see tconn_normalize_date_window(): only posts modified after
  *                       'modified_after' and no later than 'modified_before' (each optional).
  * @return array Normalized local post records.
  */
-function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), array $window = array() ): array {
+function tconn_collect_local_posts( array $tax_terms, string $match, int $limit, bool $show_thumb, string $image_size, array $exclude_ids = array(), array $expansions = array(), array $window = array() ): array {
     // Normalize the taxonomy => IDs map, dropping empties.
     $clean = array();
     foreach ( $tax_terms as $tax => $ids ) {
@@ -838,7 +838,7 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
         $args['post__not_in'] = $exclude_ids;
     }
     $date_query = array();
-    $window     = tc_normalize_date_window( $window );
+    $window     = tconn_normalize_date_window( $window );
     foreach ( array( 'modified_after' => array( 'post_modified_gmt', 'after' ), 'modified_before' => array( 'post_modified_gmt', 'before' ) ) as $key => $spec ) {
         $ts = '' !== $window[ $key ] ? strtotime( $window[ $key ] ) : false;
         if ( false === $ts ) {
@@ -868,7 +868,7 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
         return array();
     }
 
-    $origin     = tc_external_get_site_origin( home_url( '/' ) );
+    $origin     = tconn_external_get_site_origin( home_url( '/' ) );
     $image_size = '' !== $image_size ? $image_size : 'medium';
 
     $out = array();
@@ -888,7 +888,7 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
             }
         }
 
-        $out[] = tc_normalize_post_record( array(
+        $out[] = tconn_normalize_post_record( array(
             'id'               => $p->ID,
             'url'              => get_permalink( $p ),
             'title'            => get_the_title( $p ),
@@ -918,7 +918,7 @@ function tc_collect_local_posts( array $tax_terms, string $match, int $limit, bo
  * @param bool   $show_thumbnail Whether thumbnail data was requested.
  * @return array Normalized post.
  */
-function tc_external_normalize_post( array $raw, string $origin, bool $show_thumbnail ): array {
+function tconn_external_normalize_post( array $raw, string $origin, bool $show_thumbnail ): array {
     $title   = isset( $raw['title']['rendered'] )
         ? wp_strip_all_tags( $raw['title']['rendered'] )
         : '';
@@ -946,7 +946,7 @@ function tc_external_normalize_post( array $raw, string $origin, bool $show_thum
         }
     }
 
-    return tc_normalize_post_record( array(
+    return tconn_normalize_post_record( array(
         'id'               => $raw['id'] ?? 0,
         'url'              => $raw['link'] ?? '',
         'title'            => $title,
@@ -971,7 +971,7 @@ function tc_external_normalize_post( array $raw, string $origin, bool $show_thum
  * @param bool   $ht_scored      Whether to include htax_* response fields.
  * @return string
  */
-function tc_external_post_fields( bool $show_thumbnail, bool $ht_scored ): string {
+function tconn_external_post_fields( bool $show_thumbnail, bool $ht_scored ): string {
     // When thumbnails are requested, WordPress REST API strips _embedded from
     // the response when _fields is set (even if _embedded is listed) because
     // _embedded is not a schema-registered field — it is dynamically added
@@ -996,18 +996,18 @@ function tc_external_post_fields( bool $show_thumbnail, bool $ht_scored ): strin
  * Return the current cache version for a link type slug.
  *
  * The version is stored in a non-autoloaded option and starts at 1. Incrementing
- * it via tc_external_clear_site_cache() invalidates all cached post lists for
+ * it via tconn_external_clear_site_cache() invalidates all cached post lists for
  * that link type without needing pattern-based transient deletion.
  *
  * @since 1.0.0
  * @param string $peer_site_slug Link type slug, or empty string for FOAF/ad-hoc peers.
  * @return int Version counter (1 when not yet set).
  */
-function tc_external_get_link_type_cache_version( string $peer_site_slug ): int {
+function tconn_external_get_link_type_cache_version( string $peer_site_slug ): int {
     if ( '' === $peer_site_slug ) {
         return 0;
     }
-    return (int) get_option( 'tc_ext_ltver_' . $peer_site_slug, 1 );
+    return (int) get_option( 'tconn_ext_ltver_' . $peer_site_slug, 1 );
 }
 
 /**
@@ -1020,13 +1020,13 @@ function tc_external_get_link_type_cache_version( string $peer_site_slug ): int 
  * @since 1.0.0
  * @param string $peer_site_slug Link type slug.
  */
-function tc_external_clear_site_cache( string $peer_site_slug ): void {
+function tconn_external_clear_site_cache( string $peer_site_slug ): void {
     if ( '' === $peer_site_slug ) {
         return;
     }
-    $current = tc_external_get_link_type_cache_version( $peer_site_slug );
-    update_option( 'tc_ext_ltver_' . $peer_site_slug, $current + 1, false );
-    delete_option( 'tc_ext_ltfetch_' . $peer_site_slug );
+    $current = tconn_external_get_link_type_cache_version( $peer_site_slug );
+    update_option( 'tconn_ext_ltver_' . $peer_site_slug, $current + 1, false );
+    delete_option( 'tconn_ext_ltfetch_' . $peer_site_slug );
 }
 
 /**
@@ -1039,11 +1039,11 @@ function tc_external_clear_site_cache( string $peer_site_slug ): void {
  * @param string $peer_site_slug Link type slug.
  * @param int    $count   Number of posts stored in the transient.
  */
-function tc_external_record_fetch( string $peer_site_slug, int $count ): void {
+function tconn_external_record_fetch( string $peer_site_slug, int $count ): void {
     if ( '' === $peer_site_slug ) {
         return;
     }
-    update_option( 'tc_ext_ltfetch_' . $peer_site_slug, array(
+    update_option( 'tconn_ext_ltfetch_' . $peer_site_slug, array(
         'count' => $count,
         'time'  => time(),
     ), false );
@@ -1069,29 +1069,29 @@ function tc_external_record_fetch( string $peer_site_slug, int $count ): void {
  * @param bool   $show_thumbnail Whether to request the featured image.
  * @param bool   $ht_scored      Request HyperTaxonomy scores, and read them when the peer runs HyperTaxonomy.
  * @param int    $ttl            Cache TTL in seconds.
- * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
+ * @param array  $window Date window, see tconn_normalize_date_window(): only posts modified after
  *                       'modified_after' and no later than 'modified_before' (each optional).
  * @return array Normalized posts.
  */
-function tc_external_fetch_post_list( string $origin, string $peer_site_slug, string $cache_key, array $params, bool $show_thumbnail, bool $ht_scored, int $ttl, array $window ): array {
+function tconn_external_fetch_post_list( string $origin, string $peer_site_slug, string $cache_key, array $params, bool $show_thumbnail, bool $ht_scored, int $ttl, array $window ): array {
     $cached = get_transient( $cache_key );
     if ( false !== $cached ) {
         return (array) $cached;
     }
 
-    if ( tc_peer_site_health_is_blocked( $peer_site_slug ) ) {
+    if ( tconn_peer_site_health_is_blocked( $peer_site_slug ) ) {
         return array();
     }
 
     // Core REST: modified_after and modified_before bound the last-modified date.
-    $window = tc_normalize_date_window( $window );
+    $window = tconn_normalize_date_window( $window );
     if ( '' !== $window['modified_after'] ) {
         $params['modified_after'] = $window['modified_after'];
     }
     if ( '' !== $window['modified_before'] ) {
         $params['modified_before'] = $window['modified_before'];
     }
-    $fields_str = tc_external_post_fields( $show_thumbnail, $ht_scored );
+    $fields_str = tconn_external_post_fields( $show_thumbnail, $ht_scored );
     if ( '' !== $fields_str ) {
         $params['_fields'] = $fields_str;
     }
@@ -1100,30 +1100,30 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
     }
 
     $url      = $origin . '/wp-json/wp/v2/posts?' . http_build_query( $params );
-    $response = wp_remote_get( $url, tc_external_request_args( $ht_scored ? 10 : 8 ) );
+    $response = wp_remote_get( $url, tconn_external_request_args( $ht_scored ? 10 : 8 ) );
 
     if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
         $error = is_wp_error( $response )
             ? $response->get_error_message()
             : 'HTTP ' . wp_remote_retrieve_response_code( $response );
-        tc_peer_site_health_record_failure( $peer_site_slug, $error, $ttl );
+        tconn_peer_site_health_record_failure( $peer_site_slug, $error, $ttl );
         set_transient( $cache_key, array(), 300 );
         return array();
     }
 
     $is_ht = $ht_scored && '' !== wp_remote_retrieve_header( $response, 'X-HyperTaxonomy' );
-    $body  = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+    $body  = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
     if ( ! is_array( $body ) ) {
-        tc_peer_site_health_record_failure( $peer_site_slug, 'invalid JSON', $ttl );
+        tconn_peer_site_health_record_failure( $peer_site_slug, 'invalid JSON', $ttl );
         set_transient( $cache_key, array(), 300 );
         return array();
     }
 
-    tc_peer_site_health_record_success( $peer_site_slug );
+    tconn_peer_site_health_record_success( $peer_site_slug );
 
     // Cache peer discovery data from htax_term_peers before normalizing.
     if ( $is_ht ) {
-        tc_external_cache_term_peers( $origin, $body );
+        tconn_external_cache_term_peers( $origin, $body );
     }
 
     $posts = array();
@@ -1131,7 +1131,7 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
         if ( ! is_array( $raw ) || empty( $raw['id'] ) ) {
             continue;
         }
-        $post = tc_external_normalize_post( $raw, $origin, $show_thumbnail );
+        $post = tconn_external_normalize_post( $raw, $origin, $show_thumbnail );
         if ( $is_ht && isset( $raw['htax_score'] ) && null !== $raw['htax_score'] ) {
             $post['score']              = (float) $raw['htax_score'];
             $post['matched_term_slugs'] = (array) ( $raw['htax_matched_term_slugs'] ?? array() );
@@ -1140,7 +1140,7 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
         $posts[] = $post;
     }
 
-    tc_external_record_fetch( $peer_site_slug, count( $posts ) );
+    tconn_external_record_fetch( $peer_site_slug, count( $posts ) );
     set_transient( $cache_key, $posts, $ttl );
     return $posts;
 }
@@ -1162,13 +1162,13 @@ function tc_external_fetch_post_list( string $origin, string $peer_site_slug, st
  * @param int         $fetch_size     Number of posts to request from the remote site.
  * @param int         $ttl            Cache TTL in seconds.
  * @param string      $peer_site_slug Link type slug; used to scope the cache so per-site clearing works.
- * @param array       $window         Date window, see tc_normalize_date_window(): only posts modified after
+ * @param array       $window         Date window, see tconn_normalize_date_window(): only posts modified after
  *                                    'modified_after' and no later than 'modified_before' (each optional).
  * @param string|null $search_keyword Null for date order; otherwise the keyword to rank by relevance
  *                                    (typically the current post title). An empty keyword returns no posts.
  * @return array Normalized posts (score=0.0, ht_scored=false; the caller scores them client-side).
  */
-function tc_external_fetch_posts(
+function tconn_external_fetch_posts(
     string $origin,
     string $taxonomy,
     array $all_term_ids,
@@ -1186,30 +1186,30 @@ function tc_external_fetch_posts(
     $sorted_ids = array_unique( array_map( 'intval', $all_term_ids ) );
     sort( $sorted_ids );
 
-    $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
+    $version   = tconn_external_get_link_type_cache_version( $peer_site_slug );
     $key_parts = "$peer_site_slug|$version|$origin|$taxonomy|" . implode( ',', $sorted_ids );
-    $key_tail  = "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . implode( '~', tc_normalize_date_window( $window ) );
+    $key_tail  = "|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . implode( '~', tconn_normalize_date_window( $window ) );
 
     $params = array(
-        tc_external_get_taxonomy_rest_base( $taxonomy ) => implode( ',', $sorted_ids ),
+        tconn_external_get_taxonomy_rest_base( $taxonomy ) => implode( ',', $sorted_ids ),
         'per_page' => $fetch_size,
     );
     if ( null === $search_keyword ) {
-        $cache_key         = 'tc_ext_posts_' . md5( $key_parts . $key_tail );
+        $cache_key         = 'tconn_ext_posts_' . md5( $key_parts . $key_tail );
         $params['orderby'] = 'date';
         $params['order']   = 'desc';
     } else {
-        $cache_key         = 'tc_ext_rel_' . md5( $key_parts . '|' . md5( $search_keyword ) . $key_tail );
+        $cache_key         = 'tconn_ext_rel_' . md5( $key_parts . '|' . md5( $search_keyword ) . $key_tail );
         $params['search']  = $search_keyword;
         $params['orderby'] = 'relevance';
     }
-    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $window );
+    return tconn_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, false, $ttl, $window );
 }
 
 /**
  * Fetch scored posts from a peer running HyperTaxonomy using htax_* query params.
  *
- * Sends the full tc_includes / tc_weights / tc_match scoring params.
+ * Sends the full tconn_includes / tconn_weights / tconn_match scoring params.
  * Extracts htax_term_peers from the response and caches them for FOAF discovery.
  * Always fetches score-ordered; the caller re-sorts from the cached set.
  *
@@ -1224,11 +1224,11 @@ function tc_external_fetch_posts(
  * @param int    $ttl            Cache TTL in seconds.
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
  * @param bool   $expand         Ask the peer to re-expand primaries via its own relationships (htax_expand).
- * @param array  $window Date window, see tc_normalize_date_window(): only posts modified after
+ * @param array  $window Date window, see tconn_normalize_date_window(): only posts modified after
  *                       'modified_after' and no later than 'modified_before' (each optional).
  * @return array Normalized posts with score and matched_term_slugs from HT.
  */
-function tc_external_fetch_scored_posts(
+function tconn_external_fetch_scored_posts(
     string $origin,
     string $taxonomy,
     array $term_id_map,
@@ -1245,9 +1245,9 @@ function tc_external_fetch_scored_posts(
         return array();
     }
 
-    $version   = tc_external_get_link_type_cache_version( $peer_site_slug );
-    $cache_key = 'tc_ext_scored_' . md5(
-        "$peer_site_slug|$version|$origin|$taxonomy|" . tc_external_serialize_term_id_map( $term_id_map ) . "|$match|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . wp_json_encode( $term_weights ) . '|' . ( $expand ? '1' : '0' ) . '|' . implode( '~', tc_normalize_date_window( $window ) )
+    $version   = tconn_external_get_link_type_cache_version( $peer_site_slug );
+    $cache_key = 'tconn_ext_scored_' . md5(
+        "$peer_site_slug|$version|$origin|$taxonomy|" . tconn_external_serialize_term_id_map( $term_id_map ) . "|$match|$fetch_size|" . ( $show_thumbnail ? '1' : '0' ) . '|' . wp_json_encode( $term_weights ) . '|' . ( $expand ? '1' : '0' ) . '|' . implode( '~', tconn_normalize_date_window( $window ) )
     );
 
     // Collect all IDs for the standard taxonomy filter param.
@@ -1261,7 +1261,7 @@ function tc_external_fetch_scored_posts(
     $all_ids = array_unique( $all_ids );
 
     $params = array(
-        tc_external_get_taxonomy_rest_base( $taxonomy ) => implode( ',', $all_ids ),
+        tconn_external_get_taxonomy_rest_base( $taxonomy ) => implode( ',', $all_ids ),
         'htax_match' => $match,
         'per_page'   => $fetch_size,
         'orderby'    => 'score',
@@ -1283,7 +1283,7 @@ function tc_external_fetch_scored_posts(
         $params['htax_expand'] = '1';
     }
 
-    return tc_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, true, $ttl, $window );
+    return tconn_external_fetch_post_list( $origin, $peer_site_slug, $cache_key, $params, $show_thumbnail, true, $ttl, $window );
 }
 
 // ==============================================================================
@@ -1301,13 +1301,13 @@ function tc_external_fetch_scored_posts(
  * Also populates matched_term_slugs from the id_to_slug reverse map.
  *
  * @since 1.0.0
- * @param array $posts        Normalized posts (from tc_external_fetch_posts()).
+ * @param array $posts        Normalized posts (from tconn_external_fetch_posts()).
  * @param array $term_id_map  [ primary_id => [include_id, ...], ... ]
  * @param array $id_to_slug   [ remote_term_id => slug ] — inverted from the resolution step.
  * @param array $term_weights [ remote_term_id => weight ]; any matched term not listed counts 1.0.
  * @return array Posts with score and matched_term_slugs set; ht_scored remains false.
  */
-function tc_external_score_posts(
+function tconn_external_score_posts(
     array $posts,
     array $term_id_map,
     array $id_to_slug,
@@ -1361,7 +1361,7 @@ function tc_external_score_posts(
  * connections through terms the requesting site never asked about and has no direct
  * link type mapping for.
  *
- * Called automatically by tc_external_fetch_scored_posts() after each successful
+ * Called automatically by tconn_external_fetch_scored_posts() after each successful
  * HT response. The peer cache lives longer than the post cache so connections
  * persist across post cache expirations.
  *
@@ -1369,8 +1369,8 @@ function tc_external_score_posts(
  * @param string  $remote_origin Origin of the site that returned these posts.
  * @param array[] $raw_posts     Raw post objects from the REST response (before normalization).
  */
-function tc_external_cache_term_peers( string $remote_origin, array $raw_posts ): void {
-    $settings = get_option( 'tc_settings', array() );
+function tconn_external_cache_term_peers( string $remote_origin, array $raw_posts ): void {
+    $settings = get_option( 'tconn_settings', array() );
     $ttl      = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
 
     // Collect all peer entries per remote term_id from every post in the response.
@@ -1400,7 +1400,7 @@ function tc_external_cache_term_peers( string $remote_origin, array $raw_posts )
     }
 
     foreach ( $peer_map as $term_id => $peers ) {
-        set_transient( 'tc_ext_tpeer_' . md5( "$remote_origin|$term_id" ), $peers, $ttl );
+        set_transient( 'tconn_ext_tpeer_' . md5( "$remote_origin|$term_id" ), $peers, $ttl );
     }
 }
 
@@ -1409,7 +1409,7 @@ function tc_external_cache_term_peers( string $remote_origin, array $raw_posts )
  *
  * Uses two independent discovery mechanisms and merges the results:
  *
- * Mechanism A (targeted): fetch each queried term's tc_links from the peer TC
+ * Mechanism A (targeted): fetch each queried term's tconn_links from the peer TC
  * term endpoint. Finds wordpress-platform entries; origin and slug are extracted
  * from the URL field of each [ { url, platform, ... } ] entry.
  *
@@ -1427,7 +1427,7 @@ function tc_external_cache_term_peers( string $remote_origin, array $raw_posts )
  * @param array  $visited            Origins already fetched this traversal (passed by reference for read).
  * @return array[] Each entry: { origin: string, slug: string }
  */
-function tc_external_get_foaf_candidates(
+function tconn_external_get_foaf_candidates(
     string $origin,
     array $term_taxonomy_map,
     array $visited
@@ -1436,19 +1436,19 @@ function tc_external_get_foaf_candidates(
     $seen       = array(); // "peer_origin|slug" dedup keys
 
     // Mechanism A data, fetched up front: one request per up-to-100 terms per
-    // taxonomy (via tc_external_get_term_data_batch()) rather than one request
+    // taxonomy (via tconn_external_get_term_data_batch()) rather than one request
     // per term — $term_taxonomy_map can hold many terms for a single FOAF
     // discovery call, and the single-term REST endpoint would cost one HTTP
     // round-trip per term.
-    $tc_enabled = tc_external_is_tc_enabled( $origin );
+    $tconn_enabled = tconn_external_is_tc_enabled( $origin );
     $term_data_by_id = array();
-    if ( $tc_enabled ) {
+    if ( $tconn_enabled ) {
         $ids_by_taxonomy = array();
         foreach ( $term_taxonomy_map as $term_id => $taxonomy ) {
             $ids_by_taxonomy[ (string) $taxonomy ][] = (int) $term_id;
         }
         foreach ( $ids_by_taxonomy as $taxonomy => $ids ) {
-            $term_data_by_id += tc_external_get_term_data_batch( $origin, $taxonomy, $ids );
+            $term_data_by_id += tconn_external_get_term_data_batch( $origin, $taxonomy, $ids );
         }
     }
 
@@ -1456,7 +1456,7 @@ function tc_external_get_foaf_candidates(
         $term_id = (int) $term_id;
 
         // Mechanism B: local peer cache (passive, populated from post responses).
-        $cache_key = 'tc_ext_tpeer_' . md5( "$origin|$term_id" );
+        $cache_key = 'tconn_ext_tpeer_' . md5( "$origin|$term_id" );
         $cached    = get_transient( $cache_key );
         if ( is_array( $cached ) ) {
             foreach ( $cached as $peer ) {
@@ -1467,7 +1467,7 @@ function tc_external_get_foaf_candidates(
                 if ( isset( $seen[ $key ] ) || in_array( $peer['origin'], $visited, true ) ) {
                     continue;
                 }
-                if ( tc_external_is_blacklisted( $peer['origin'] ) ) {
+                if ( tconn_external_is_blacklisted( $peer['origin'] ) ) {
                     continue;
                 }
                 $candidates[]  = $peer;
@@ -1476,16 +1476,16 @@ function tc_external_get_foaf_candidates(
         }
 
         // Mechanism A: targeted term data fetch (TC-enabled sites only).
-        if ( ! $tc_enabled ) {
+        if ( ! $tconn_enabled ) {
             continue;
         }
-        $term_data = $term_data_by_id[ $term_id ] ?? array( 'htax_includes' => array(), 'tc_links' => array() );
-        foreach ( $term_data['tc_links'] as $link ) {
+        $term_data = $term_data_by_id[ $term_id ] ?? array( 'htax_includes' => array(), 'tconn_links' => array() );
+        foreach ( $term_data['tconn_links'] as $link ) {
             if ( ! is_array( $link ) || ( $link['platform'] ?? '' ) !== 'wordpress' ) {
                 continue;
             }
             $link_url    = (string) ( $link['url'] ?? '' );
-            $peer_origin = tc_external_get_site_origin( $link_url );
+            $peer_origin = tconn_external_get_site_origin( $link_url );
             $peer_slug   = $link_url ? basename( rtrim( $link_url, '/' ) ) : '';
             if ( '' === $peer_origin || '' === $peer_slug ) {
                 continue;
@@ -1494,7 +1494,7 @@ function tc_external_get_foaf_candidates(
             if ( isset( $seen[ $key ] ) || in_array( $peer_origin, $visited, true ) ) {
                 continue;
             }
-            if ( tc_external_is_blacklisted( $peer_origin ) ) {
+            if ( tconn_external_is_blacklisted( $peer_origin ) ) {
                 continue;
             }
             $candidates[] = array( 'origin' => $peer_origin, 'slug' => $peer_slug );
@@ -1530,7 +1530,7 @@ add_filter(
         static $peer_hosts = null;
         if ( null === $peer_hosts ) {
             $peer_hosts = array();
-            foreach ( tc_get_platform_link_types( 'wordpress' ) as $peer_site ) {
+            foreach ( tconn_get_platform_link_types( 'wordpress' ) as $peer_site ) {
                 if ( ! empty( $peer_site['uri_prefix'] ) ) {
                     $parsed = wp_parse_url( $peer_site['uri_prefix'] );
                     if ( ! empty( $parsed['host'] ) ) {

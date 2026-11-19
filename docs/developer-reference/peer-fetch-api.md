@@ -20,18 +20,18 @@ Public functions for fetching and scoring posts from peer sites and feeds. All c
 ### Validation
 
 ```php
-tc_external_validate_origin( string $origin ): bool
+tconn_external_validate_origin( string $origin ): bool
 // Returns true when the origin is a safe, publicly reachable HTTP(S) host.
 // Blocks private IPs and loopback addresses. Call before any outbound request.
 
-tc_external_is_blacklisted( string $origin ): bool
+tconn_external_is_blacklisted( string $origin ): bool
 // Returns true when the origin's host is a blocked domain or one of its subdomains.
 
-tc_external_is_ht_enabled( string $origin ): bool
+tconn_external_is_ht_enabled( string $origin ): bool
 // Returns true when the peer runs HyperTaxonomy (checks X-HyperTaxonomy header).
 // Cached per origin; failures cached 5 minutes.
 
-tc_external_is_tc_enabled( string $origin ): bool
+tconn_external_is_tc_enabled( string $origin ): bool
 // Returns true when the peer runs TermConnect (checks X-TermConnect header).
 // Same caching. Check this before relying on htax_term_uri, which other sites ignore.
 ```
@@ -39,37 +39,37 @@ tc_external_is_tc_enabled( string $origin ): bool
 ### Term Resolution
 
 ```php
-tc_external_resolve_term_id( string $origin, string $taxonomy, string $slug ): ?int
+tconn_external_resolve_term_id( string $origin, string $taxonomy, string $slug ): ?int
 // Resolves a remote term slug to its numeric ID. Cached 24 hours.
 
-tc_external_search_terms( string $origin, string $taxonomy, string $search, int $per_page = 5 ): array
+tconn_external_search_terms( string $origin, string $taxonomy, string $search, int $per_page = 5 ): array
 // Searches for terms on a peer site by keyword. Returns [{id, name, slug}, ...]. Cached 5 minutes.
 
-tc_external_get_term_data( string $origin, string $taxonomy, int $term_id ): array
-// Fetches tc_links and htax_includes for a remote term (for FOAF discovery).
+tconn_external_get_term_data( string $origin, string $taxonomy, int $term_id ): array
+// Fetches tconn_links and htax_includes for a remote term (for FOAF discovery).
 
-tc_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array
+tconn_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array
 // Same data for many terms at once, keyed by term ID: one collection request per
 // up to 100 uncached terms, sending both X-TermConnect and X-HyperTaxonomy so collection
-// responses include htax_includes. Shares tc_external_get_term_data()'s per-term cache.
+// responses include htax_includes. Shares tconn_external_get_term_data()'s per-term cache.
 ```
 
 ### Author Search (peer users)
 
 ```php
-tc_external_search_users( string $origin, string $search, int $per_page = 8 ): array
+tconn_external_search_users( string $origin, string $search, int $per_page = 8 ): array
 // Searches a peer site's authors via its public /wp/v2/users endpoint.
 // Returns [{id, name, slug, url}, ...]. Cached 5 minutes. Authors-only and
 // best-effort: WP core exposes only users with published posts to unauthenticated
 // REST, and a peer may disable the endpoint.
 ```
 
-This powers the term-edit author autocomplete for "people" taxonomies (see the [`tc_taxonomy_peer_authors`](actions-filters.html) filter): on such a taxonomy a WordPress-peer link searches the peer's authors instead of its terms, and the built-in non-configurable **"Local site"** peer (which points at this site's own origin) lists **local** authors via `get_users()`. The peer is always identified by a configured link-type slug, never a raw URL, so it is SSRF-safe.
+This powers the term-edit author autocomplete for "people" taxonomies (see the [`tconn_taxonomy_peer_authors`](actions-filters.html) filter): on such a taxonomy a WordPress-peer link searches the peer's authors instead of its terms, and the built-in non-configurable **"Local site"** peer (which points at this site's own origin) lists **local** authors via `get_users()`. The peer is always identified by a configured link-type slug, never a raw URL, so it is SSRF-safe.
 
 ### Post Fetching
 
 ```php
-tc_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids,
+tconn_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids,
     bool $show_thumbnail, int $fetch_size, int $ttl, string $peer_site_slug = '',
     array $window = array(), ?string $search_keyword = null ): array
 // Standard WordPress fetch (no HyperTaxonomy scoring). Works on any WordPress site.
@@ -81,7 +81,7 @@ tc_external_fetch_posts( string $origin, string $taxonomy, array $all_term_ids,
 // $search_keyword: null (default) fetches newest first; a keyword sends
 // ?search={keyword}&orderby=relevance instead. An empty keyword returns [].
 
-tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id_map,
+tconn_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id_map,
     string $match, array $term_weights, bool $show_thumbnail, int $fetch_size, int $ttl,
     string $peer_site_slug = '', bool $expand = false, array $window = array() ): array
 // HyperTaxonomy-scored fetch. Automatically caches htax_term_peers for FOAF discovery.
@@ -90,7 +90,7 @@ tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id
 // $expand:        true sends htax_expand=1 so the peer matches via its own relationship graph
 ```
 
-### How [tc_peer_posts] Queries Peers
+### How [tconn_peer_posts] Queries Peers
 
 - **Identifier matching.** With no remote slug configured, the term's external identifiers are looked up with `?htax_term_uri=<uri>` on peers running TermConnect. A peer without it ignores the parameter, so this is skipped for those peers.
 - **HyperTaxonomy peers** get a [scored request](https://hypertaxonomy.org/hypertaxonomy/developer-reference/rest-api.html#scored-post-collection-get-wpv2posts) with `htax_includes`, `htax_match` and `htax_term_weights`, a per-term weight map derived from local per-taxonomy relevance settings (direct weight for primary and synonym terms, container weight for included terms). `peer_expand="true"` adds `htax_expand=1`. The peer returns `htax_score` from its own search index.
@@ -101,25 +101,25 @@ tc_external_fetch_scored_posts( string $origin, string $taxonomy, array $term_id
 ### Scoring & Cache
 
 ```php
-tc_external_score_posts( array $posts, array $term_id_map, array $id_to_slug, array $term_weights ): array
+tconn_external_score_posts( array $posts, array $term_id_map, array $id_to_slug, array $term_weights ): array
 // Client-side per-term weighted scoring for non-HyperTaxonomy peers ($term_weights: [ term_id => weight ]).
 // Same formula as HyperTaxonomy server-side scoring.
 
-tc_external_clear_site_cache( string $peer_site_slug ): void
+tconn_external_clear_site_cache( string $peer_site_slug ): void
 // Invalidates all cached post lists for a link type. Called by the admin Clear Cache button.
-// tc_external_clear_site_cache( 'my-wp-blog' );
+// tconn_external_clear_site_cache( 'my-wp-blog' );
 ```
 
 ### FOAF Discovery
 
 ```php
-tc_external_cache_term_peers( string $remote_origin, array $raw_posts ): void
+tconn_external_cache_term_peers( string $remote_origin, array $raw_posts ): void
 // Extracts htax_term_peers from post responses and writes to local FOAF cache.
-// Called automatically by tc_external_fetch_scored_posts.
+// Called automatically by tconn_external_fetch_scored_posts.
 
-tc_external_get_foaf_candidates( string $origin, array $term_taxonomy_map, array $visited ): array
+tconn_external_get_foaf_candidates( string $origin, array $term_taxonomy_map, array $visited ): array
 // Returns peer candidates via two mechanisms:
-// A (targeted): fetches tc_links from remote term endpoints
+// A (targeted): fetches tconn_links from remote term endpoints
 // B (opportunistic): reads the local FOAF cache from prior responses
 // Returns [{origin: string, slug: string}, ...]. Filters blocked and already-visited origins.
 ```

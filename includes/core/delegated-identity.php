@@ -10,15 +10,15 @@
  * (platform='wordpress') plus the remote term slug. The remote taxonomy is
  * always the same as the local taxonomy.
  *
- * External links are read from the tc_links field in the remote WP REST response
- * (format: [ { url, platform, label, fetched_at } ]) and cached in _tc_delegated_links_data.
- * TermConnect sends X-TermConnect: {TC_VERSION} in outbound requests to identify itself.
+ * External links are read from the tconn_links field in the remote WP REST response
+ * (format: [ { url, platform, label, fetched_at } ]) and cached in _tconn_delegated_links_data.
+ * TermConnect sends X-TermConnect: {TCONN_VERSION} in outbound requests to identify itself.
  *
  * Meta keys used per term:
- *   _tc_identity_source        — array: delegation target + cache timestamps + status
- *   _tc_delegated_links_data   — array: cached [ { url, platform, label, fetched_at } ] from remote
- *   _tc_uris                   — multi-value: URI index rebuilt from local + delegated links
- *   _tc_original_description   — the term's description before delegation was set
+ *   _tconn_identity_source        — array: delegation target + cache timestamps + status
+ *   _tconn_delegated_links_data   — array: cached [ { url, platform, label, fetched_at } ] from remote
+ *   _tconn_uris                   — multi-value: URI index rebuilt from local + delegated links
+ *   _tconn_original_description   — the term's description before delegation was set
  *
  * @package TermConnect
  * @since   1.0.0
@@ -28,19 +28,19 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TC_META_IDENTITY_SOURCE',      '_tc_identity_source' );
-define( 'TC_META_DELEGATED_LINKS_DATA', '_tc_delegated_links_data' );
-define( 'TC_META_ORIGINAL_DESCRIPTION', '_tc_original_description' );
-define( 'TC_META_ORIGINAL_NAME',        '_tc_original_name' );
-define( 'TC_META_REL_SYNC_ISSUES',      '_tc_rel_sync_issues' );
-define( 'TC_IDENTITY_CACHE_TTL',        DAY_IN_SECONDS );
+define( 'TCONN_META_IDENTITY_SOURCE',      '_tconn_identity_source' );
+define( 'TCONN_META_DELEGATED_LINKS_DATA', '_tconn_delegated_links_data' );
+define( 'TCONN_META_ORIGINAL_DESCRIPTION', '_tconn_original_description' );
+define( 'TCONN_META_ORIGINAL_NAME',        '_tconn_original_name' );
+define( 'TCONN_META_REL_SYNC_ISSUES',      '_tconn_rel_sync_issues' );
+define( 'TCONN_IDENTITY_CACHE_TTL',        DAY_IN_SECONDS );
 
 /**
  * Wall-clock seconds a single cron tick may spend making synchronous remote
- * requests (e.g. tc_cron_refresh_identity_caches()) before bailing out and
+ * requests (e.g. tconn_cron_refresh_identity_caches()) before bailing out and
  * leaving the remainder for the next scheduled run.
  */
-define( 'TC_CRON_TIME_BUDGET', 20 );
+define( 'TCONN_CRON_TIME_BUDGET', 20 );
 
 // ==============================================================================
 // IDENTITY SOURCE CRUD
@@ -63,8 +63,8 @@ define( 'TC_CRON_TIME_BUDGET', 20 );
  *     @type int    $last_fetched   Unix timestamp of last successful fetch.
  * }
  */
-function tc_get_identity_source( int $term_id ): ?array {
-    $raw = get_term_meta( $term_id, TC_META_IDENTITY_SOURCE, true );
+function tconn_get_identity_source( int $term_id ): ?array {
+    $raw = get_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, true );
     if ( ! is_array( $raw ) || empty( $raw['peer_site_slug'] ) ) {
         return null;
     }
@@ -97,27 +97,27 @@ function tc_get_identity_source( int $term_id ): ?array {
  * @param bool   $sync_description  Replace local description with remote description and keep in sync. Default true.
  * @return true|WP_Error
  */
-function tc_set_identity_source( int $term_id, string $peer_site_slug, string $remote_slug, array $remote, bool $sync_descendants = false, string $sv_source_id = '', bool $sync_name = true, bool $sync_description = true ) {
+function tconn_set_identity_source( int $term_id, string $peer_site_slug, string $remote_slug, array $remote, bool $sync_descendants = false, string $sv_source_id = '', bool $sync_name = true, bool $sync_description = true ) {
     $term = get_term( $term_id );
     if ( ! $term || is_wp_error( $term ) ) {
-        return new WP_Error( 'tc_invalid_term', __( 'Term not found.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_term', __( 'Term not found.', 'termconnect' ) );
     }
 
-    $link_type = tc_get_link_type( $peer_site_slug );
+    $link_type = tconn_get_link_type( $peer_site_slug );
     if ( ! $link_type || ( $link_type['platform'] ?? '' ) !== 'wordpress' ) {
-        return new WP_Error( 'tc_invalid_lt', __( 'Not a WordPress peer link type.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_lt', __( 'Not a WordPress peer link type.', 'termconnect' ) );
     }
 
-    $site_url = tc_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
+    $site_url = tconn_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
     if ( ! $site_url ) {
-        return new WP_Error( 'tc_invalid_origin', __( 'Could not determine peer site URL.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_origin', __( 'Could not determine peer site URL.', 'termconnect' ) );
     }
 
     // Guard: prevent delegating to this site itself.
     $local_host  = wp_parse_url( home_url(), PHP_URL_HOST );
     $remote_host = wp_parse_url( $site_url, PHP_URL_HOST );
     if ( $local_host && $remote_host && rtrim( $local_host, '.' ) === rtrim( $remote_host, '.' ) ) {
-        return new WP_Error( 'tc_self_delegation', __( 'Cannot delegate a term\'s identity to local site.', 'termconnect' ) );
+        return new WP_Error( 'tconn_self_delegation', __( 'Cannot delegate a term\'s identity to local site.', 'termconnect' ) );
     }
 
     $term_updates = array();
@@ -126,8 +126,8 @@ function tc_set_identity_source( int $term_id, string $peer_site_slug, string $r
     // term is already delegated, its current name is the synced remote value, and
     // re-delegating must not overwrite the true original with it.
     if ( $sync_name ) {
-        if ( ! metadata_exists( 'term', $term_id, TC_META_ORIGINAL_NAME ) ) {
-            update_term_meta( $term_id, TC_META_ORIGINAL_NAME, $term->name );
+        if ( ! metadata_exists( 'term', $term_id, TCONN_META_ORIGINAL_NAME ) ) {
+            update_term_meta( $term_id, TCONN_META_ORIGINAL_NAME, $term->name );
         }
         $remote_name = sanitize_text_field( html_entity_decode( $remote['name'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
         if ( '' !== $remote_name ) {
@@ -137,8 +137,8 @@ function tc_set_identity_source( int $term_id, string $peer_site_slug, string $r
 
     // Preserve and optionally sync description.
     if ( $sync_description ) {
-        if ( ! metadata_exists( 'term', $term_id, TC_META_ORIGINAL_DESCRIPTION ) ) {
-            update_term_meta( $term_id, TC_META_ORIGINAL_DESCRIPTION, $term->description );
+        if ( ! metadata_exists( 'term', $term_id, TCONN_META_ORIGINAL_DESCRIPTION ) ) {
+            update_term_meta( $term_id, TCONN_META_ORIGINAL_DESCRIPTION, $term->description );
         }
         $term_updates['description'] = $remote['description'] ?? '';
     }
@@ -166,13 +166,13 @@ function tc_set_identity_source( int $term_id, string $peer_site_slug, string $r
     if ( '' !== $sv_source_id ) {
         $meta['sv_source_id'] = sanitize_key( $sv_source_id );
     }
-    update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $meta );
+    update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $meta );
 
     // Cache the remote delegated links.
-    tc_save_delegated_links( $term_id, $remote['delegated_links'] ?? array() );
+    tconn_save_delegated_links( $term_id, $remote['delegated_links'] ?? array() );
 
     // A (re)delegation replaces whatever redirect was pending for this term.
-    tc_identity_redirect_queue_remove( $term_id );
+    tconn_identity_redirect_queue_remove( $term_id );
 
     return true;
 }
@@ -188,7 +188,7 @@ function tc_set_identity_source( int $term_id, string $peer_site_slug, string $r
  *                                     locally enabled link types that have no existing local link. Default false.
  * }
  */
-function tc_remove_identity_source( int $term_id, array $options = array() ): void {
+function tconn_remove_identity_source( int $term_id, array $options = array() ): void {
     $restore_name        = (bool) ( $options['restore_name'] ?? true );
     $restore_description = (bool) ( $options['restore_description'] ?? true );
     $keep_peer_links     = (bool) ( $options['keep_peer_links'] ?? false );
@@ -199,22 +199,22 @@ function tc_remove_identity_source( int $term_id, array $options = array() ): vo
     }
 
     if ( $keep_peer_links ) {
-        tc_absorb_delegated_links( $term_id );
+        tconn_absorb_delegated_links( $term_id );
     }
 
     $restores = array();
 
-    $original_name = get_term_meta( $term_id, TC_META_ORIGINAL_NAME, true );
+    $original_name = get_term_meta( $term_id, TCONN_META_ORIGINAL_NAME, true );
     if ( $restore_name && false !== $original_name && '' !== $original_name ) {
         $restores['name'] = $original_name;
     }
-    delete_term_meta( $term_id, TC_META_ORIGINAL_NAME );
+    delete_term_meta( $term_id, TCONN_META_ORIGINAL_NAME );
 
-    $original_desc = get_term_meta( $term_id, TC_META_ORIGINAL_DESCRIPTION, true );
+    $original_desc = get_term_meta( $term_id, TCONN_META_ORIGINAL_DESCRIPTION, true );
     if ( $restore_description && false !== $original_desc ) {
         $restores['description'] = $original_desc;
     }
-    delete_term_meta( $term_id, TC_META_ORIGINAL_DESCRIPTION );
+    delete_term_meta( $term_id, TCONN_META_ORIGINAL_DESCRIPTION );
 
     if ( ! empty( $restores ) ) {
         $restore_result = wp_update_term( $term_id, $term->taxonomy, $restores );
@@ -223,10 +223,10 @@ function tc_remove_identity_source( int $term_id, array $options = array() ): vo
         }
     }
 
-    delete_term_meta( $term_id, TC_META_IDENTITY_SOURCE );
-    delete_term_meta( $term_id, TC_META_DELEGATED_LINKS_DATA );
-    tc_identity_redirect_queue_remove( $term_id );
-    tc_rebuild_uri_index( $term_id );
+    delete_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE );
+    delete_term_meta( $term_id, TCONN_META_DELEGATED_LINKS_DATA );
+    tconn_identity_redirect_queue_remove( $term_id );
+    tconn_rebuild_uri_index( $term_id );
 }
 
 /**
@@ -239,13 +239,13 @@ function tc_remove_identity_source( int $term_id, array $options = array() ): vo
  *
  * @param int $term_id
  */
-function tc_absorb_delegated_links( int $term_id ): void {
-    $delegated = get_term_meta( $term_id, TC_META_DELEGATED_LINKS_DATA, true );
+function tconn_absorb_delegated_links( int $term_id ): void {
+    $delegated = get_term_meta( $term_id, TCONN_META_DELEGATED_LINKS_DATA, true );
     if ( ! is_array( $delegated ) || empty( $delegated ) ) {
         return;
     }
 
-    $enabled_types = tc_get_enabled_link_types();
+    $enabled_types = tconn_get_enabled_link_types();
 
     foreach ( $enabled_types as $slug => $type ) {
         $prefix = $type['uri_prefix'] ?? '';
@@ -260,7 +260,7 @@ function tc_absorb_delegated_links( int $term_id ): void {
             if ( 0 === strpos( $url, $prefix ) ) {
                 $id = substr( $url, strlen( $prefix ) );
                 if ( '' !== $id ) {
-                    tc_set_term_link( $term_id, $slug, $id, $entry['label'] ?? '', (int) ( $entry['fetched_at'] ?? 0 ) );
+                    tconn_set_term_link( $term_id, $slug, $id, $entry['label'] ?? '', (int) ( $entry['fetched_at'] ?? 0 ) );
                     break;
                 }
             }
@@ -279,8 +279,8 @@ function tc_absorb_delegated_links( int $term_id ): void {
  * @param bool $sync_description
  * @return bool False if the term has no identity source.
  */
-function tc_update_identity_sync_flags( int $term_id, bool $sync_name, bool $sync_description ): bool {
-    $source = tc_get_identity_source( $term_id );
+function tconn_update_identity_sync_flags( int $term_id, bool $sync_name, bool $sync_description ): bool {
+    $source = tconn_get_identity_source( $term_id );
     if ( null === $source ) {
         return false;
     }
@@ -296,14 +296,14 @@ function tc_update_identity_sync_flags( int $term_id, bool $sync_name, bool $syn
     $restores = array();
 
     if ( $old_sync_name && ! $sync_name ) {
-        $original_name = get_term_meta( $term_id, TC_META_ORIGINAL_NAME, true );
+        $original_name = get_term_meta( $term_id, TCONN_META_ORIGINAL_NAME, true );
         if ( false !== $original_name && '' !== $original_name ) {
             $restores['name'] = $original_name;
         }
     }
 
     if ( $old_sync_desc && ! $sync_description ) {
-        $original_desc = get_term_meta( $term_id, TC_META_ORIGINAL_DESCRIPTION, true );
+        $original_desc = get_term_meta( $term_id, TCONN_META_ORIGINAL_DESCRIPTION, true );
         if ( false !== $original_desc ) {
             $restores['description'] = $original_desc;
         }
@@ -318,7 +318,7 @@ function tc_update_identity_sync_flags( int $term_id, bool $sync_name, bool $syn
 
     $source['sync_name']        = $sync_name;
     $source['sync_description'] = $sync_description;
-    update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
+    update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
     return true;
 }
 
@@ -336,7 +336,7 @@ function tc_update_identity_sync_flags( int $term_id, bool $sync_name, bool $syn
  * @param array  $restores Fields passed to wp_update_term(): 'name' and/or 'description'.
  * @return string Empty when every field matches; otherwise a message naming the fields.
  */
-function tc_term_restore_mismatch( int $term_id, string $taxonomy, array $restores ): string {
+function tconn_term_restore_mismatch( int $term_id, string $taxonomy, array $restores ): string {
     clean_term_cache( $term_id, $taxonomy );
     $fresh = get_term( $term_id, $taxonomy, OBJECT, 'raw' );
     if ( ! $fresh || is_wp_error( $fresh ) ) {
@@ -369,12 +369,12 @@ function tc_term_restore_mismatch( int $term_id, string $taxonomy, array $restor
  *                 manual follow-up, since there's no automated retry for a source
  *                 that's already been deleted.
  */
-function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
+function tconn_sv_remove_delegations_by_source( string $sv_source_id ): array {
     global $wpdb;
 
     $rows = $wpdb->get_results( $wpdb->prepare(
         "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s",
-        TC_META_IDENTITY_SOURCE
+        TCONN_META_IDENTITY_SOURCE
     ) );
 
     $term_ids = array();
@@ -412,11 +412,11 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
 
     // Restore original names/descriptions via wp_update_term() — one call per term,
     // combining both restores where a term needs both — so edit_term/edited_term fire
-    // as they do for every other restore path in this file (tc_remove_identity_source(),
-    // tc_update_identity_sync_flags()), keeping HyperTaxonomy's search index (and any
+    // as they do for every other restore path in this file (tconn_remove_identity_source(),
+    // tconn_update_identity_sync_flags()), keeping HyperTaxonomy's search index (and any
     // other edited_term listener) current after a bulk source removal.
     // A restore that fails for one term (wp_update_term() returns an error, or the
-    // re-read in tc_term_restore_mismatch() shows the write didn't land) is reported in
+    // re-read in tconn_term_restore_mismatch() shows the write didn't land) is reported in
     // the return value and does not abort the rest of the cleanup below — but the term's original-name/description backup meta is kept out
     // of the deletion pass further down, so the data needed to retry the restore by hand
     // isn't destroyed along with it.
@@ -429,13 +429,13 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
         }
         $restores = array();
         if ( in_array( $term_id, $name_restore_ids, true ) ) {
-            $original_name = get_term_meta( $term_id, TC_META_ORIGINAL_NAME, true );
+            $original_name = get_term_meta( $term_id, TCONN_META_ORIGINAL_NAME, true );
             if ( false !== $original_name && '' !== $original_name ) {
                 $restores['name'] = $original_name;
             }
         }
         if ( in_array( $term_id, $desc_restore_ids, true ) ) {
-            $original_desc = get_term_meta( $term_id, TC_META_ORIGINAL_DESCRIPTION, true );
+            $original_desc = get_term_meta( $term_id, TCONN_META_ORIGINAL_DESCRIPTION, true );
             if ( false !== $original_desc ) {
                 $restores['description'] = $original_desc;
             }
@@ -444,7 +444,7 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
             $result  = wp_update_term( $term_id, $term->taxonomy, $restores );
             $message = is_wp_error( $result )
                 ? $result->get_error_message()
-                : tc_term_restore_mismatch( $term_id, $term->taxonomy, $restores );
+                : tconn_term_restore_mismatch( $term_id, $term->taxonomy, $restores );
             if ( '' !== $message ) {
                 $failed_term_ids[]  = $term_id;
                 $failures[]         = array( 'term_id' => $term_id, 'message' => $message );
@@ -455,17 +455,17 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
 
     $wpdb->query( 'START TRANSACTION' );
 
-    // TC_META_ORIGINAL_NAME/DESCRIPTION are skipped for terms whose restore failed above,
+    // TCONN_META_ORIGINAL_NAME/DESCRIPTION are skipped for terms whose restore failed above,
     // so a future manual fix (e.g. renaming the colliding term out of the way) has the
     // backup value to restore from — every other delegation meta key is cleared for all
     // affected terms regardless, since the source itself is gone either way.
     $backup_term_ids = array_values( array_diff( $term_ids, $failed_term_ids ) );
     foreach ( array(
-        TC_META_IDENTITY_SOURCE     => $term_ids,
-        TC_META_DELEGATED_LINKS_DATA => $term_ids,
-        TC_META_ORIGINAL_NAME       => $backup_term_ids,
-        TC_META_ORIGINAL_DESCRIPTION => $backup_term_ids,
-        TC_META_REL_SYNC_ISSUES     => $term_ids,
+        TCONN_META_IDENTITY_SOURCE     => $term_ids,
+        TCONN_META_DELEGATED_LINKS_DATA => $term_ids,
+        TCONN_META_ORIGINAL_NAME       => $backup_term_ids,
+        TCONN_META_ORIGINAL_DESCRIPTION => $backup_term_ids,
+        TCONN_META_REL_SYNC_ISSUES     => $term_ids,
     ) as $meta_key => $ids_for_key ) {
         if ( empty( $ids_for_key ) ) {
             continue;
@@ -481,9 +481,9 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
         }
     }
 
-    // Also clear the _tc_uris index for each affected term.
+    // Also clear the _tconn_uris index for each affected term.
     $result = $wpdb->query( $wpdb->prepare(
-        "DELETE FROM {$wpdb->termmeta} WHERE meta_key = '_tc_uris' AND term_id IN ({$placeholders})",
+        "DELETE FROM {$wpdb->termmeta} WHERE meta_key = '_tconn_uris' AND term_id IN ({$placeholders})",
         $term_ids
     ) );
     if ( false === $result ) {
@@ -496,18 +496,18 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
     clean_term_cache( $term_ids );
     foreach ( $term_ids as $term_id ) {
         wp_cache_delete( $term_id, 'term_meta' );
-        delete_transient( 'tc_uris_' . $term_id );
-        tc_get_term_links_data( (int) $term_id, true );
+        delete_transient( 'tconn_uris_' . $term_id );
+        tconn_get_term_links_data( (int) $term_id, true );
     }
 
     // Rebuild URI index for each term using only remaining local links.
     foreach ( $term_ids as $term_id ) {
-        tc_rebuild_uri_index( (int) $term_id );
+        tconn_rebuild_uri_index( (int) $term_id );
     }
 
     // The meta rows were deleted with direct SQL, which fires no meta hooks.
-    tc_flush_term_ids_with_meta( TC_META_IDENTITY_SOURCE );
-    tc_flush_term_ids_with_meta( TC_META_REL_SYNC_ISSUES );
+    tconn_flush_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE );
+    tconn_flush_term_ids_with_meta( TCONN_META_REL_SYNC_ISSUES );
 
     return $failures;
 }
@@ -516,11 +516,11 @@ function tc_sv_remove_delegations_by_source( string $sv_source_id ): array {
  * Save delegated links data and rebuild the URI index for a term.
  *
  * @param int   $term_id
- * @param array $links   Flat array of { url, platform, label, fetched_at } from remote tc_links.
+ * @param array $links   Flat array of { url, platform, label, fetched_at } from remote tconn_links.
  */
-function tc_save_delegated_links( int $term_id, array $links ): void {
-    update_term_meta( $term_id, TC_META_DELEGATED_LINKS_DATA, $links );
-    tc_rebuild_uri_index( $term_id );
+function tconn_save_delegated_links( int $term_id, array $links ): void {
+    update_term_meta( $term_id, TCONN_META_DELEGATED_LINKS_DATA, $links );
+    tconn_rebuild_uri_index( $term_id );
 }
 
 // ==============================================================================
@@ -530,8 +530,8 @@ function tc_save_delegated_links( int $term_id, array $links ): void {
 /**
  * Fetch identity data for a term from a peer WordPress site via WP REST API.
  *
- * Uses GET /wp/v2/{taxonomy}?slug={slug}&_fields=id,slug,name,description,tc_links,htax_redirect.
- * External identifiers are read from tc_links. TermConnect sends X-TermConnect: {TC_VERSION}
+ * Uses GET /wp/v2/{taxonomy}?slug={slug}&_fields=id,slug,name,description,tconn_links,htax_redirect.
+ * External identifiers are read from tconn_links. TermConnect sends X-TermConnect: {TCONN_VERSION}
  * to identify itself to the remote site.
  *
  * @param string $peer_site_slug      Peer link type slug (platform='wordpress').
@@ -539,55 +539,55 @@ function tc_save_delegated_links( int $term_id, array $links ): void {
  * @param string $remote_slug  Remote term slug.
  * @return array|WP_Error Array with keys: term_id, slug, name, description, mappings.
  */
-function tc_fetch_remote_identity( string $peer_site_slug, string $taxonomy, string $remote_slug ) {
-    $link_type = tc_get_link_type( $peer_site_slug );
+function tconn_fetch_remote_identity( string $peer_site_slug, string $taxonomy, string $remote_slug ) {
+    $link_type = tconn_get_link_type( $peer_site_slug );
     if ( ! $link_type || ( $link_type['platform'] ?? '' ) !== 'wordpress' ) {
-        return new WP_Error( 'tc_invalid_lt', __( 'Not a WordPress peer link type.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_lt', __( 'Not a WordPress peer link type.', 'termconnect' ) );
     }
 
-    $origin = tc_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
+    $origin = tconn_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
     if ( ! $origin ) {
-        return new WP_Error( 'tc_invalid_origin', __( 'Could not determine peer site URL from link type.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_origin', __( 'Could not determine peer site URL from link type.', 'termconnect' ) );
     }
 
-    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+    $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
     $url = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base
          . '?' . http_build_query( array(
              'slug'    => $remote_slug,
-             '_fields' => 'id,slug,name,description,link,tc_links,htax_redirect',
+             '_fields' => 'id,slug,name,description,link,tconn_links,htax_redirect',
          ) );
 
     // HT's collection endpoint only includes htax_redirect (even when requested via
     // _fields) for requests that identify themselves as a peer via this header — plain
     // _fields filtering isn't enough on its own. Without it, a remote term that redirects
     // is silently reported as a normal term, and this function can never detect a move.
-    $response = wp_remote_get( $url, tc_external_request_args( 10, tc_external_peer_headers( true ) ) );
+    $response = wp_remote_get( $url, tconn_external_request_args( 10, tconn_external_peer_headers( true ) ) );
 
     if ( is_wp_error( $response ) ) {
-        return new WP_Error( 'tc_unreachable', $response->get_error_message() );
+        return new WP_Error( 'tconn_unreachable', $response->get_error_message() );
     }
 
     $code = (int) wp_remote_retrieve_response_code( $response );
     if ( 200 !== $code ) {
         if ( 404 === $code ) {
-            return new WP_Error( 'tc_not_found', __( 'Remote term not found.', 'termconnect' ) );
+            return new WP_Error( 'tconn_not_found', __( 'Remote term not found.', 'termconnect' ) );
         }
         return new WP_Error(
-            'tc_remote_error',
+            'tconn_remote_error',
             /* translators: %d: HTTP status code */
             sprintf( __( 'Remote site returned HTTP %d.', 'termconnect' ), $code )
         );
     }
 
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+    $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
     if ( ! is_array( $body ) ) {
-        return new WP_Error( 'tc_invalid_response', __( 'Invalid response from remote site.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_response', __( 'Invalid response from remote site.', 'termconnect' ) );
     }
 
     // WP REST collection endpoint returns an array of matching terms.
     $term_data = isset( $body[0] ) ? $body[0] : $body;
     if ( empty( $term_data['id'] ) ) {
-        return new WP_Error( 'tc_not_found', __( 'Remote term not found.', 'termconnect' ) );
+        return new WP_Error( 'tconn_not_found', __( 'Remote term not found.', 'termconnect' ) );
     }
 
     // htax_redirect is present when the remote runs HyperTaxonomy — indicates this term
@@ -603,11 +603,11 @@ function tc_fetch_remote_identity( string $peer_site_slug, string $taxonomy, str
         );
     }
 
-    // Extract delegated links from tc_links. Format: [ { url, platform, label, type_label, fetched_at } ].
-    $tc_links        = $term_data['tc_links'] ?? array();
+    // Extract delegated links from tconn_links. Format: [ { url, platform, label, type_label, fetched_at } ].
+    $tconn_links        = $term_data['tconn_links'] ?? array();
     $delegated_links = array();
-    if ( is_array( $tc_links ) ) {
-        foreach ( $tc_links as $entry ) {
+    if ( is_array( $tconn_links ) ) {
+        foreach ( $tconn_links as $entry ) {
             if ( ! empty( $entry['url'] ) ) {
                 $delegated_links[] = array(
                     'url'        => esc_url_raw( (string) $entry['url'] ),
@@ -642,23 +642,23 @@ function tc_fetch_remote_identity( string $peer_site_slug, string $taxonomy, str
  * @param int $term_id
  * @return true|WP_Error
  */
-function tc_refresh_identity_cache( int $term_id ) {
-    $source = tc_get_identity_source( $term_id );
+function tconn_refresh_identity_cache( int $term_id ) {
+    $source = tconn_get_identity_source( $term_id );
     if ( null === $source ) {
-        return new WP_Error( 'tc_no_source', __( 'No identity source set for this term.', 'termconnect' ) );
+        return new WP_Error( 'tconn_no_source', __( 'No identity source set for this term.', 'termconnect' ) );
     }
 
     $term = get_term( $term_id );
     if ( ! $term || is_wp_error( $term ) ) {
-        return new WP_Error( 'tc_invalid_term', __( 'Term not found.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_term', __( 'Term not found.', 'termconnect' ) );
     }
 
-    $remote = tc_fetch_remote_identity( $source['peer_site_slug'], $term->taxonomy, $source['remote_slug'] );
+    $remote = tconn_fetch_remote_identity( $source['peer_site_slug'], $term->taxonomy, $source['remote_slug'] );
 
     if ( is_wp_error( $remote ) ) {
-        $new_status       = 'tc_not_found' === $remote->get_error_code() ? 'not_found' : 'unreachable';
+        $new_status       = 'tconn_not_found' === $remote->get_error_code() ? 'not_found' : 'unreachable';
         $source['status'] = $new_status;
-        update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
+        update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
         return $remote;
     }
 
@@ -668,7 +668,7 @@ function tc_refresh_identity_cache( int $term_id ) {
         // untouched. SV sync is the authority on which remote slug this term tracks;
         // auto-following here would be undone by SV sync on its next pass anyway.
         if ( ! empty( $source['sv_source_id'] ) ) {
-            tc_identity_redirect_queue_add( $term_id, $remote );
+            tconn_identity_redirect_queue_add( $term_id, $remote );
             return true;
         }
 
@@ -677,12 +677,12 @@ function tc_refresh_identity_cache( int $term_id ) {
         if ( '' !== ( $remote['target_slug'] ?? '' )
             && ( $source['declined_redirect_slug'] ?? '' ) === $remote['target_slug'] ) {
             $source['status'] = 'redirect_declined';
-            update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
-            tc_identity_redirect_queue_remove( $term_id );
+            update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
+            tconn_identity_redirect_queue_remove( $term_id );
             return true;
         }
 
-        $settings    = get_option( 'tc_settings', array() );
+        $settings    = get_option( 'tconn_settings', array() );
         $auto_single = ! empty( $settings['auto_accept_redirects'] );
         $auto_chain  = ! empty( $settings['auto_accept_chain_redirects'] );
         $max_depth   = max( 1, min( 5, (int) ( $settings['identity_chain_max_depth'] ?? 3 ) ) );
@@ -703,7 +703,7 @@ function tc_refresh_identity_cache( int $term_id ) {
                     break;
                 }
 
-                $fetched = tc_fetch_remote_identity( $source['peer_site_slug'], $term->taxonomy, $current_slug );
+                $fetched = tconn_fetch_remote_identity( $source['peer_site_slug'], $term->taxonomy, $current_slug );
 
                 if ( is_wp_error( $fetched ) ) {
                     break; // Target unreachable or not found — queue for review.
@@ -726,16 +726,16 @@ function tc_refresh_identity_cache( int $term_id ) {
             }
 
             if ( null !== $resolved ) {
-                tc_identity_follow_redirect( $term_id, $resolved['_slug'], $resolved );
+                tconn_identity_follow_redirect( $term_id, $resolved['_slug'], $resolved );
                 return true;
             }
         }
 
         // Queue for admin review (auto-accept off, cross-taxonomy redirect, chain
         // disabled with more hops remaining, or target unreachable).
-        tc_identity_redirect_queue_add( $term_id, $remote );
+        tconn_identity_redirect_queue_add( $term_id, $remote );
         $source['status'] = 'redirect_pending';
-        update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
+        update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
         return true;
     }
 
@@ -757,22 +757,22 @@ function tc_refresh_identity_cache( int $term_id ) {
             return $sync_result;
         }
     }
-    tc_save_delegated_links( $term_id, $remote['delegated_links'] ?? array() );
+    tconn_save_delegated_links( $term_id, $remote['delegated_links'] ?? array() );
 
     // The source resolves to a normal term again — nothing is pending any more.
     $source['status']       = 'active';
     $source['last_fetched'] = time();
     unset( $source['declined_redirect_slug'] );
-    tc_identity_redirect_queue_remove( $term_id );
+    tconn_identity_redirect_queue_remove( $term_id );
     $old_remote_term_id     = (int) ( $source['remote_term_id'] ?? 0 );
     $new_remote_term_id     = absint( $remote['term_id'] ?? $old_remote_term_id );
     $source['remote_term_id'] = $new_remote_term_id;
     $source['remote_link']    = esc_url_raw( $remote['link'] ?? $source['remote_link'] ?? '' );
-    update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
+    update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
 
     // Slug match wins — if the remote returned a different ID for the same slug, keep SV roots in sync.
     if ( $new_remote_term_id && $new_remote_term_id !== $old_remote_term_id && ! empty( $source['sv_source_id'] ) ) {
-        tc_sv_update_root_term_id( $source['sv_source_id'], $source['remote_slug'], $new_remote_term_id );
+        tconn_sv_update_root_term_id( $source['sv_source_id'], $source['remote_slug'], $new_remote_term_id );
     }
 
     return true;
@@ -794,7 +794,7 @@ function tc_refresh_identity_cache( int $term_id ) {
  * @param string $name Lock name used by callers.
  * @return string Site-scoped lock name.
  */
-function tc_mysql_lock_name( string $name ): string {
+function tconn_mysql_lock_name( string $name ): string {
     global $wpdb;
     return substr( md5( DB_NAME . '|' . $wpdb->prefix ), 0, 12 ) . '_' . $name;
 }
@@ -809,12 +809,12 @@ function tc_mysql_lock_name( string $name ): string {
  * @param string $remote_slug  Slug used to identify the root entry.
  * @param int    $new_term_id  Newly discovered remote term ID.
  */
-function tc_sv_update_root_term_id( string $sv_source_id, string $remote_slug, int $new_term_id ): void {
-    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
+function tconn_sv_update_root_term_id( string $sv_source_id, string $remote_slug, int $new_term_id ): void {
+    if ( ! tconn_acquire_mysql_lock( 'tconn_sv_write_lock' ) ) {
         return;
     }
     try {
-        $sources = get_option( 'tc_shared_vocabularies', array() );
+        $sources = get_option( 'tconn_shared_vocabularies', array() );
         $changed = false;
         foreach ( $sources as &$src ) {
             if ( ( $src['id'] ?? '' ) !== $sv_source_id ) {
@@ -832,10 +832,10 @@ function tc_sv_update_root_term_id( string $sv_source_id, string $remote_slug, i
         }
         unset( $src );
         if ( $changed ) {
-            update_option( 'tc_shared_vocabularies', $sources );
+            update_option( 'tconn_shared_vocabularies', $sources );
         }
     } finally {
-        tc_release_mysql_lock( 'tc_sv_write_lock' );
+        tconn_release_mysql_lock( 'tconn_sv_write_lock' );
     }
 }
 
@@ -849,12 +849,12 @@ function tc_sv_update_root_term_id( string $sv_source_id, string $remote_slug, i
  * @param string $old_slug     Existing slug to locate the entry.
  * @param string $new_slug     New slug to store.
  */
-function tc_sv_update_root_slug( string $sv_source_id, string $old_slug, string $new_slug ): void {
-    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
+function tconn_sv_update_root_slug( string $sv_source_id, string $old_slug, string $new_slug ): void {
+    if ( ! tconn_acquire_mysql_lock( 'tconn_sv_write_lock' ) ) {
         return;
     }
     try {
-        $sources = get_option( 'tc_shared_vocabularies', array() );
+        $sources = get_option( 'tconn_shared_vocabularies', array() );
         $changed = false;
         foreach ( $sources as &$src ) {
             if ( ( $src['id'] ?? '' ) !== $sv_source_id ) {
@@ -871,10 +871,10 @@ function tc_sv_update_root_slug( string $sv_source_id, string $old_slug, string 
         }
         unset( $src );
         if ( $changed ) {
-            update_option( 'tc_shared_vocabularies', $sources );
+            update_option( 'tconn_shared_vocabularies', $sources );
         }
     } finally {
-        tc_release_mysql_lock( 'tc_sv_write_lock' );
+        tconn_release_mysql_lock( 'tconn_sv_write_lock' );
     }
 }
 
@@ -889,41 +889,41 @@ function tc_sv_update_root_slug( string $sv_source_id, string $old_slug, string 
  * @param int    $remote_term_id Remote term ID.
  * @return array|WP_Error { term_id, slug, name, link } or WP_Error on failure.
  */
-function tc_fetch_remote_term_by_id( string $peer_site_slug, string $taxonomy, int $remote_term_id ) {
-    $link_type = tc_get_link_type( $peer_site_slug );
+function tconn_fetch_remote_term_by_id( string $peer_site_slug, string $taxonomy, int $remote_term_id ) {
+    $link_type = tconn_get_link_type( $peer_site_slug );
     if ( ! $link_type || ( $link_type['platform'] ?? '' ) !== 'wordpress' ) {
-        return new WP_Error( 'tc_invalid_lt', __( 'Not a WordPress peer link type.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_lt', __( 'Not a WordPress peer link type.', 'termconnect' ) );
     }
 
-    $origin = tc_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
+    $origin = tconn_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
     if ( ! $origin ) {
-        return new WP_Error( 'tc_invalid_origin', __( 'Could not determine peer site URL.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_origin', __( 'Could not determine peer site URL.', 'termconnect' ) );
     }
 
-    $rest_base = tc_external_get_taxonomy_rest_base( $taxonomy );
+    $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
     $url       = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base . '/' . $remote_term_id
                . '?' . http_build_query( array( '_fields' => 'id,slug,name,link' ) );
 
-    $response = wp_remote_get( $url, tc_external_request_args( 10, tc_external_peer_headers() ) );
+    $response = wp_remote_get( $url, tconn_external_request_args( 10, tconn_external_peer_headers() ) );
 
     if ( is_wp_error( $response ) ) {
-        return new WP_Error( 'tc_unreachable', $response->get_error_message() );
+        return new WP_Error( 'tconn_unreachable', $response->get_error_message() );
     }
 
     $code = (int) wp_remote_retrieve_response_code( $response );
     if ( 404 === $code ) {
-        return new WP_Error( 'tc_not_found', __( 'Remote term not found.', 'termconnect' ) );
+        return new WP_Error( 'tconn_not_found', __( 'Remote term not found.', 'termconnect' ) );
     }
     if ( 200 !== $code ) {
-        return new WP_Error( 'tc_remote_error',
+        return new WP_Error( 'tconn_remote_error',
             /* translators: %d: HTTP status code */
             sprintf( __( 'Remote site returned HTTP %d.', 'termconnect' ), $code )
         );
     }
 
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+    $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
     if ( ! is_array( $body ) || empty( $body['id'] ) ) {
-        return new WP_Error( 'tc_invalid_response', __( 'Invalid response from remote site.', 'termconnect' ) );
+        return new WP_Error( 'tconn_invalid_response', __( 'Invalid response from remote site.', 'termconnect' ) );
     }
 
     return array(
@@ -936,7 +936,7 @@ function tc_fetch_remote_term_by_id( string $peer_site_slug, string $taxonomy, i
 
 // ==============================================================================
 // REDIRECT REVIEW QUEUE
-// Populated by tc_refresh_identity_cache when a remote term carries htax_redirect
+// Populated by tconn_refresh_identity_cache when a remote term carries htax_redirect
 // (HyperTaxonomy peer payload). Admin reviews via Site Health or Settings → TermConnect → Delegated Identity.
 // ==============================================================================
 
@@ -946,12 +946,12 @@ function tc_fetch_remote_term_by_id( string $peer_site_slug, string $taxonomy, i
  * @param int   $term_id
  * @param array $remote  Remote identity response with type='redirect'.
  */
-function tc_identity_redirect_queue_add( int $term_id, array $remote ): void {
-    if ( ! tc_acquire_mysql_lock( 'tc_redirect_queue_lock' ) ) {
+function tconn_identity_redirect_queue_add( int $term_id, array $remote ): void {
+    if ( ! tconn_acquire_mysql_lock( 'tconn_redirect_queue_lock' ) ) {
         return;
     }
     try {
-        $queue = get_option( 'tc_identity_redirect_queue', array() );
+        $queue = get_option( 'tconn_identity_redirect_queue', array() );
         $queue[ (string) $term_id ] = array(
             'term_id'     => $term_id,
             'detected_at' => time(),
@@ -959,9 +959,9 @@ function tc_identity_redirect_queue_add( int $term_id, array $remote ): void {
             'target_name' => $remote['target_name'] ?? '',
             'target_link' => $remote['target_link'] ?? '',
         );
-        update_option( 'tc_identity_redirect_queue', $queue, false );
+        update_option( 'tconn_identity_redirect_queue', $queue, false );
     } finally {
-        tc_release_mysql_lock( 'tc_redirect_queue_lock' );
+        tconn_release_mysql_lock( 'tconn_redirect_queue_lock' );
     }
 }
 
@@ -970,8 +970,8 @@ function tc_identity_redirect_queue_add( int $term_id, array $remote ): void {
  *
  * @return array
  */
-function tc_identity_redirect_queue_get(): array {
-    return (array) get_option( 'tc_identity_redirect_queue', array() );
+function tconn_identity_redirect_queue_get(): array {
+    return (array) get_option( 'tconn_identity_redirect_queue', array() );
 }
 
 /**
@@ -984,22 +984,22 @@ function tc_identity_redirect_queue_get(): array {
  * @since 1.0.0
  * @param int $term_id Local term ID.
  */
-function tc_identity_redirect_queue_remove( int $term_id ): void {
-    $queue = tc_identity_redirect_queue_get();
+function tconn_identity_redirect_queue_remove( int $term_id ): void {
+    $queue = tconn_identity_redirect_queue_get();
     if ( ! isset( $queue[ (string) $term_id ] ) ) {
         return;
     }
 
-    // Same lock as tc_identity_redirect_queue_add().
-    if ( ! tc_acquire_mysql_lock( 'tc_redirect_queue_lock' ) ) {
+    // Same lock as tconn_identity_redirect_queue_add().
+    if ( ! tconn_acquire_mysql_lock( 'tconn_redirect_queue_lock' ) ) {
         return;
     }
     try {
-        $queue = (array) get_option( 'tc_identity_redirect_queue', array() );
+        $queue = (array) get_option( 'tconn_identity_redirect_queue', array() );
         unset( $queue[ (string) $term_id ] );
-        update_option( 'tc_identity_redirect_queue', $queue, false );
+        update_option( 'tconn_identity_redirect_queue', $queue, false );
     } finally {
-        tc_release_mysql_lock( 'tc_redirect_queue_lock' );
+        tconn_release_mysql_lock( 'tconn_redirect_queue_lock' );
     }
 }
 
@@ -1017,11 +1017,11 @@ function tc_identity_redirect_queue_remove( int $term_id ): void {
  * @param array  $remote      Fetched identity of the target (type 'term').
  * @return true|WP_Error
  */
-function tc_identity_follow_redirect( int $term_id, string $remote_slug, array $remote ) {
+function tconn_identity_follow_redirect( int $term_id, string $remote_slug, array $remote ) {
     $term   = get_term( $term_id );
-    $source = tc_get_identity_source( $term_id );
+    $source = tconn_get_identity_source( $term_id );
     if ( ! ( $term instanceof WP_Term ) || null === $source ) {
-        return new WP_Error( 'tc_not_delegated', __( 'This term has no delegated identity.', 'termconnect' ) );
+        return new WP_Error( 'tconn_not_delegated', __( 'This term has no delegated identity.', 'termconnect' ) );
     }
 
     $source['remote_slug']    = sanitize_title( $remote_slug );
@@ -1030,7 +1030,7 @@ function tc_identity_follow_redirect( int $term_id, string $remote_slug, array $
     $source['status']         = 'active';
     $source['last_fetched']   = time();
     unset( $source['declined_redirect_slug'] );
-    update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
+    update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
 
     $updates = array();
     if ( ! empty( $source['sync_name'] ) || ! isset( $source['sync_name'] ) ) {
@@ -1048,8 +1048,8 @@ function tc_identity_follow_redirect( int $term_id, string $remote_slug, array $
             error_log( 'TermConnect: redirect follow term update failed for term ' . $term_id . ': ' . $result->get_error_message() );
         }
     }
-    tc_save_delegated_links( $term_id, $remote['delegated_links'] ?? array() );
-    tc_identity_redirect_queue_remove( $term_id );
+    tconn_save_delegated_links( $term_id, $remote['delegated_links'] ?? array() );
+    tconn_identity_redirect_queue_remove( $term_id );
 
     return true;
 }
@@ -1064,54 +1064,54 @@ function tc_identity_follow_redirect( int $term_id, string $remote_slug, array $
  * @param int $term_id Local term ID.
  * @return true|WP_Error
  */
-function tc_identity_decline_redirect( int $term_id ) {
-    $source = tc_get_identity_source( $term_id );
-    $queue  = tc_identity_redirect_queue_get();
+function tconn_identity_decline_redirect( int $term_id ) {
+    $source = tconn_get_identity_source( $term_id );
+    $queue  = tconn_identity_redirect_queue_get();
     $entry  = $queue[ (string) $term_id ] ?? null;
     if ( null === $source || null === $entry ) {
-        return new WP_Error( 'tc_no_pending_redirect', __( 'There is no pending redirect for this term.', 'termconnect' ) );
+        return new WP_Error( 'tconn_no_pending_redirect', __( 'There is no pending redirect for this term.', 'termconnect' ) );
     }
 
     $source['declined_redirect_slug'] = sanitize_title( $entry['target_slug'] ?? '' );
     $source['status']                 = 'redirect_declined';
-    update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
-    tc_identity_redirect_queue_remove( $term_id );
+    update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
+    tconn_identity_redirect_queue_remove( $term_id );
 
     return true;
 }
 
 // A deleted term can't have a pending redirect.
 add_action( 'delete_term', static function ( $term_id ): void {
-    tc_identity_redirect_queue_remove( (int) $term_id );
+    tconn_identity_redirect_queue_remove( (int) $term_id );
 } );
 
 // ==============================================================================
 // TERM ID LIST CACHES
-// Site-wide sets of the term IDs that carry TC_META_IDENTITY_SOURCE (delegated terms)
-// and TC_META_REL_SYNC_ISSUES (terms with stale relationship rows). Both sets change
+// Site-wide sets of the term IDs that carry TCONN_META_IDENTITY_SOURCE (delegated terms)
+// and TCONN_META_REL_SYNC_ISSUES (terms with stale relationship rows). Both sets change
 // rarely, so they are cached with no expiry and flushed whenever a term gains or loses
 // one of the keys.
 // ==============================================================================
 
 /**
- * Meta keys whose term ID sets tc_get_term_ids_with_meta() caches.
+ * Meta keys whose term ID sets tconn_get_term_ids_with_meta() caches.
  */
-const TC_TERM_ID_CACHED_META_KEYS = array( TC_META_IDENTITY_SOURCE, TC_META_REL_SYNC_ISSUES );
+const TCONN_TERM_ID_CACHED_META_KEYS = array( TCONN_META_IDENTITY_SOURCE, TCONN_META_REL_SYNC_ISSUES );
 
 /**
  * Return the IDs of all terms that have a meta key.
  *
- * Cached as the transient `tc_term_ids{$meta_key}` (no expiry) for the keys in
- * TC_TERM_ID_CACHED_META_KEYS; other keys are queried each time.
+ * Cached as the transient `tconn_term_ids{$meta_key}` (no expiry) for the keys in
+ * TCONN_TERM_ID_CACHED_META_KEYS; other keys are queried each time.
  *
  * @since 1.0.0
- * @param string $meta_key Term meta key, e.g. TC_META_IDENTITY_SOURCE.
+ * @param string $meta_key Term meta key, e.g. TCONN_META_IDENTITY_SOURCE.
  * @return int[]
  */
-function tc_get_term_ids_with_meta( string $meta_key ): array {
-    $cached_key = in_array( $meta_key, TC_TERM_ID_CACHED_META_KEYS, true );
+function tconn_get_term_ids_with_meta( string $meta_key ): array {
+    $cached_key = in_array( $meta_key, TCONN_TERM_ID_CACHED_META_KEYS, true );
     if ( $cached_key ) {
-        $cached = get_transient( 'tc_term_ids' . $meta_key );
+        $cached = get_transient( 'tconn_term_ids' . $meta_key );
         if ( false !== $cached ) {
             return (array) $cached;
         }
@@ -1122,7 +1122,7 @@ function tc_get_term_ids_with_meta( string $meta_key ): array {
         $meta_key
     ) ) );
     if ( $cached_key ) {
-        set_transient( 'tc_term_ids' . $meta_key, $ids, 0 );
+        set_transient( 'tconn_term_ids' . $meta_key, $ids, 0 );
     }
     return $ids;
 }
@@ -1136,8 +1136,8 @@ function tc_get_term_ids_with_meta( string $meta_key ): array {
  * @since 1.0.0
  * @param string $meta_key Term meta key.
  */
-function tc_flush_term_ids_with_meta( string $meta_key ): void {
-    delete_transient( 'tc_term_ids' . $meta_key );
+function tconn_flush_term_ids_with_meta( string $meta_key ): void {
+    delete_transient( 'tconn_term_ids' . $meta_key );
 }
 
 /**
@@ -1152,24 +1152,24 @@ function tc_flush_term_ids_with_meta( string $meta_key ): void {
  * @param int       $object_id Term ID, unused.
  * @param string    $meta_key  Meta key.
  */
-function tc_flush_term_ids_on_meta_change( $meta_ids, $object_id, $meta_key ): void {
-    if ( in_array( $meta_key, TC_TERM_ID_CACHED_META_KEYS, true ) ) {
-        tc_flush_term_ids_with_meta( $meta_key );
+function tconn_flush_term_ids_on_meta_change( $meta_ids, $object_id, $meta_key ): void {
+    if ( in_array( $meta_key, TCONN_TERM_ID_CACHED_META_KEYS, true ) ) {
+        tconn_flush_term_ids_with_meta( $meta_key );
     }
 }
-add_action( 'added_term_meta', 'tc_flush_term_ids_on_meta_change', 10, 3 );
-add_action( 'deleted_term_meta', 'tc_flush_term_ids_on_meta_change', 10, 3 );
+add_action( 'added_term_meta', 'tconn_flush_term_ids_on_meta_change', 10, 3 );
+add_action( 'deleted_term_meta', 'tconn_flush_term_ids_on_meta_change', 10, 3 );
 
 // ==============================================================================
 // CRON
 // ==============================================================================
 
-add_action( 'tc_refresh_identity_caches', 'tc_cron_refresh_identity_caches' );
+add_action( 'tconn_refresh_identity_caches', 'tconn_cron_refresh_identity_caches' );
 
 /**
  * Cron callback: refresh all stale delegated identity caches.
  *
- * Bails out after TC_CRON_TIME_BUDGET wall-clock seconds rather than
+ * Bails out after TCONN_CRON_TIME_BUDGET wall-clock seconds rather than
  * refreshing every stale term in one tick: on a site with hundreds of
  * delegated terms, each refresh is a synchronous wp_remote_get(), and an
  * unbounded loop risks hitting max_execution_time mid-run. Terms not reached
@@ -1185,19 +1185,19 @@ add_action( 'tc_refresh_identity_caches', 'tc_cron_refresh_identity_caches' );
  * can look a few seconds too young. The time budget is allowed for here, or a
  * 24-hour setting would wait for the following run.
  */
-function tc_cron_refresh_identity_caches(): void {
-    $deadline = time() + TC_CRON_TIME_BUDGET;
-    $settings = get_option( 'tc_settings', array() );
-    $ttl      = max( 60, (int) ( $settings['identity_cache_ttl'] ?? TC_IDENTITY_CACHE_TTL ) );
+function tconn_cron_refresh_identity_caches(): void {
+    $deadline = time() + TCONN_CRON_TIME_BUDGET;
+    $settings = get_option( 'tconn_settings', array() );
+    $ttl      = max( 60, (int) ( $settings['identity_cache_ttl'] ?? TCONN_IDENTITY_CACHE_TTL ) );
 
     $stale = array();
-    foreach ( tc_get_term_ids_with_meta( TC_META_IDENTITY_SOURCE ) as $term_id ) {
-        $source = tc_get_identity_source( (int) $term_id );
+    foreach ( tconn_get_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE ) as $term_id ) {
+        $source = tconn_get_identity_source( (int) $term_id );
         if ( null === $source ) {
             continue;
         }
         $last_fetched = (int) $source['last_fetched'];
-        if ( time() - $last_fetched + TC_CRON_TIME_BUDGET >= $ttl ) {
+        if ( time() - $last_fetched + TCONN_CRON_TIME_BUDGET >= $ttl ) {
             $stale[ (int) $term_id ] = $last_fetched;
         }
     }
@@ -1207,6 +1207,6 @@ function tc_cron_refresh_identity_caches(): void {
         if ( time() >= $deadline ) {
             break;
         }
-        tc_refresh_identity_cache( $term_id );
+        tconn_refresh_identity_cache( $term_id );
     }
 }

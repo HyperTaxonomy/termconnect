@@ -8,6 +8,12 @@
   justify-content: flex-end;
 }
 
+// Always reserve the page scrollbar's space. Otherwise short pages, with no scrollbar, are
+// 15px wider, and the sidebar (sized from the window width) shifts its contents sideways.
+html {
+  scrollbar-gutter: stable;
+}
+
 // Plugin logo before the site title, matching the suite landing site.
 .site-title {
   display: flex;
@@ -21,6 +27,19 @@
   .site-title {
     padding-right: 1rem;
     padding-left: 1rem;
+  }
+}
+
+// Where the sidebar is wider than its contents (Just the Docs' lg breakpoint), the plugin
+// name lines up with the section links below it (2rem in) and the logo moves into the free
+// space on its left, so longer names such as "TermConnect Social" fit on one line.
+@media (min-width: 66.5rem) {
+  .site-title {
+    padding-left: 0;
+  }
+
+  .site-title-logo {
+    margin-left: calc(2rem - 0.6rem - 36px);
   }
 }
 
@@ -61,4 +80,13 @@
 // as soon as the sidebar shows a scrollbar, or when it's the current page (bold).
 .site-nav .nav-list-item > .nav-list-link:only-child {
   padding-right: 0.5rem;
+}
+
+// Justified body text, without hyphenation.
+.main-content {
+  p,
+  li {
+    text-align: justify;
+    hyphens: none;
+  }
 }

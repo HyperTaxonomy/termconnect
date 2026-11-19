@@ -6,7 +6,7 @@ nav_order: 9
 
 # Export & Import
 
-Go to **Settings → TermConnect → Export / Import** to back up and restore configuration.
+Go to **Settings&nbsp;→ TermConnect&nbsp;→ Export / Import** to back up and restore configuration.
 
 **Export** downloads a JSON file with all link type definitions, every external link stored across all terms and taxonomies, delegated identity sources with each term's original name and description, and Shared Vocabulary sources. Cached delegated links aren't included, and are refreshed automatically after import. Settings and enabled taxonomies aren't included either, so set those up again when restoring to a new site.
 

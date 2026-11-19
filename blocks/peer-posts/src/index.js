@@ -288,7 +288,7 @@ function Edit( { attributes, setAttributes } ) {
 					/>
 					<TextControl
 						label={ __( 'Template (style variant)', 'termconnect' ) }
-						help={ __( 'CSS class suffix added as tc-result-{template}.', 'termconnect' ) }
+						help={ __( 'CSS class suffix added as tconn-result-{template}.', 'termconnect' ) }
 						value={ template }
 						onChange={ ( val ) => setAttributes( { template: val } ) }
 					/>

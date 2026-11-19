@@ -10,18 +10,18 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-add_action( 'wp_ajax_tc_di_preview_term',    'tc_ajax_di_preview_term' );
-add_action( 'wp_ajax_tc_di_set_source',      'tc_ajax_di_set_source' );
-add_action( 'wp_ajax_tc_di_remove',          'tc_ajax_di_remove' );
-add_action( 'wp_ajax_tc_di_refresh',         'tc_ajax_di_refresh' );
-add_action( 'wp_ajax_tc_di_resync_all',      'tc_ajax_di_resync_all' );
-add_action( 'wp_ajax_tc_di_update_settings', 'tc_ajax_di_update_settings' );
-add_action( 'wp_ajax_tc_di_check_rename',    'tc_ajax_di_check_rename' );
-add_action( 'wp_ajax_tc_di_relink_rename',   'tc_ajax_di_relink_rename' );
-add_action( 'wp_ajax_tc_di_add_link',        'tc_ajax_di_add_link' );
-add_action( 'wp_ajax_tc_di_redelegate',      'tc_ajax_di_redelegate' );
-add_action( 'wp_ajax_tc_di_follow_redirect', 'tc_ajax_di_follow_redirect' );
-add_action( 'wp_ajax_tc_di_decline_redirect', 'tc_ajax_di_decline_redirect' );
+add_action( 'wp_ajax_tconn_di_preview_term',    'tconn_ajax_di_preview_term' );
+add_action( 'wp_ajax_tconn_di_set_source',      'tconn_ajax_di_set_source' );
+add_action( 'wp_ajax_tconn_di_remove',          'tconn_ajax_di_remove' );
+add_action( 'wp_ajax_tconn_di_refresh',         'tconn_ajax_di_refresh' );
+add_action( 'wp_ajax_tconn_di_resync_all',      'tconn_ajax_di_resync_all' );
+add_action( 'wp_ajax_tconn_di_update_settings', 'tconn_ajax_di_update_settings' );
+add_action( 'wp_ajax_tconn_di_check_rename',    'tconn_ajax_di_check_rename' );
+add_action( 'wp_ajax_tconn_di_relink_rename',   'tconn_ajax_di_relink_rename' );
+add_action( 'wp_ajax_tconn_di_add_link',        'tconn_ajax_di_add_link' );
+add_action( 'wp_ajax_tconn_di_redelegate',      'tconn_ajax_di_redelegate' );
+add_action( 'wp_ajax_tconn_di_follow_redirect', 'tconn_ajax_di_follow_redirect' );
+add_action( 'wp_ajax_tconn_di_decline_redirect', 'tconn_ajax_di_decline_redirect' );
 
 /**
  * Read term_id, peer_site_slug and remote_slug from the request, and fetch the remote
@@ -33,7 +33,7 @@ add_action( 'wp_ajax_tc_di_decline_redirect', 'tc_ajax_di_decline_redirect' );
  * @since 1.0.0
  * @return array{0:WP_Term,1:string,2:string,3:array} Term, peer site slug, remote slug, remote data.
  */
-function tc_di_fetch_requested_remote(): array {
+function tconn_di_fetch_requested_remote(): array {
     $term_id        = absint( $_POST['term_id'] ?? 0 );
     $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
     $remote_slug    = sanitize_title( wp_unslash( $_POST['remote_slug'] ?? '' ) );
@@ -47,7 +47,7 @@ function tc_di_fetch_requested_remote(): array {
         wp_send_json_error( array( 'message' => __( 'Term not found.', 'termconnect' ) ) );
     }
 
-    $remote = tc_fetch_remote_identity( $peer_site_slug, $term->taxonomy, $remote_slug );
+    $remote = tconn_fetch_remote_identity( $peer_site_slug, $term->taxonomy, $remote_slug );
     if ( is_wp_error( $remote ) ) {
         wp_send_json_error( array( 'message' => $remote->get_error_message() ) );
     }
@@ -62,15 +62,15 @@ function tc_di_fetch_requested_remote(): array {
 /**
  * Fetch a preview of a remote term's identity data before commit.
  *
- * POST params: term_id, peer_site_slug, remote_slug, nonce (tc_admin).
+ * POST params: term_id, peer_site_slug, remote_slug, nonce (tconn_admin).
  */
-function tc_ajax_di_preview_term(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_preview_term(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
-    list( , , , $remote ) = tc_di_fetch_requested_remote();
+    list( , , , $remote ) = tconn_di_fetch_requested_remote();
 
     wp_send_json_success( array(
         'description'     => wp_kses_post( $remote['description'] ),
@@ -82,10 +82,10 @@ function tc_ajax_di_preview_term(): void {
 /**
  * Commit delegation: fetch remote data, save identity source, cache delegated links.
  *
- * POST params: term_id, peer_site_slug, remote_slug, nonce (tc_admin).
+ * POST params: term_id, peer_site_slug, remote_slug, nonce (tconn_admin).
  */
-function tc_ajax_di_set_source(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_set_source(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -95,7 +95,7 @@ function tc_ajax_di_set_source(): void {
     $sync_description = isset( $_POST['sync_description'] ) ? (bool) sanitize_text_field( wp_unslash( $_POST['sync_description'] ) ) : true;
 
     // Final fetch before saving.
-    list( $term, $peer_site_slug, $remote_slug, $remote ) = tc_di_fetch_requested_remote();
+    list( $term, $peer_site_slug, $remote_slug, $remote ) = tconn_di_fetch_requested_remote();
     $term_id = (int) $term->term_id;
 
     // Determine the Shared Vocabularies source ID for this delegation.
@@ -103,7 +103,7 @@ function tc_ajax_di_set_source(): void {
     // peer builds a single SV rather than one per term. If an SV exists but has different
     // sync settings the client is asked to choose; it re-submits with either
     // existing_sv_id (join existing) or force_new_sv (create separate SV).
-    // The SV entry is only persisted after tc_set_identity_source() succeeds.
+    // The SV entry is only persisted after tconn_set_identity_source() succeeds.
     $target_scope   = ( $sync_descendants && is_taxonomy_hierarchical( $term->taxonomy ) ) ? 'roots' : 'terms';
     $remote_term_id = absint( $remote['term_id'] ?? 0 );
 
@@ -116,7 +116,7 @@ function tc_ajax_di_set_source(): void {
     } else {
         $existing_sv_id = null;
         $conflicting_sv = null;
-        foreach ( get_option( 'tc_shared_vocabularies', array() ) as $src ) {
+        foreach ( get_option( 'tconn_shared_vocabularies', array() ) as $src ) {
             if ( ( $src['peer_site_slug'] ?? '' ) !== $peer_site_slug ) { continue; }
             if ( ( $src['taxonomy'] ?? '' ) !== $term->taxonomy ) { continue; }
             if ( ( $src['scope'] ?? '' ) !== $target_scope ) { continue; }
@@ -147,19 +147,19 @@ function tc_ajax_di_set_source(): void {
         }
     }
 
-    $result = tc_set_identity_source( $term_id, $peer_site_slug, $remote_slug, $remote, $sync_descendants, $sv_source_id, $sync_name, $sync_description );
+    $result = tconn_set_identity_source( $term_id, $peer_site_slug, $remote_slug, $remote, $sync_descendants, $sv_source_id, $sync_name, $sync_description );
 
     if ( is_wp_error( $result ) ) {
         wp_send_json_error( array( 'message' => $result->get_error_message() ) );
     }
 
     // Identity saved — now create the vocabulary source entry.
-    if ( ! tc_acquire_mysql_lock( 'tc_sv_write_lock' ) ) {
+    if ( ! tconn_acquire_mysql_lock( 'tconn_sv_write_lock' ) ) {
         wp_send_json_error( array( 'message' => __( 'Another update is in progress. Please try again.', 'termconnect' ) ) );
         return;
     }
     try {
-        $sources   = get_option( 'tc_shared_vocabularies', array() );
+        $sources   = get_option( 'tconn_shared_vocabularies', array() );
         $found_idx = null;
         foreach ( $sources as $idx => $src ) {
             if ( ( $src['id'] ?? '' ) === $sv_source_id ) {
@@ -197,13 +197,13 @@ function tc_ajax_di_set_source(): void {
                 'sync_name'                    => (bool) $sync_name,
                 'sync_description'             => (bool) $sync_description,
                 'last_sync'                    => time(),
-                'last_sync_result'             => tc_sv_format_sync_result( array( 'synced' => 1, 'created' => 0, 'renamed' => 0 ) ),
+                'last_sync_result'             => tconn_sv_format_sync_result( array( 'synced' => 1, 'created' => 0, 'renamed' => 0 ) ),
                 'status'                       => 'active',
             );
         }
-        update_option( 'tc_shared_vocabularies', tc_sv_sort_sources( $sources ) );
+        update_option( 'tconn_shared_vocabularies', tconn_sv_sort_sources( $sources ) );
     } finally {
-        tc_release_mysql_lock( 'tc_sv_write_lock' );
+        tconn_release_mysql_lock( 'tconn_sv_write_lock' );
     }
 
     wp_send_json_success( array( 'message' => __( 'Identity delegated successfully.', 'termconnect' ) ) );
@@ -212,10 +212,10 @@ function tc_ajax_di_set_source(): void {
 /**
  * End delegation, restoring the original description and local links.
  *
- * POST params: term_id, nonce (tc_admin).
+ * POST params: term_id, nonce (tconn_admin).
  */
-function tc_ajax_di_remove(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_remove(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -231,8 +231,8 @@ function tc_ajax_di_remove(): void {
 
     // Prevent removing identity that is locked by a full- or group-scope SV source.
     // Those delegations must be removed by editing the Shared Vocabularies source.
-    $identity = tc_get_identity_source( $term_id );
-    $sources  = get_option( 'tc_shared_vocabularies', array() );
+    $identity = tconn_get_identity_source( $term_id );
+    $sources  = get_option( 'tconn_shared_vocabularies', array() );
     if ( $identity && ! empty( $identity['sv_source_id'] ) ) {
         foreach ( $sources as $src ) {
             if ( ( $src['id'] ?? '' ) !== $identity['sv_source_id'] ) {
@@ -276,7 +276,7 @@ function tc_ajax_di_remove(): void {
                 if ( empty( $src['roots'] ) ) {
                     $sources = array_values( array_filter( $sources, static fn( $s ) => $s['id'] !== $sv_source_id ) );
                 }
-                update_option( 'tc_shared_vocabularies', $sources );
+                update_option( 'tconn_shared_vocabularies', $sources );
 
                 // For roots scope, clear sv_source_id from all local descendants so they
                 // revert to unattributed (still delegated, but no longer shown as locked).
@@ -285,10 +285,10 @@ function tc_ajax_di_remove(): void {
                     if ( $term_obj && ! is_wp_error( $term_obj ) ) {
                         $desc_ids = get_term_children( $term_id, $term_obj->taxonomy );
                         foreach ( (array) $desc_ids as $desc_id ) {
-                            $desc_meta = get_term_meta( (int) $desc_id, TC_META_IDENTITY_SOURCE, true );
+                            $desc_meta = get_term_meta( (int) $desc_id, TCONN_META_IDENTITY_SOURCE, true );
                             if ( is_array( $desc_meta ) && ( $desc_meta['sv_source_id'] ?? '' ) === $sv_source_id ) {
                                 unset( $desc_meta['sv_source_id'] );
-                                update_term_meta( (int) $desc_id, TC_META_IDENTITY_SOURCE, $desc_meta );
+                                update_term_meta( (int) $desc_id, TCONN_META_IDENTITY_SOURCE, $desc_meta );
                             }
                         }
                     }
@@ -299,7 +299,7 @@ function tc_ajax_di_remove(): void {
         unset( $src );
     }
 
-    tc_remove_identity_source( $term_id, array(
+    tconn_remove_identity_source( $term_id, array(
         'restore_name'        => $restore_name,
         'restore_description' => $restore_description,
         'keep_peer_links'     => $keep_peer_links,
@@ -313,10 +313,10 @@ function tc_ajax_di_remove(): void {
 /**
  * Re-sync all delegated terms, ignoring the cache TTL.
  *
- * POST params: nonce (tc_admin).
+ * POST params: nonce (tconn_admin).
  */
-function tc_ajax_di_resync_all(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_resync_all(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -324,7 +324,7 @@ function tc_ajax_di_resync_all(): void {
     global $wpdb;
     $rows = $wpdb->get_results( $wpdb->prepare(
         "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s",
-        TC_META_IDENTITY_SOURCE
+        TCONN_META_IDENTITY_SOURCE
     ) );
 
     // Oldest first, so running this again after the time limit continues with the terms
@@ -355,7 +355,7 @@ function tc_ajax_di_resync_all(): void {
                 ),
             ) );
         }
-        $result = tc_refresh_identity_cache( (int) $term_id );
+        $result = tconn_refresh_identity_cache( (int) $term_id );
         if ( is_wp_error( $result ) ) {
             $errors++;
         } else {
@@ -376,10 +376,10 @@ function tc_ajax_di_resync_all(): void {
 /**
  * Update sync_name and sync_description flags for one delegated term.
  *
- * POST params: term_id, sync_name, sync_description, nonce (tc_admin).
+ * POST params: term_id, sync_name, sync_description, nonce (tconn_admin).
  */
-function tc_ajax_di_update_settings(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_update_settings(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -392,7 +392,7 @@ function tc_ajax_di_update_settings(): void {
         wp_send_json_error( array( 'message' => __( 'Invalid term ID.', 'termconnect' ) ) );
     }
 
-    if ( ! tc_update_identity_sync_flags( $term_id, $sync_name, $sync_description ) ) {
+    if ( ! tconn_update_identity_sync_flags( $term_id, $sync_name, $sync_description ) ) {
         wp_send_json_error( array( 'message' => __( 'No delegation found for this term.', 'termconnect' ) ) );
     }
 
@@ -402,10 +402,10 @@ function tc_ajax_di_update_settings(): void {
 /**
  * Manually trigger a cache refresh for one term's delegated identity.
  *
- * POST params: term_id, nonce (tc_admin).
+ * POST params: term_id, nonce (tconn_admin).
  */
-function tc_ajax_di_refresh(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_refresh(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -415,7 +415,7 @@ function tc_ajax_di_refresh(): void {
         wp_send_json_error( array( 'message' => __( 'Invalid term ID.', 'termconnect' ) ) );
     }
 
-    $result = tc_refresh_identity_cache( $term_id );
+    $result = tconn_refresh_identity_cache( $term_id );
 
     if ( is_wp_error( $result ) ) {
         wp_send_json_error( array( 'message' => $result->get_error_message() ) );
@@ -431,10 +431,10 @@ function tc_ajax_di_refresh(): void {
  * Returns outcome A (not found by ID), B (renamed, new slug free locally), or
  * C (renamed, new slug already taken by another local term).
  *
- * POST params: term_id, nonce (tc_admin).
+ * POST params: term_id, nonce (tconn_admin).
  */
-function tc_ajax_di_check_rename(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_check_rename(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -444,7 +444,7 @@ function tc_ajax_di_check_rename(): void {
         wp_send_json_error( array( 'message' => __( 'Invalid term ID.', 'termconnect' ) ) );
     }
 
-    $source = tc_get_identity_source( $term_id );
+    $source = tconn_get_identity_source( $term_id );
     if ( ! $source ) {
         wp_send_json_error( array( 'message' => __( 'No delegation found for this term.', 'termconnect' ) ) );
     }
@@ -459,7 +459,7 @@ function tc_ajax_di_check_rename(): void {
         wp_send_json_error( array( 'message' => __( 'Local term not found.', 'termconnect' ) ) );
     }
 
-    $remote = tc_fetch_remote_term_by_id( $source['peer_site_slug'], $term->taxonomy, $remote_term_id );
+    $remote = tconn_fetch_remote_term_by_id( $source['peer_site_slug'], $term->taxonomy, $remote_term_id );
 
     // Outcome A: remote term not found by ID either — likely deleted.
     if ( is_wp_error( $remote ) ) {
@@ -505,10 +505,10 @@ function tc_ajax_di_check_rename(): void {
  * Re-link a not_found delegation to the remote term's new slug, and rename the
  * local term's slug to match.
  *
- * POST params: term_id, new_slug, nonce (tc_admin).
+ * POST params: term_id, new_slug, nonce (tconn_admin).
  */
-function tc_ajax_di_relink_rename(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_relink_rename(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -520,7 +520,7 @@ function tc_ajax_di_relink_rename(): void {
         wp_send_json_error( array( 'message' => __( 'Invalid parameters.', 'termconnect' ) ) );
     }
 
-    $source = tc_get_identity_source( $term_id );
+    $source = tconn_get_identity_source( $term_id );
     if ( ! $source ) {
         wp_send_json_error( array( 'message' => __( 'No delegation found for this term.', 'termconnect' ) ) );
     }
@@ -540,14 +540,14 @@ function tc_ajax_di_relink_rename(): void {
     $old_slug              = $source['remote_slug'];
     $source['remote_slug'] = $new_slug;
     $source['status']      = 'active';
-    update_term_meta( $term_id, TC_META_IDENTITY_SOURCE, $source );
+    update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
 
     if ( ! empty( $source['sv_source_id'] ) ) {
-        tc_sv_update_root_slug( $source['sv_source_id'], $old_slug, $new_slug );
+        tconn_sv_update_root_slug( $source['sv_source_id'], $old_slug, $new_slug );
     }
 
     // Full refresh to pick up name, description, and links from the new slug.
-    tc_refresh_identity_cache( $term_id );
+    tconn_refresh_identity_cache( $term_id );
 
     wp_send_json_success( array( 'message' => __( 'Term re-linked and renamed.', 'termconnect' ) ) );
 }
@@ -556,10 +556,10 @@ function tc_ajax_di_relink_rename(): void {
  * Remove a not_found delegation and add the remote term as a local external link
  * on a specified local term (which may or may not be the same term).
  *
- * POST params: remove_term_id, link_term_id, peer_site_slug, new_slug, new_name, nonce (tc_admin).
+ * POST params: remove_term_id, link_term_id, peer_site_slug, new_slug, new_name, nonce (tconn_admin).
  */
-function tc_ajax_di_add_link(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_add_link(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -576,17 +576,17 @@ function tc_ajax_di_add_link(): void {
 
     // Validate the link type exists before touching the delegation, so a failure
     // does not leave the term in a worse state.
-    if ( null === tc_get_link_type( $peer_site_slug ) ) {
+    if ( null === tconn_get_link_type( $peer_site_slug ) ) {
         wp_send_json_error( array( 'message' => __( 'Unknown link type.', 'termconnect' ) ) );
     }
 
     // Add the remote term as a local external link.
-    if ( ! tc_set_term_link( $link_term_id, $peer_site_slug, $new_slug, $new_name, time() ) ) {
+    if ( ! tconn_set_term_link( $link_term_id, $peer_site_slug, $new_slug, $new_name, time() ) ) {
         wp_send_json_error( array( 'message' => __( 'Failed to add link.', 'termconnect' ) ) );
     }
 
     // Link added — now remove the not_found delegation, restoring original name and description.
-    tc_remove_identity_source( $remove_term_id );
+    tconn_remove_identity_source( $remove_term_id );
 
     wp_send_json_success( array( 'message' => __( 'Link added.', 'termconnect' ) ) );
 }
@@ -595,10 +595,10 @@ function tc_ajax_di_add_link(): void {
  * Transfer a not_found delegation from the current term to another local term
  * whose slug matches the remote term's new slug.
  *
- * POST params: remove_term_id, target_term_id, peer_site_slug, new_slug, nonce (tc_admin).
+ * POST params: remove_term_id, target_term_id, peer_site_slug, new_slug, nonce (tconn_admin).
  */
-function tc_ajax_di_redelegate(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_redelegate(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
@@ -618,7 +618,7 @@ function tc_ajax_di_redelegate(): void {
     }
 
     // Fetch remote data before making any changes.
-    $remote = tc_fetch_remote_identity( $peer_site_slug, $target_term->taxonomy, $new_slug );
+    $remote = tconn_fetch_remote_identity( $peer_site_slug, $target_term->taxonomy, $new_slug );
     if ( is_wp_error( $remote ) ) {
         wp_send_json_error( array( 'message' => $remote->get_error_message() ) );
     }
@@ -628,18 +628,18 @@ function tc_ajax_di_redelegate(): void {
 
     // Delegate the target term first; only remove the old delegation once that
     // succeeds, so a failed redelegation leaves the original delegation intact.
-    $result = tc_set_identity_source( $target_term_id, $peer_site_slug, $new_slug, $remote );
+    $result = tconn_set_identity_source( $target_term_id, $peer_site_slug, $new_slug, $remote );
     if ( is_wp_error( $result ) ) {
         wp_send_json_error( array( 'message' => $result->get_error_message() ) );
     }
 
     // When redelegating a term to a new remote slug on itself (remove_term_id ===
-    // target_term_id), tc_set_identity_source() above already fully overwrote this
+    // target_term_id), tconn_set_identity_source() above already fully overwrote this
     // term's delegation — there is nothing stale to clean up. Removing it here would
     // delete the delegation just written and restore the term's pre-delegation name/
     // description, discarding the redelegation entirely.
     if ( $remove_term_id !== $target_term_id ) {
-        tc_remove_identity_source( $remove_term_id );
+        tconn_remove_identity_source( $remove_term_id );
     }
 
     wp_send_json_success( array( 'message' => __( 'Delegation transferred.', 'termconnect' ) ) );
@@ -654,16 +654,16 @@ function tc_ajax_di_redelegate(): void {
  *
  * @since 1.0.0
  */
-function tc_ajax_di_follow_redirect(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_follow_redirect(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
     $term_id = absint( $_POST['term_id'] ?? 0 );
     $term    = $term_id ? get_term( $term_id ) : null;
-    $source  = $term_id ? tc_get_identity_source( $term_id ) : null;
-    $entry   = tc_identity_redirect_queue_get()[ (string) $term_id ] ?? null;
+    $source  = $term_id ? tconn_get_identity_source( $term_id ) : null;
+    $entry   = tconn_identity_redirect_queue_get()[ (string) $term_id ] ?? null;
     if ( ! ( $term instanceof WP_Term ) || null === $source || null === $entry || '' === ( $entry['target_slug'] ?? '' ) ) {
         wp_send_json_error( array( 'message' => __( 'There is no pending redirect for this term.', 'termconnect' ) ) );
     }
@@ -671,7 +671,7 @@ function tc_ajax_di_follow_redirect(): void {
         wp_send_json_error( array( 'message' => __( 'This term is managed by a shared vocabulary; update the vocabulary source instead.', 'termconnect' ) ) );
     }
 
-    $remote = tc_fetch_remote_identity( $source['peer_site_slug'], $term->taxonomy, $entry['target_slug'] );
+    $remote = tconn_fetch_remote_identity( $source['peer_site_slug'], $term->taxonomy, $entry['target_slug'] );
     if ( is_wp_error( $remote ) ) {
         wp_send_json_error( array( 'message' => $remote->get_error_message() ) );
     }
@@ -679,7 +679,7 @@ function tc_ajax_di_follow_redirect(): void {
         wp_send_json_error( array( 'message' => __( 'Remote term has moved again. Retry from Site Health.', 'termconnect' ) ) );
     }
 
-    $result = tc_identity_follow_redirect( $term_id, $entry['target_slug'], $remote );
+    $result = tconn_identity_follow_redirect( $term_id, $entry['target_slug'], $remote );
     if ( is_wp_error( $result ) ) {
         wp_send_json_error( array( 'message' => $result->get_error_message() ) );
     }
@@ -691,13 +691,13 @@ function tc_ajax_di_follow_redirect(): void {
  *
  * @since 1.0.0
  */
-function tc_ajax_di_decline_redirect(): void {
-    check_ajax_referer( 'tc_admin', 'nonce' );
+function tconn_ajax_di_decline_redirect(): void {
+    check_ajax_referer( 'tconn_admin', 'nonce' );
     if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
-    $result = tc_identity_decline_redirect( absint( $_POST['term_id'] ?? 0 ) );
+    $result = tconn_identity_decline_redirect( absint( $_POST['term_id'] ?? 0 ) );
     if ( is_wp_error( $result ) ) {
         wp_send_json_error( array( 'message' => $result->get_error_message() ) );
     }

@@ -6,7 +6,7 @@
  */
 
 /* ---- Width constraint: match native term-edit field width ---- */
-.tc-external-links-field td {
+.tconn-external-links-field td {
     max-width: 95%;
     box-sizing: border-box;
 }
@@ -14,9 +14,9 @@
 
 /* ---- Pill container fallback (when HT is inactive).
    .htax-links-container is defined in HT's htax-term-edit.css.
-   .tc-links-container mirrors those styles for standalone use.
+   .tconn-links-container mirrors those styles for standalone use.
    width:95% matches native WordPress term-edit field widths. ---- */
-.tc-links-container {
+.tconn-links-container {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -35,7 +35,7 @@
 }
 
 /* ---- External link pills — TC-owned, identical style to HT's base pill ---- */
-.tc-link-pill {
+.tconn-link-pill {
     display: inline-flex;
     align-items: center;
     padding: 1px 5px;
@@ -52,24 +52,24 @@
 }
 
 /* Local (editable) pills — subtle blue tint */
-.tc-link-pill-local {
+.tconn-link-pill-local {
     background: #edf2fa;
     border-color: #a5b4cf;
 }
 
 /* Delegated (read-only) pills — subtle green tint, dashed border */
-.tc-link-pill-delegated {
+.tconn-link-pill-delegated {
     background: #edf7ed;
     border-color: #a5c7a5;
     border-style: dashed;
 }
 
 /* Suppressed local pill: overridden by a delegated link on the same site */
-.tc-link-pill-suppressed {
+.tconn-link-pill-suppressed {
     opacity: .5;
 }
 
-.tc-link-pill-remove {
+.tconn-link-pill-remove {
     background: none;
     border: none;
     color: #666;
@@ -85,12 +85,12 @@
     height: 15px;
 }
 
-.tc-link-pill-remove:hover {
+.tconn-link-pill-remove:hover {
     color: #d63638;
 }
 
 /* ---- Add button — TC-owned, identical style to HT's htax-group-add-btn ---- */
-.tc-links-add-btn {
+.tconn-links-add-btn {
     background: #fff;
     border: 1px solid #8c8f94;
     border-radius: 3px;
@@ -108,13 +108,13 @@
     transition: border-color 0.1s, color 0.1s;
 }
 
-.tc-links-add-btn:hover {
+.tconn-links-add-btn:hover {
     border-color: #2271b1;
     color: #2271b1;
     background: #f0f6fc;
 }
 
-.tc-links-add-btn .dashicons {
+.tconn-links-add-btn .dashicons {
     font-size: 14px;
     width: 14px;
     height: 14px;
@@ -122,7 +122,7 @@
 }
 
 /* ---- External links dropdown — TC-owned, identical style to HT's htax-group-dropdown ---- */
-.tc-links-dropdown {
+.tconn-links-dropdown {
     display: none;
     position: fixed;
     z-index: 99999;
@@ -137,7 +137,7 @@
 }
 
 /* ---- Dropdown rows ---- */
-.tc-links-dd-row label {
+.tconn-links-dd-row label {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -146,19 +146,19 @@
     border-bottom: 1px solid #f0f0f1;
 }
 
-.tc-links-dd-row label:hover {
+.tconn-links-dd-row label:hover {
     background: #f6f7f7;
 }
 
-.tc-links-dd-preview {
+.tconn-links-dd-preview {
     font-size: 11px;
     color: #666;
     padding: 0 10px 4px 34px;
 }
 
 /* ---- Delegated Identity ---- */
-.tc-di-status-ok     { color: #2a9d2a; font-size: 12px; }
-.tc-di-status-warning { color: #d63638; font-size: 12px; }
+.tconn-di-status-ok     { color: #2a9d2a; font-size: 12px; }
+.tconn-di-status-warning { color: #d63638; font-size: 12px; }
 
 /* Pending pill: no additional styling — looks identical to committed pills */
 

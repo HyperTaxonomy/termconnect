@@ -14,7 +14,7 @@ Works with any WordPress site. When [HyperTaxonomy](https://wordpress.org/plugin
 - **Delegated Identity** — Delegate a term's description to an authoritative term on any peer WordPress site, matched by slug. Synced automatically; if the peer runs HyperTaxonomy with external link sharing enabled, identifier mappings sync too.
 - **Shared Vocabularies** — Mirror individual terms, hierarchy branches, or full taxonomies from peer sites into your local vocabulary. When HyperTaxonomy is active, mirror all members of a local group in one step. Terms are created as needed, renamed when the remote renames, and kept in sync on a schedule.
 - **Peer Posts** — Fetch related posts from WordPress peer sites and RSS/Atom feeds using shared terms as the matching key. No plugin required on the peer.
-- **Topic Browser** — An interactive `[tc_peer_browse]` facet: visitors pick terms and see matching posts from this site and peers, with Any/All matching and Load-more.
+- **Topic Browser** — An interactive `[tconn_peer_browse]` facet: visitors pick terms and see matching posts from this site and peers, with Any/All matching and Load-more.
 - **FOAF Discovery** — Passively discover peer sites from HyperTaxonomy-enabled post responses; follow discovered connections without explicit configuration.
 - **See Also on Archives** — "See also: Wikidata · GeoNames" section appended to term archive descriptions for configured identifier types.
 - **Export / Import** — JSON backup and restore of link type definitions, per-term identifiers, and delegated identity sources.
@@ -35,10 +35,10 @@ Works with any WordPress site. When [HyperTaxonomy](https://wordpress.org/plugin
 
 | Shortcode | Block | Purpose |
 |-----------|-------|---------|
-| `[tc_peer_posts]` | `termconnect/peer-posts` | Related posts from configured peer sites and feeds for the current post (optionally blend in local via `scope="all"`) |
-| `[tc_peer_browse]` | `termconnect/peer-browse` | Interactive topic browser: visitors pick terms, see matching posts from this site + peers |
+| `[tconn_peer_posts]` | `termconnect/peer-posts` | Related posts from configured peer sites and feeds for the current post (optionally blend in local via `scope="all"`) |
+| `[tconn_peer_browse]` | `termconnect/peer-browse` | Interactive topic browser: visitors pick terms, see matching posts from this site + peers |
 
-To blend peer/feed posts together with this site's own related posts in one block, set `scope="all"` on `[tc_peer_posts]` (or the Peer Posts block's Source = Local + peers).
+To blend peer/feed posts together with this site's own related posts in one block, set `scope="all"` on `[tconn_peer_posts]` (or the Peer Posts block's Source = Local + peers).
 
 ## Documentation
 

@@ -19,15 +19,15 @@ add_action( 'admin_enqueue_scripts', function ( string $hook ): void {
         return;
     }
     wp_enqueue_script(
-        'tc-di-health',
-        TC_PLUGIN_URL . 'assets/js/tc-di-health.js',
+        'tconn-di-health',
+        TCONN_PLUGIN_URL . 'assets/js/tconn-di-health.js',
         array( 'jquery' ),
-        TC_VERSION,
+        TCONN_VERSION,
         true
     );
-    wp_localize_script( 'tc-di-health', 'tcDiHealth', array(
+    wp_localize_script( 'tconn-di-health', 'tconnDiHealth', array(
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
-        'nonce'   => wp_create_nonce( 'tc_admin' ),
+        'nonce'   => wp_create_nonce( 'tconn_admin' ),
         'i18n'    => array(
             'checking'           => __( 'Checking…', 'termconnect' ),
             'error'              => __( 'Request failed.', 'termconnect' ),
@@ -50,13 +50,13 @@ add_action( 'admin_enqueue_scripts', function ( string $hook ): void {
 } );
 
 add_filter( 'site_status_tests', function ( array $tests ): array {
-    $tests['direct']['tc_delegated_identity'] = array(
+    $tests['direct']['tconn_delegated_identity'] = array(
         'label' => __( 'TermConnect delegated identity', 'termconnect' ),
-        'test'  => 'tc_health_check_delegated_identity',
+        'test'  => 'tconn_health_check_delegated_identity',
     );
-    $tests['direct']['tc_shared_vocabularies'] = array(
+    $tests['direct']['tconn_shared_vocabularies'] = array(
         'label' => __( 'TermConnect shared vocabularies', 'termconnect' ),
-        'test'  => 'tc_health_check_shared_vocabularies',
+        'test'  => 'tconn_health_check_shared_vocabularies',
     );
     return $tests;
 } );
@@ -67,12 +67,12 @@ add_filter( 'site_status_tests', function ( array $tests ): array {
  * @since 1.0.0
  * @return array Site Health result array.
  */
-function tc_health_check_delegated_identity(): array {
+function tconn_health_check_delegated_identity(): array {
     global $wpdb;
 
     $rows = $wpdb->get_results( $wpdb->prepare(
         "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s",
-        TC_META_IDENTITY_SOURCE
+        TCONN_META_IDENTITY_SOURCE
     ) );
 
     if ( empty( $rows ) ) {
@@ -81,7 +81,7 @@ function tc_health_check_delegated_identity(): array {
             'status'      => 'good',
             'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
             'description' => '',
-            'test'        => 'tc_delegated_identity',
+            'test'        => 'tconn_delegated_identity',
         );
     }
 
@@ -90,7 +90,7 @@ function tc_health_check_delegated_identity(): array {
     $redirect_pending = array();
     $unreachable      = array();
     $not_found        = array();
-    $queue            = tc_identity_redirect_queue_get();
+    $queue            = tconn_identity_redirect_queue_get();
 
     foreach ( $rows as $row ) {
         $source = maybe_unserialize( $row->meta_value );
@@ -144,7 +144,7 @@ function tc_health_check_delegated_identity(): array {
             'status'      => 'good',
             'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
             'description' => '',
-            'test'        => 'tc_delegated_identity',
+            'test'        => 'tconn_delegated_identity',
         );
     }
 
@@ -163,10 +163,10 @@ function tc_health_check_delegated_identity(): array {
                 $description .= ' → ' . esc_html( $new_label );
             }
             if ( $item['sv_managed'] ) {
-                $description .= ' &nbsp;<a href="' . esc_url( admin_url( 'admin.php?page=tc-shared-vocabularies' ) ) . '">'
+                $description .= ' &nbsp;<a href="' . esc_url( admin_url( 'admin.php?page=tconn-shared-vocabularies' ) ) . '">'
                     . esc_html__( 'Managed by a shared vocabulary — update the source', 'termconnect' ) . '</a>';
             } else {
-                $description .= '<div class="tc-di-redirect-actions" data-term-id="' . absint( $item['term_id'] ) . '"'
+                $description .= '<div class="tconn-di-redirect-actions" data-term-id="' . absint( $item['term_id'] ) . '"'
                     . ' data-can-follow="' . ( '' !== $item['new_slug'] ? '1' : '0' ) . '"></div>';
             }
             $description .= '</li>';
@@ -191,11 +191,11 @@ function tc_health_check_delegated_identity(): array {
         foreach ( $not_found as $item ) {
             $description .= '<li><strong>' . esc_html( $item['label'] ) . '</strong> — ' . esc_html( $item['target'] );
             if ( ! empty( $item['remote_term_id'] ) ) {
-                $description .= ' &nbsp;<button type="button" class="button-link tc-di-check-rename"'
+                $description .= ' &nbsp;<button type="button" class="button-link tconn-di-check-rename"'
                     . ' data-term-id="' . absint( $item['term_id'] ) . '">'
                     . esc_html__( 'Check for rename', 'termconnect' )
                     . '</button>'
-                    . '<span class="tc-di-rename-result" style="margin-left:6px"></span>';
+                    . '<span class="tconn-di-rename-result" style="margin-left:6px"></span>';
             }
             $description .= '</li>';
         }
@@ -216,7 +216,7 @@ function tc_health_check_delegated_identity(): array {
         'status'      => 'recommended',
         'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'orange' ),
         'description' => $description,
-        'test'        => 'tc_delegated_identity',
+        'test'        => 'tconn_delegated_identity',
     );
 }
 
@@ -226,10 +226,10 @@ function tc_health_check_delegated_identity(): array {
  * @since 1.0.0
  * @return array Site Health result array.
  */
-function tc_health_check_shared_vocabularies(): array {
-    $sources         = get_option( 'tc_shared_vocabularies', array() );
-    $misplaced       = (array) get_option( 'tc_sv_misplaced_queue', array() );
-    $merge_proposals = (array) get_option( 'tc_merge_proposals', array() );
+function tconn_health_check_shared_vocabularies(): array {
+    $sources         = get_option( 'tconn_shared_vocabularies', array() );
+    $misplaced       = (array) get_option( 'tconn_sv_misplaced_queue', array() );
+    $merge_proposals = (array) get_option( 'tconn_merge_proposals', array() );
     $issues          = array();
     $description     = '';
 
@@ -237,7 +237,7 @@ function tc_health_check_shared_vocabularies(): array {
     global $wpdb;
     $rows = $wpdb->get_results( $wpdb->prepare(
         "SELECT term_id, meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s",
-        TC_META_IDENTITY_SOURCE
+        TCONN_META_IDENTITY_SOURCE
     ) );
     _prime_term_caches( array_column( $rows, 'term_id' ) );
     $orphaned = array();
@@ -254,7 +254,7 @@ function tc_health_check_shared_vocabularies(): array {
     if ( ! empty( $merge_proposals ) ) {
         $proposal_count = count( $merge_proposals );
         $issues[]       = $proposal_count;
-        $sv_url         = admin_url( 'admin.php?page=tc-shared-vocabularies' );
+        $sv_url         = admin_url( 'admin.php?page=tconn-shared-vocabularies' );
         $description   .= '<p><strong>' . esc_html__( 'Merge proposals pending', 'termconnect' ) . '</strong> — ';
         $description   .= sprintf(
             /* translators: 1: count, 2: URL */
@@ -267,7 +267,7 @@ function tc_health_check_shared_vocabularies(): array {
 
     if ( ! empty( $misplaced ) ) {
         $issues[] = count( $misplaced );
-        $sv_url   = admin_url( 'admin.php?page=tc-shared-vocabularies' );
+        $sv_url   = admin_url( 'admin.php?page=tconn-shared-vocabularies' );
         $description .= '<p><strong>' . esc_html__( 'Terms in wrong position', 'termconnect' ) . '</strong> — ';
         $description .= sprintf(
             /* translators: %1$d: number of mirrored terms, %2$s: Shared Vocabularies page URL */
@@ -322,7 +322,7 @@ function tc_health_check_shared_vocabularies(): array {
     // Stale relationship rows: delegated terms with local custom-type rows no longer on remote.
     $stale_rel_rows = $wpdb->get_results( $wpdb->prepare(
         "SELECT term_id FROM {$wpdb->termmeta} WHERE meta_key = %s",
-        TC_META_REL_SYNC_ISSUES
+        TCONN_META_REL_SYNC_ISSUES
     ) );
     if ( ! empty( $stale_rel_rows ) ) {
         _prime_term_caches( array_column( $stale_rel_rows, 'term_id' ) );
@@ -355,7 +355,7 @@ function tc_health_check_shared_vocabularies(): array {
             'status'      => 'good',
             'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
             'description' => '',
-            'test'        => 'tc_shared_vocabularies',
+            'test'        => 'tconn_shared_vocabularies',
         );
     }
 
@@ -368,8 +368,8 @@ function tc_health_check_shared_vocabularies(): array {
         'status'      => 'recommended',
         'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'orange' ),
         'description' => $description,
-        'actions'     => '<a href="' . esc_url( admin_url( 'admin.php?page=tc-shared-vocabularies' ) ) . '">'
+        'actions'     => '<a href="' . esc_url( admin_url( 'admin.php?page=tconn-shared-vocabularies' ) ) . '">'
                          . esc_html__( 'Open Shared Vocabularies', 'termconnect' ) . '</a>',
-        'test'        => 'tc_shared_vocabularies',
+        'test'        => 'tconn_shared_vocabularies',
     );
 }

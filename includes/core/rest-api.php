@@ -2,13 +2,13 @@
 /**
  * TermConnect REST API.
  *
- * - tc_links field on WP taxonomy term endpoints: flat array of { url, platform,
+ * - tconn_links field on WP taxonomy term endpoints: flat array of { url, platform,
  *   label, fetched_at } covering local and delegated links. Gated by X-TermConnect
  *   request header and the expose_links_api setting.
  *
  * - htax_term_uri query parameter: lets peer sites look up terms by any external
  *   link URI (e.g. ?htax_term_uri=https://www.wikidata.org/wiki/Q28865). Queries
- *   the _tc_uris index which covers all link types for all platforms.
+ *   the _tconn_uris index which covers all link types for all platforms.
  *
  * - X-TermConnect response header: advertises TC presence to peer sites on every
  *   REST response.
@@ -21,16 +21,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-add_action( 'rest_api_init', 'tc_register_tc_links_field' );
+add_action( 'rest_api_init', 'tconn_register_tc_links_field' );
 
 add_filter( 'rest_prepare_taxonomy', static function ( $response, $taxonomy ) {
     $data            = $response->get_data();
     $data['show_ui'] = (bool) $taxonomy->show_ui;
 
-    // tc_content: mirrors the taxonomy's own 'public' flag. Public taxonomies are
+    // tconn_content: mirrors the taxonomy's own 'public' flag. Public taxonomies are
     // content-facing (category, post_tag, custom content taxonomies, Term Groups).
     // Non-public ones are utility taxonomies (nav_menu, wp_pattern_category, mlo-category, etc.).
-    $data['tc_content'] = (bool) $taxonomy->public;
+    $data['tconn_content'] = (bool) $taxonomy->public;
 
     $response->set_data( $data );
     return $response;
@@ -51,20 +51,20 @@ add_filter( 'rest_prepare_taxonomy', static function ( $response, $taxonomy ) {
  * @param string $taxonomy Taxonomy slug.
  * @return string REST object type to pass to register_rest_field().
  */
-function tc_rest_field_object_type( string $taxonomy ): string {
+function tconn_rest_field_object_type( string $taxonomy ): string {
     return 'post_tag' === $taxonomy ? 'tag' : $taxonomy;
 }
 
 /**
- * Register a tc_links field on all TermConnect-enabled taxonomy term REST endpoints.
+ * Register a tconn_links field on all TermConnect-enabled taxonomy term REST endpoints.
  */
-function tc_register_tc_links_field(): void {
-    foreach ( TC_Settings::get_enabled_taxonomies() as $taxonomy ) {
+function tconn_register_tc_links_field(): void {
+    foreach ( TConn_Settings::get_enabled_taxonomies() as $taxonomy ) {
         register_rest_field(
-            tc_rest_field_object_type( $taxonomy ),
-            'tc_links',
+            tconn_rest_field_object_type( $taxonomy ),
+            'tconn_links',
             array(
-                'get_callback'    => 'tc_rest_get_tc_links_field',
+                'get_callback'    => 'tconn_rest_get_tc_links_field',
                 'update_callback' => null,
                 'schema'          => array(
                     'description' => 'External links managed by TermConnect. Flat array combining local and delegated links with override logic applied.',
@@ -86,7 +86,7 @@ function tc_register_tc_links_field(): void {
 }
 
 /**
- * Populate the tc_links REST field for a term.
+ * Populate the tconn_links REST field for a term.
  *
  * Returns null when the request lacks X-TermConnect, expose_links_api is disabled,
  * or the term has no links.
@@ -96,8 +96,8 @@ function tc_register_tc_links_field(): void {
  * @param WP_REST_Request $request    Current REST request.
  * @return array[]|null
  */
-function tc_rest_get_tc_links_field( array $term_data, string $field_name, WP_REST_Request $request ): ?array {
-    $options = get_option( 'tc_settings', array() );
+function tconn_rest_get_tc_links_field( array $term_data, string $field_name, WP_REST_Request $request ): ?array {
+    $options = get_option( 'tconn_settings', array() );
     // On by default: settings that were never saved don't have the key yet.
     if ( empty( $options['expose_links_api'] ?? true ) ) {
         return null;
@@ -113,7 +113,7 @@ function tc_rest_get_tc_links_field( array $term_data, string $field_name, WP_RE
     }
 
     $term = get_term( (int) $term_id );
-    return $term instanceof WP_Term ? tc_rest_build_links_data( $term ) : null;
+    return $term instanceof WP_Term ? tconn_rest_build_links_data( $term ) : null;
 }
 
 // ==============================================================================
@@ -121,9 +121,9 @@ function tc_rest_get_tc_links_field( array $term_data, string $field_name, WP_RE
 // ==============================================================================
 
 add_action( 'rest_api_init', static function () {
-    foreach ( TC_Settings::get_enabled_taxonomies() as $taxonomy ) {
-        add_filter( "rest_{$taxonomy}_query",             'tc_rest_link_filter_query',            10, 2 );
-        add_filter( "rest_{$taxonomy}_collection_params", 'tc_rest_link_filter_collection_params' );
+    foreach ( TConn_Settings::get_enabled_taxonomies() as $taxonomy ) {
+        add_filter( "rest_{$taxonomy}_query",             'tconn_rest_link_filter_query',            10, 2 );
+        add_filter( "rest_{$taxonomy}_collection_params", 'tconn_rest_link_filter_collection_params' );
     }
 } );
 
@@ -133,9 +133,9 @@ add_action( 'rest_api_init', static function () {
  * @param array $params Registered collection params.
  * @return array
  */
-function tc_rest_link_filter_collection_params( array $params ): array {
+function tconn_rest_link_filter_collection_params( array $params ): array {
     $params['htax_term_uri'] = array(
-        'description' => 'Filter terms by full external link URI. TermConnect matches the URI against the _tc_uris index, which covers all link types (local and delegated).',
+        'description' => 'Filter terms by full external link URI. TermConnect matches the URI against the _tconn_uris index, which covers all link types (local and delegated).',
         'type'        => 'string',
         'default'     => '',
     );
@@ -143,19 +143,19 @@ function tc_rest_link_filter_collection_params( array $params ): array {
 }
 
 /**
- * Apply htax_term_uri filter to term queries via the _tc_uris index.
+ * Apply htax_term_uri filter to term queries via the _tconn_uris index.
  *
  * @param array           $args    WP_Term_Query args.
  * @param WP_REST_Request $request REST request.
  * @return array
  */
-function tc_rest_link_filter_query( array $args, WP_REST_Request $request ): array {
+function tconn_rest_link_filter_query( array $args, WP_REST_Request $request ): array {
     $uri = sanitize_url( rawurldecode( (string) ( $request->get_param( 'htax_term_uri' ) ?? '' ) ) );
     if ( '' === $uri ) {
         return $args;
     }
     $args['meta_query'][] = array(
-        'key'   => '_tc_uris',
+        'key'   => '_tconn_uris',
         'value' => $uri,
     );
     return $args;
@@ -167,21 +167,21 @@ function tc_rest_link_filter_query( array $args, WP_REST_Request $request ): arr
 
 // Advertise TermConnect presence via a response header so peer sites can detect it.
 add_filter( 'rest_post_dispatch', static function ( $result, $server ) {
-    $server->send_header( 'X-TermConnect', TC_VERSION );
+    $server->send_header( 'X-TermConnect', TCONN_VERSION );
     return $result;
 }, 10, 2 );
 
 // ==============================================================================
-// GROUP MEMBERS ENDPOINT — /wp-json/tc/v1/group-members
+// GROUP MEMBERS ENDPOINT — /wp-json/tconn/v1/group-members
 // ==============================================================================
 
 add_action( 'rest_api_init', static function () {
     register_rest_route(
-        'tc/v1',
+        'tconn/v1',
         '/group-members',
         array(
             'methods'             => 'GET',
-            'callback'            => 'tc_rest_group_members',
+            'callback'            => 'tconn_rest_group_members',
             'permission_callback' => '__return_true',
             'args'                => array(
                 'group_slug' => array(
@@ -198,36 +198,36 @@ add_action( 'rest_api_init', static function () {
  *
  * Gated by X-TermConnect header. Returns 404 when HT is not active or the group does not exist.
  * Each member includes taxonomy, id, slug, name, description, parent (remote term ID), and
- * optionally tc_links when expose_links_api is enabled.
+ * optionally tconn_links when expose_links_api is enabled.
  *
  * @since 1.0.0
  * @param WP_REST_Request $request Request.
  * @return WP_REST_Response|WP_Error
  */
-function tc_rest_group_members( WP_REST_Request $request ) {
+function tconn_rest_group_members( WP_REST_Request $request ) {
     if ( ! $request->get_header( 'X-TermConnect' ) ) {
-        return new WP_Error( 'tc_forbidden', __( 'X-TermConnect header required.', 'termconnect' ), array( 'status' => 403 ) );
+        return new WP_Error( 'tconn_forbidden', __( 'X-TermConnect header required.', 'termconnect' ), array( 'status' => 403 ) );
     }
 
     if ( ! function_exists( 'htax_get_terms_in_groups' ) ) {
-        return new WP_Error( 'tc_ht_required', __( 'HyperTaxonomy not active.', 'termconnect' ), array( 'status' => 404 ) );
+        return new WP_Error( 'tconn_ht_required', __( 'HyperTaxonomy not active.', 'termconnect' ), array( 'status' => 404 ) );
     }
 
     $group_slug = $request->get_param( 'group_slug' );
     $group      = get_term_by( 'slug', $group_slug, 'group' );
     if ( ! $group || is_wp_error( $group ) ) {
-        return new WP_Error( 'tc_not_found', __( 'Group not found.', 'termconnect' ), array( 'status' => 404 ) );
+        return new WP_Error( 'tconn_not_found', __( 'Group not found.', 'termconnect' ), array( 'status' => 404 ) );
     }
 
     if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $group->term_id ) && ! htax_can_see_hidden_terms( 'group' ) ) {
-        return new WP_Error( 'tc_forbidden', __( 'Group not available.', 'termconnect' ), array( 'status' => 403 ) );
+        return new WP_Error( 'tconn_forbidden', __( 'Group not available.', 'termconnect' ), array( 'status' => 403 ) );
     }
 
-    $options      = get_option( 'tc_settings', array() );
+    $options      = get_option( 'tconn_settings', array() );
     $expose_links = ! empty( $options['expose_links_api'] ?? true ); // On by default.
     $members      = array();
 
-    foreach ( TC_Settings::get_enabled_taxonomies() as $taxonomy ) {
+    foreach ( TConn_Settings::get_enabled_taxonomies() as $taxonomy ) {
         $terms = htax_get_terms_in_groups( array( $group->term_id ), $taxonomy );
         if ( empty( $terms ) ) {
             continue;
@@ -256,9 +256,9 @@ function tc_rest_group_members( WP_REST_Request $request ) {
                 'parent_slug' => $parent_slug,
             );
             if ( $expose_links ) {
-                $links = tc_rest_build_links_data( $term );
+                $links = tconn_rest_build_links_data( $term );
                 if ( null !== $links ) {
-                    $member['tc_links'] = $links;
+                    $member['tconn_links'] = $links;
                 }
             }
             $members[] = $member;
@@ -274,23 +274,23 @@ function tc_rest_group_members( WP_REST_Request $request ) {
 }
 
 /**
- * Build tc_links REST field data for a term.
+ * Build tconn_links REST field data for a term.
  *
  * Returns a flat array of { url, platform, label, fetched_at } objects covering local
  * and delegated links with override logic applied, or null when the term has no links.
- * Used by the tc_term_peers and tc_term_data REST fields on post endpoints.
+ * Used by the tconn_term_peers and tconn_term_data REST fields on post endpoints.
  *
  * @since 1.0.0
  * @param WP_Term $term Term object.
  * @return array[]|null
  */
-function tc_rest_build_links_data( WP_Term $term ): ?array {
-    $options = get_option( 'tc_settings', array() );
+function tconn_rest_build_links_data( WP_Term $term ): ?array {
+    $options = get_option( 'tconn_settings', array() );
     if ( isset( $options['expose_links_api'] ) && ! $options['expose_links_api'] ) {
         return null;
     }
 
-    $links = tc_build_merged_links( $term->term_id );
+    $links = tconn_build_merged_links( $term->term_id );
 
     return empty( $links ) ? null : $links;
 }

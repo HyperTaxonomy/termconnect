@@ -5,10 +5,10 @@
  * Handles RSS/Atom feed fetching, category accumulation, post caching,
  * and relevance scoring for link types with platform='feed'. Posts are
  * polled on a WP cron schedule and stored in transients; the
- * [tc_peer_posts] shortcode reads from cache and scores against the
+ * [tconn_peer_posts] shortcode reads from cache and scores against the
  * local term's mapped category identifiers.
  *
- * Identifier format stored in _tc_link_{slug} term meta for feed types:
+ * Identifier format stored in _tconn_link_{slug} term meta for feed types:
  *   - When slug equals label: plain slug string
  *   - Otherwise: JSON {"s":"slug","l":"Human Label"}
  *
@@ -20,11 +20,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TC_FEED_CATS_KEY', 'tc_feed_cats_' );
-define( 'TC_FEED_POSTS_KEY', 'tc_feed_posts_' );
-define( 'TC_FEED_MAX_POSTS_DEFAULT', 500 );
-define( 'TC_FEED_POST_TTL', 30 * DAY_IN_SECONDS );
-define( 'TC_FEED_CATS_TTL', 90 * DAY_IN_SECONDS );
+define( 'TCONN_FEED_CATS_KEY', 'tconn_feed_cats_' );
+define( 'TCONN_FEED_POSTS_KEY', 'tconn_feed_posts_' );
+define( 'TCONN_FEED_MAX_POSTS_DEFAULT', 500 );
+define( 'TCONN_FEED_POST_TTL', 30 * DAY_IN_SECONDS );
+define( 'TCONN_FEED_CATS_TTL', 90 * DAY_IN_SECONDS );
 
 // =============================================================================
 // SSRF VALIDATION
@@ -39,9 +39,9 @@ define( 'TC_FEED_CATS_TTL', 90 * DAY_IN_SECONDS );
  * just a textual prefix match on the hostname as written. A hostname that is
  * syntactically public but currently resolves to a private/loopback address (DNS
  * rebinding, or a DNS change made after this URL was approved) is caught on every
- * call, including the recurring cron poll in tc_feed_fetch_and_accumulate(), not
+ * call, including the recurring cron poll in tconn_feed_fetch_and_accumulate(), not
  * just at the moment an admin first saves the URL. This matches the strength of
- * tc_external_validate_origin() (used for live peer-post fetches), which performs
+ * tconn_external_validate_origin() (used for live peer-post fetches), which performs
  * the same real-IP-resolution check via the same WordPress function — so both of
  * this plugin's SSRF guards are equally strong. The http_request_host_is_external
  * filter registered in includes/core/external-posts.php still applies here too,
@@ -53,7 +53,7 @@ define( 'TC_FEED_CATS_TTL', 90 * DAY_IN_SECONDS );
  * @param string $uri_prefix URI prefix to validate.
  * @return bool
  */
-function tc_validate_uri_prefix( string $uri_prefix ): bool {
+function tconn_validate_uri_prefix( string $uri_prefix ): bool {
 	$parsed = wp_parse_url( $uri_prefix );
 	$scheme = strtolower( $parsed['scheme'] ?? '' );
 	if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
@@ -79,7 +79,7 @@ function tc_validate_uri_prefix( string $uri_prefix ): bool {
  * @param string $raw Stored meta value.
  * @return array { slug: string, label: string }
  */
-function tc_feed_parse_identifier( string $raw ): array {
+function tconn_feed_parse_identifier( string $raw ): array {
 	if ( '' !== $raw && '{' === $raw[0] ) {
 		$decoded = json_decode( $raw, true );
 		if ( is_array( $decoded ) && isset( $decoded['s'] ) ) {
@@ -102,8 +102,8 @@ function tc_feed_parse_identifier( string $raw ): array {
  * @param string $raw Stored meta value.
  * @return string
  */
-function tc_feed_display_identifier( string $raw ): string {
-	return tc_feed_parse_identifier( $raw )['label'];
+function tconn_feed_display_identifier( string $raw ): string {
+	return tconn_feed_parse_identifier( $raw )['label'];
 }
 
 // =============================================================================
@@ -117,7 +117,7 @@ function tc_feed_display_identifier( string $raw ): string {
  * @param object $item SimplePie_Item instance.
  * @return array
  */
-function tc_feed_normalize_item( $item ): array {
+function tconn_feed_normalize_item( $item ): array {
 	$categories = array();
 	$raw_cats   = $item->get_categories();
 	if ( ! is_array( $raw_cats ) ) {
@@ -144,7 +144,7 @@ function tc_feed_normalize_item( $item ): array {
 		$excerpt = mb_substr( $excerpt, 0, 297 ) . '…';
 	}
 
-	return tc_normalize_post_record( array(
+	return tconn_normalize_post_record( array(
 		'title'      => wp_strip_all_tags( (string) $item->get_title() ),
 		'url'        => (string) $item->get_permalink(),
 		'date_gmt'   => (string) $item->get_gmdate( 'Y-m-d\TH:i:s' ),
@@ -165,13 +165,9 @@ function tc_feed_normalize_item( $item ): array {
  * @param string $feed_url  Full feed URL.
  * @param int    $max_posts Maximum number of posts to retain; oldest are pruned.
  */
-function tc_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_url, int $max_posts = TC_FEED_MAX_POSTS_DEFAULT ): void {
-	if ( ! function_exists( 'fetch_feed' ) ) {
-		require_once ABSPATH . WPINC . '/feed.php';
-	}
-
+function tconn_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_url, int $max_posts = TCONN_FEED_MAX_POSTS_DEFAULT ): void {
 	// Validate the feed URL before fetching to prevent SSRF against internal hosts.
-	if ( ! function_exists( 'tc_validate_uri_prefix' ) || ! tc_validate_uri_prefix( $feed_url ) ) {
+	if ( ! function_exists( 'tconn_validate_uri_prefix' ) || ! tconn_validate_uri_prefix( $feed_url ) ) {
 		error_log( 'TermConnect: feed URL blocked by SSRF validation: ' . $feed_url );
 		return;
 	}
@@ -186,8 +182,8 @@ function tc_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_url,
 		return;
 	}
 
-	$cats_key  = TC_FEED_CATS_KEY . $peer_site_slug;
-	$posts_key = TC_FEED_POSTS_KEY . $peer_site_slug;
+	$cats_key  = TCONN_FEED_CATS_KEY . $peer_site_slug;
+	$posts_key = TCONN_FEED_POSTS_KEY . $peer_site_slug;
 
 	$cats = get_transient( $cats_key );
 	$cats = is_array( $cats ) ? $cats : array();
@@ -196,7 +192,7 @@ function tc_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_url,
 	$posts_map = is_array( $posts_map ) ? $posts_map : array();
 
 	foreach ( $items as $item ) {
-		$normalized = tc_feed_normalize_item( $item );
+		$normalized = tconn_feed_normalize_item( $item );
 		$url        = $normalized['url'];
 		if ( '' === $url ) {
 			continue;
@@ -222,11 +218,11 @@ function tc_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_url,
 		$posts_map = array_slice( $posts_map, 0, $max_posts, true );
 	}
 
-	set_transient( $cats_key, $cats, TC_FEED_CATS_TTL );
-	set_transient( $posts_key, $posts_map, TC_FEED_POST_TTL );
+	set_transient( $cats_key, $cats, TCONN_FEED_CATS_TTL );
+	set_transient( $posts_key, $posts_map, TCONN_FEED_POST_TTL );
 
 	update_option(
-		'tc_feed_poll_stat_' . $peer_site_slug,
+		'tconn_feed_poll_stat_' . $peer_site_slug,
 		array(
 			'post_count' => count( $posts_map ),
 			'cat_count'  => count( $cats ),
@@ -243,8 +239,8 @@ function tc_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_url,
  * @param string $peer_site_slug Link type slug.
  * @return array [ slug => label ]
  */
-function tc_feed_get_categories( string $peer_site_slug ): array {
-	$cached = get_transient( TC_FEED_CATS_KEY . $peer_site_slug );
+function tconn_feed_get_categories( string $peer_site_slug ): array {
+	$cached = get_transient( TCONN_FEED_CATS_KEY . $peer_site_slug );
 	return is_array( $cached ) ? $cached : array();
 }
 
@@ -255,8 +251,8 @@ function tc_feed_get_categories( string $peer_site_slug ): array {
  * @param string $peer_site_slug Link type slug.
  * @return array
  */
-function tc_feed_get_cached_posts( string $peer_site_slug ): array {
-	$cached = get_transient( TC_FEED_POSTS_KEY . $peer_site_slug );
+function tconn_feed_get_cached_posts( string $peer_site_slug ): array {
+	$cached = get_transient( TCONN_FEED_POSTS_KEY . $peer_site_slug );
 	return is_array( $cached ) ? array_values( $cached ) : array();
 }
 
@@ -266,10 +262,10 @@ function tc_feed_get_cached_posts( string $peer_site_slug ): array {
  * @since 1.0.0
  * @param string $peer_site_slug Link type slug.
  */
-function tc_feed_clear_cache( string $peer_site_slug ): void {
-	delete_transient( TC_FEED_CATS_KEY . $peer_site_slug );
-	delete_transient( TC_FEED_POSTS_KEY . $peer_site_slug );
-	delete_option( 'tc_feed_poll_stat_' . $peer_site_slug );
+function tconn_feed_clear_cache( string $peer_site_slug ): void {
+	delete_transient( TCONN_FEED_CATS_KEY . $peer_site_slug );
+	delete_transient( TCONN_FEED_POSTS_KEY . $peer_site_slug );
+	delete_option( 'tconn_feed_poll_stat_' . $peer_site_slug );
 }
 
 // =============================================================================
@@ -283,13 +279,13 @@ function tc_feed_clear_cache( string $peer_site_slug ): void {
  * feed post category. Posts with no matching category are excluded.
  *
  * @since 1.0.0
- * @param array  $posts           Normalized posts from tc_feed_get_cached_posts().
+ * @param array  $posts           Normalized posts from tconn_feed_get_cached_posts().
  * @param array  $category_slugs  Slugs to match (extracted from term meta identifiers).
  * @param float  $weight_direct   Score weight per matched slug.
  * @param string $origin          Feed URL; set as 'origin' on each returned post.
- * @return array Scored posts (score > 0 only), with tc_score and origin set.
+ * @return array Scored posts (score > 0 only), with tconn_score and origin set.
  */
-function tc_feed_score_posts( array $posts, array $category_slugs, float $weight_direct, string $origin ): array {
+function tconn_feed_score_posts( array $posts, array $category_slugs, float $weight_direct, string $origin ): array {
 	if ( empty( $posts ) || empty( $category_slugs ) ) {
 		return array();
 	}
@@ -333,16 +329,16 @@ function tc_feed_score_posts( array $posts, array $category_slugs, float $weight
  * @since 1.0.0
  * @param string $peer_site_slug Link type slug.
  */
-function tc_feed_do_poll( string $peer_site_slug ): void {
-	$type = tc_get_link_type( $peer_site_slug );
+function tconn_feed_do_poll( string $peer_site_slug ): void {
+	$type = tconn_get_link_type( $peer_site_slug );
 	if ( null === $type || ( $type['platform'] ?? '' ) !== 'feed' || empty( $type['enabled'] ) ) {
 		return;
 	}
 
-	$max_posts = (int) ( $type['max_cached_posts'] ?? TC_FEED_MAX_POSTS_DEFAULT );
-	tc_feed_fetch_and_accumulate( $peer_site_slug, $type['uri_prefix'], $max_posts );
+	$max_posts = (int) ( $type['max_cached_posts'] ?? TCONN_FEED_MAX_POSTS_DEFAULT );
+	tconn_feed_fetch_and_accumulate( $peer_site_slug, $type['uri_prefix'], $max_posts );
 }
-add_action( 'tc_feed_poll', 'tc_feed_do_poll' );
+add_action( 'tconn_feed_poll', 'tconn_feed_do_poll' );
 
 /**
  * Schedule or reschedule the cron event for a feed link type.
@@ -354,9 +350,9 @@ add_action( 'tc_feed_poll', 'tc_feed_do_poll' );
  * @param string $peer_site_slug  Link type slug.
  * @param int    $interval Poll interval in seconds (minimum 300).
  */
-function tc_feed_schedule( string $peer_site_slug, int $interval ): void {
+function tconn_feed_schedule( string $peer_site_slug, int $interval ): void {
 	$interval = max( 300, min( 86400, $interval ) );
-	$hook     = 'tc_feed_poll';
+	$hook     = 'tconn_feed_poll';
 	$args     = array( $peer_site_slug );
 	$existing = wp_next_scheduled( $hook, $args );
 
@@ -364,7 +360,7 @@ function tc_feed_schedule( string $peer_site_slug, int $interval ): void {
 		wp_unschedule_event( $existing, $hook, $args );
 	}
 
-	wp_schedule_event( time(), 'tc_' . $interval . 's', $hook, $args );
+	wp_schedule_event( time(), 'tconn_' . $interval . 's', $hook, $args );
 }
 
 /**
@@ -372,25 +368,25 @@ function tc_feed_schedule( string $peer_site_slug, int $interval ): void {
  *
  * @since 1.0.0
  */
-function tc_feed_reschedule_after_activation(): void {
+function tconn_feed_reschedule_after_activation(): void {
 	// The flag stays stored, autoloaded, as 0: a missing option would cost a query on every load.
-	$flag = get_option( 'tc_feed_reschedule', null );
+	$flag = get_option( 'tconn_feed_reschedule', null );
 	if ( null === $flag ) {
-		add_option( 'tc_feed_reschedule', 0, '', true );
+		add_option( 'tconn_feed_reschedule', 0, '', true );
 		return;
 	}
 	if ( ! $flag ) {
 		return;
 	}
-	update_option( 'tc_feed_reschedule', 0, true );
+	update_option( 'tconn_feed_reschedule', 0, true );
 
-	foreach ( tc_get_all_link_types() as $slug => $type ) {
+	foreach ( tconn_get_all_link_types() as $slug => $type ) {
 		if ( 'feed' === ( $type['platform'] ?? '' ) && ! empty( $type['enabled'] ) ) {
-			tc_feed_schedule( (string) $slug, (int) ( $type['poll_interval'] ?? 3600 ) );
+			tconn_feed_schedule( (string) $slug, (int) ( $type['poll_interval'] ?? 3600 ) );
 		}
 	}
 }
-add_action( 'init', 'tc_feed_reschedule_after_activation' );
+add_action( 'init', 'tconn_feed_reschedule_after_activation' );
 
 /**
  * Remove the cron event for a feed link type.
@@ -398,8 +394,8 @@ add_action( 'init', 'tc_feed_reschedule_after_activation' );
  * @since 1.0.0
  * @param string $peer_site_slug Link type slug.
  */
-function tc_feed_unschedule( string $peer_site_slug ): void {
-	$hook      = 'tc_feed_poll';
+function tconn_feed_unschedule( string $peer_site_slug ): void {
+	$hook      = 'tconn_feed_poll';
 	$args      = array( $peer_site_slug );
 	$timestamp = wp_next_scheduled( $hook, $args );
 	if ( $timestamp ) {
@@ -414,13 +410,13 @@ function tc_feed_unschedule( string $peer_site_slug ): void {
  * @param array $schedules Existing schedules.
  * @return array
  */
-function tc_feed_cron_schedules( array $schedules ): array {
-	foreach ( tc_get_all_link_types() as $type ) {
+function tconn_feed_cron_schedules( array $schedules ): array {
+	foreach ( tconn_get_all_link_types() as $type ) {
 		if ( ( $type['platform'] ?? '' ) !== 'feed' ) {
 			continue;
 		}
 		$interval = max( 300, min( 86400, (int) ( $type['poll_interval'] ?? 3600 ) ) );
-		$key      = 'tc_' . $interval . 's';
+		$key      = 'tconn_' . $interval . 's';
 		if ( ! isset( $schedules[ $key ] ) ) {
 			$schedules[ $key ] = array(
 				'interval' => $interval,
@@ -431,4 +427,4 @@ function tc_feed_cron_schedules( array $schedules ): array {
 	}
 	return $schedules;
 }
-add_filter( 'cron_schedules', 'tc_feed_cron_schedules' );
+add_filter( 'cron_schedules', 'tconn_feed_cron_schedules' );

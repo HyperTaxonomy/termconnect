@@ -1,15 +1,15 @@
 /* TermConnect — Site Health: delegated identity rename check and recovery actions
  *
  * Handles "Check for rename" buttons on not_found delegation entries.
- * Fires tc_di_check_rename AJAX, renders outcome inline, and provides
+ * Fires tconn_di_check_rename AJAX, renders outcome inline, and provides
  * action buttons for each recovery path.
  */
-/* global jQuery, tcDiHealth */
+/* global jQuery, tconnDiHealth */
 
 ( function ( $ ) {
     'use strict';
 
-    var cfg  = ( typeof tcDiHealth !== 'undefined' ) ? tcDiHealth : {};
+    var cfg  = ( typeof tconnDiHealth !== 'undefined' ) ? tconnDiHealth : {};
     var ajax = cfg.ajaxurl || ( typeof ajaxurl !== 'undefined' ? ajaxurl : '' );
     var nonce = cfg.nonce || '';
     var i18n  = cfg.i18n || {};
@@ -18,16 +18,16 @@
     // "Check for rename" button
     // -------------------------------------------------------------------------
 
-    $( document ).on( 'click', '.tc-di-check-rename', function ( e ) {
+    $( document ).on( 'click', '.tconn-di-check-rename', function ( e ) {
         e.preventDefault();
         var $btn    = $( this ).prop( 'disabled', true );
         var termId  = $btn.data( 'term-id' );
-        var $result = $btn.siblings( '.tc-di-rename-result' );
+        var $result = $btn.siblings( '.tconn-di-rename-result' );
 
         $result.text( i18n.checking || '' );
 
         $.post( ajax, {
-            action:  'tc_di_check_rename',
+            action:  'tconn_di_check_rename',
             nonce:   nonce,
             term_id: termId,
         } ).done( function ( resp ) {
@@ -51,19 +51,19 @@
     // Site Health loads test results asynchronously, so render whenever the
     // placeholders appear.
     function renderRedirectActions() {
-        $( '.tc-di-redirect-actions' ).not( '.tc-rendered' ).each( function () {
-            var $wrap  = $( this ).addClass( 'tc-rendered' );
+        $( '.tconn-di-redirect-actions' ).not( '.tconn-rendered' ).each( function () {
+            var $wrap  = $( this ).addClass( 'tconn-rendered' );
             var termId = $wrap.data( 'term-id' );
             if ( '1' === String( $wrap.data( 'can-follow' ) ) ) {
                 addActionBtn( $wrap, i18n.followRedirect || 'Follow redirect', function ( $btn ) {
-                    fireAction( $btn, { action: 'tc_di_follow_redirect', nonce: nonce, term_id: termId } );
+                    fireAction( $btn, { action: 'tconn_di_follow_redirect', nonce: nonce, term_id: termId } );
                 } );
             }
             addActionBtn( $wrap, i18n.keepCurrent || 'Keep current delegation', function ( $btn ) {
-                fireAction( $btn, { action: 'tc_di_decline_redirect', nonce: nonce, term_id: termId } );
+                fireAction( $btn, { action: 'tconn_di_decline_redirect', nonce: nonce, term_id: termId } );
             } );
             addActionBtn( $wrap, i18n.removeOnly || 'End delegation', function ( $btn ) {
-                fireAction( $btn, { action: 'tc_di_remove', nonce: nonce, term_id: termId } );
+                fireAction( $btn, { action: 'tconn_di_remove', nonce: nonce, term_id: termId } );
             } );
         } );
     }
@@ -82,7 +82,7 @@
         if ( 'A' === data.outcome ) {
             $wrap.append( $( '<span>' ).text( data.message || '' ) );
             addActionBtn( $wrap, i18n.removeOnly || 'Remove delegation', function ( $btn ) {
-                fireAction( $btn, { action: 'tc_di_remove', nonce: nonce, term_id: termId } );
+                fireAction( $btn, { action: 'tconn_di_remove', nonce: nonce, term_id: termId } );
             } );
 
         } else if ( 'B' === data.outcome ) {
@@ -90,17 +90,17 @@
             $wrap.append( $( '<em style="display:block;margin-bottom:4px">' ).text( msgB ) );
 
             addActionBtn( $wrap, ( i18n.relinkRename || 'Re-link and rename local slug to "%s"' ).replace( '%s', data.new_slug ), function ( $btn ) {
-                fireAction( $btn, { action: 'tc_di_relink_rename', nonce: nonce, term_id: termId, new_slug: data.new_slug } );
+                fireAction( $btn, { action: 'tconn_di_relink_rename', nonce: nonce, term_id: termId, new_slug: data.new_slug } );
             } );
             addActionBtn( $wrap, i18n.addLinkOnThis || 'Add as external link on this term', function ( $btn ) {
                 fireAction( $btn, {
-                    action: 'tc_di_add_link', nonce: nonce,
+                    action: 'tconn_di_add_link', nonce: nonce,
                     remove_term_id: termId, link_term_id: termId,
                     peer_site_slug: data.peer_site_slug, new_slug: data.new_slug, new_name: data.new_name,
                 } );
             } );
             addActionBtn( $wrap, i18n.removeOnly || 'Remove delegation', function ( $btn ) {
-                fireAction( $btn, { action: 'tc_di_remove', nonce: nonce, term_id: termId } );
+                fireAction( $btn, { action: 'tconn_di_remove', nonce: nonce, term_id: termId } );
             } );
 
         } else if ( 'C' === data.outcome ) {
@@ -111,27 +111,27 @@
 
             addActionBtn( $wrap, ( i18n.delegateOther || 'Delegate "%s" instead' ).replace( '%s', data.other_term_name ), function ( $btn ) {
                 fireAction( $btn, {
-                    action: 'tc_di_redelegate', nonce: nonce,
+                    action: 'tconn_di_redelegate', nonce: nonce,
                     remove_term_id: termId, target_term_id: data.other_term_id,
                     peer_site_slug: data.peer_site_slug, new_slug: data.new_slug,
                 } );
             } );
             addActionBtn( $wrap, i18n.addLinkOnThis || 'Add as external link on this term', function ( $btn ) {
                 fireAction( $btn, {
-                    action: 'tc_di_add_link', nonce: nonce,
+                    action: 'tconn_di_add_link', nonce: nonce,
                     remove_term_id: termId, link_term_id: termId,
                     peer_site_slug: data.peer_site_slug, new_slug: data.new_slug, new_name: data.new_name,
                 } );
             } );
             addActionBtn( $wrap, ( i18n.addLinkOnOther || 'Add as external link on "%s"' ).replace( '%s', data.other_term_name ), function ( $btn ) {
                 fireAction( $btn, {
-                    action: 'tc_di_add_link', nonce: nonce,
+                    action: 'tconn_di_add_link', nonce: nonce,
                     remove_term_id: termId, link_term_id: data.other_term_id,
                     peer_site_slug: data.peer_site_slug, new_slug: data.new_slug, new_name: data.new_name,
                 } );
             } );
             addActionBtn( $wrap, i18n.removeOnly || 'Remove delegation', function ( $btn ) {
-                fireAction( $btn, { action: 'tc_di_remove', nonce: nonce, term_id: termId } );
+                fireAction( $btn, { action: 'tconn_di_remove', nonce: nonce, term_id: termId } );
             } );
         }
 
@@ -155,9 +155,9 @@
                 window.location.reload();
             } else {
                 $btn.prop( 'disabled', false ).text( origText );
-                var $status = $btn.closest( 'div' ).find( '.tc-di-action-err' );
+                var $status = $btn.closest( 'div' ).find( '.tconn-di-action-err' );
                 if ( ! $status.length ) {
-                    $status = $( '<span class="tc-di-action-err" style="color:#d63638;margin-left:6px">' ).appendTo( $btn.parent() );
+                    $status = $( '<span class="tconn-di-action-err" style="color:#d63638;margin-left:6px">' ).appendTo( $btn.parent() );
                 }
                 $status.text( ( resp.data && resp.data.message ) || ( i18n.error || 'Error.' ) );
             }

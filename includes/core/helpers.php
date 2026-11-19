@@ -18,10 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param array $headers Extra request headers, e.g. X-TermConnect.
  * @return array
  */
-function tc_external_request_args( int $timeout = 8, array $headers = array() ): array {
+function tconn_external_request_args( int $timeout = 8, array $headers = array() ): array {
     $args = array(
         'timeout'    => $timeout,
-        'user-agent' => 'TermConnect/' . TC_VERSION,
+        'user-agent' => 'TermConnect/' . TCONN_VERSION,
         'sslverify'  => true,
     );
     if ( $headers ) {
@@ -41,7 +41,7 @@ function tc_external_request_args( int $timeout = 8, array $headers = array() ):
  * @param string $body Raw HTTP response body.
  * @return mixed Decoded value or null on failure.
  */
-function tc_external_json_decode( string $body ) {
+function tconn_external_json_decode( string $body ) {
     if ( 0 === strpos( $body, "\xef\xbb\xbf" ) ) {
         $body = substr( $body, 3 );
     }
@@ -55,7 +55,7 @@ function tc_external_json_decode( string $body ) {
  * @param string $uri_prefix URI prefix, e.g. 'https://example.com/tag/'.
  * @return string scheme://host, or empty string on failure.
  */
-function tc_external_get_site_origin( string $uri_prefix ): string {
+function tconn_external_get_site_origin( string $uri_prefix ): string {
     $parsed = wp_parse_url( $uri_prefix );
     if ( empty( $parsed['scheme'] ) || empty( $parsed['host'] ) ) {
         return '';
@@ -86,25 +86,25 @@ function tc_external_get_site_origin( string $uri_prefix ): string {
  * @param int    $timeout Seconds to wait for the lock before giving up.
  * @return bool True if the lock was acquired.
  */
-function tc_acquire_mysql_lock( string $name, int $timeout = 2 ): bool {
+function tconn_acquire_mysql_lock( string $name, int $timeout = 2 ): bool {
     global $wpdb;
-    return '1' === $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', tc_mysql_lock_name( $name ), $timeout ) );
+    return '1' === $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', tconn_mysql_lock_name( $name ), $timeout ) );
 }
 
 /**
- * Release a lock previously acquired with tc_acquire_mysql_lock().
+ * Release a lock previously acquired with tconn_acquire_mysql_lock().
  *
- * @param string $name Lock name passed to tc_acquire_mysql_lock().
+ * @param string $name Lock name passed to tconn_acquire_mysql_lock().
  */
-function tc_release_mysql_lock( string $name ): void {
+function tconn_release_mysql_lock( string $name ): void {
     global $wpdb;
-    $wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', tc_mysql_lock_name( $name ) ) );
+    $wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', tconn_mysql_lock_name( $name ) ) );
 }
 
 /**
  * Headers that identify TermConnect to a peer site.
  *
- * X-TermConnect asks a TermConnect peer for its tc_links field and its peer-only
+ * X-TermConnect asks a TermConnect peer for its tconn_links field and its peer-only
  * endpoints. X-HyperTaxonomy asks a HyperTaxonomy peer for the term fields it shares
  * only with peers (htax_includes, htax_redirect, htax_relationships on collections).
  * Both plugins check only that a header is present. X-TermConnect carries this
@@ -116,10 +116,10 @@ function tc_release_mysql_lock( string $name ): void {
  * @param bool $termconnect   Include X-TermConnect.
  * @return array<string, string>
  */
-function tc_external_peer_headers( bool $hypertaxonomy = false, bool $termconnect = true ): array {
+function tconn_external_peer_headers( bool $hypertaxonomy = false, bool $termconnect = true ): array {
     $headers = array();
     if ( $termconnect ) {
-        $headers['X-TermConnect'] = TC_VERSION;
+        $headers['X-TermConnect'] = TCONN_VERSION;
     }
     if ( $hypertaxonomy ) {
         $headers['X-HyperTaxonomy'] = defined( 'HTAX_VERSION' ) ? HTAX_VERSION : '1.0.0';
@@ -135,15 +135,15 @@ function tc_external_peer_headers( bool $hypertaxonomy = false, bool $termconnec
  *
  * @since 1.0.0
  * @param string $url  URL to fetch.
- * @param array  $args wp_remote_get() arguments, usually from tc_external_request_args().
+ * @param array  $args wp_remote_get() arguments, usually from tconn_external_request_args().
  * @return array|null Decoded body, or null on any failure.
  */
-function tc_external_get_json( string $url, array $args ): ?array {
+function tconn_external_get_json( string $url, array $args ): ?array {
     $response = wp_remote_get( $url, $args );
     if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
         return null;
     }
-    $body = tc_external_json_decode( wp_remote_retrieve_body( $response ) );
+    $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
     return is_array( $body ) ? $body : null;
 }
 
@@ -158,7 +158,7 @@ function tc_external_get_json( string $url, array $args ): ?array {
  * @param array $window 'modified_after' and 'modified_before' ISO 8601 dates, each optional.
  * @return array{modified_after: string, modified_before: string}
  */
-function tc_normalize_date_window( array $window ): array {
+function tconn_normalize_date_window( array $window ): array {
     return array(
         'modified_after'  => (string) ( $window['modified_after'] ?? '' ),
         'modified_before' => (string) ( $window['modified_before'] ?? '' ),
@@ -167,7 +167,7 @@ function tc_normalize_date_window( array $window ): array {
 
 /**
  * Whether the POST carries a valid core term edit or add-term form nonce. Guards
- * tc_save_term_links(), which runs on saved_term.
+ * tconn_save_term_links(), which runs on saved_term.
  *
  * Term save hooks also fire for programmatic and REST term updates; this
  * confirms the POST data being read came from one of the core term forms.
@@ -176,11 +176,91 @@ function tc_normalize_date_window( array $window ): array {
  * @param int $term_id Term being saved (for the edit form's per-term nonce).
  * @return bool True if either form's nonce verifies.
  */
-function tc_verify_term_nonce( int $term_id ): bool {
+function tconn_verify_term_nonce( int $term_id ): bool {
     if ( isset( $_POST['_wpnonce'] )
         && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'update-tag_' . $term_id ) ) {
         return true;
     }
     return isset( $_POST['_wpnonce_add-tag'] )
         && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce_add-tag'] ) ), 'add-tag' );
+}
+
+/**
+ * Add a page-specific inline script through the script API.
+ *
+ * While the footer scripts are still to come, registers a source-less footer handle
+ * 'tconn-{name}-{n}' and attaches $js to it (each call its own handle, so each script
+ * prints as its own element). Once they have been printed, e.g. from an
+ * admin_footer-{$hook_suffix} callback, prints the script at once with
+ * wp_print_inline_script_tag().
+ *
+ * @since 1.0.0
+ *
+ * @param string   $name Short name for the handle.
+ * @param string   $js   JavaScript code, without the script element tags.
+ * @param string[] $deps Script dependencies.
+ */
+function tconn_add_inline_script( string $name, string $js, array $deps = array( 'jquery' ) ): void {
+    static $count = 0;
+    if ( did_action( 'admin_print_footer_scripts' ) || did_action( 'wp_print_footer_scripts' ) ) {
+        wp_print_inline_script_tag( $js );
+        return;
+    }
+    $handle = 'tconn-' . $name . '-' . ( ++$count );
+    wp_register_script( $handle, false, $deps, TCONN_VERSION, array( 'in_footer' => true ) );
+    wp_enqueue_script( $handle );
+    wp_add_inline_script( $handle, $js );
+}
+
+/**
+ * Print an inline stylesheet through the style API: a source-less handle,
+ * wp_add_inline_style() and wp_print_styles(), at once.
+ *
+ * @since 1.0.0
+ *
+ * @param string $handle Style handle.
+ * @param string $css    CSS, without the style element tags.
+ */
+function tconn_print_inline_style( string $handle, string $css ): void {
+    wp_register_style( $handle, false, array(), TCONN_VERSION );
+    wp_add_inline_style( $handle, wp_strip_all_tags( $css ) );
+    wp_print_styles( $handle );
+}
+
+/**
+ * Decode JSON from a request and sanitize everything in it.
+ *
+ * String values go through $sanitize_string (default sanitize_text_field()), keys
+ * through sanitize_text_field(); numbers, booleans and nulls keep their types. Pass
+ * the value through wp_unslash() first. Callers still validate the shape.
+ *
+ * @since 1.0.0
+ *
+ * @param mixed         $json            Unslashed JSON text.
+ * @param callable|null $sanitize_string Sanitizer for string values: fn( string $value, string $key ): string.
+ * @return array|null The sanitized data, or null when $json isn't a JSON object or array.
+ */
+function tconn_decode_json_request( $json, ?callable $sanitize_string = null ): ?array {
+    $data = is_string( $json ) ? tconn_external_json_decode( $json ) : null;
+    if ( ! is_array( $data ) ) {
+        return null;
+    }
+    $sanitize_string = $sanitize_string ?? static function ( string $value ): string {
+        return sanitize_text_field( $value );
+    };
+    $walk = static function ( array $data ) use ( &$walk, $sanitize_string ): array {
+        $clean = array();
+        foreach ( $data as $key => $value ) {
+            $key = is_int( $key ) ? $key : sanitize_text_field( (string) $key );
+            if ( is_array( $value ) ) {
+                $clean[ $key ] = $walk( $value );
+            } elseif ( is_string( $value ) ) {
+                $clean[ $key ] = $sanitize_string( $value, (string) $key );
+            } elseif ( is_int( $value ) || is_float( $value ) || is_bool( $value ) || null === $value ) {
+                $clean[ $key ] = $value;
+            }
+        }
+        return $clean;
+    };
+    return $walk( $data );
 }

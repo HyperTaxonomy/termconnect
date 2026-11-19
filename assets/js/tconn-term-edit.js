@@ -5,22 +5,22 @@
  *   select peer → immediate lookup for local slug on that peer
  *   found → confirmation pane (description/delegated links preview + warning)
  *   not found → error shown in dropdown, pick different peer
- *   Delegate → AJAX tc_di_set_source → reload
+ *   Delegate → AJAX tconn_di_set_source → reload
  *
  * Slug matching is enforced: only a remote term with the exact same slug
  * as the local term can be delegated. No cross-slug mapping.
  *
  * Flow (active state):
  *   pill shows "[Site: remote-slug ↗]  ×"
- *   Refresh → AJAX tc_di_refresh → reload
- *   × → confirm → AJAX tc_di_remove → reload (empty state shown on reload)
+ *   Refresh → AJAX tconn_di_refresh → reload
+ *   × → confirm → AJAX tconn_di_remove → reload (empty state shown on reload)
  */
-/* global jQuery, ajaxurl, tcDiI18n */
+/* global jQuery, ajaxurl, tconnDiI18n */
 
 ( function ( $ ) {
     'use strict';
 
-    var i18n = ( typeof tcDiI18n !== 'undefined' ) ? tcDiI18n : {};
+    var i18n = ( typeof tconnDiI18n !== 'undefined' ) ? tconnDiI18n : {};
 
     // -------------------------------------------------------------------------
     // Helpers
@@ -36,23 +36,23 @@
     }
 
     function closeDropdown( $container ) {
-        $container.find( '.tc-di-dropdown' ).hide();
-        $( document ).off( 'click.tcDiDrop keydown.tcDiDrop' );
+        $container.find( '.tconn-di-dropdown' ).hide();
+        $( document ).off( 'click.tconnDiDrop keydown.tconnDiDrop' );
     }
 
     function resetContainer( $container ) {
-        $container.find( '.tc-di-site-select' ).val( '' );
-        $container.find( '.tc-di-lookup-status' ).hide().text( '' );
+        $container.find( '.tconn-di-site-select' ).val( '' );
+        $container.find( '.tconn-di-lookup-status' ).hide().text( '' );
     }
 
     // -------------------------------------------------------------------------
     // "+" button — open/close dropdown
     // -------------------------------------------------------------------------
 
-    $( document ).on( 'click', '.tc-di-add-btn', function ( e ) {
+    $( document ).on( 'click', '.tconn-di-add-btn', function ( e ) {
         e.stopPropagation();
-        var $container = $( this ).closest( '.tc-di-container' );
-        var $dropdown  = $container.find( '.tc-di-dropdown' );
+        var $container = $( this ).closest( '.tconn-di-container' );
+        var $dropdown  = $container.find( '.tconn-di-dropdown' );
 
         if ( $dropdown.is( ':visible' ) ) {
             closeDropdown( $container );
@@ -63,11 +63,11 @@
         positionDropdown( $dropdown, $( this ) );
         $dropdown.show();
 
-        $( document ).off( 'click.tcDiDrop keydown.tcDiDrop' ).on( 'click.tcDiDrop', function ( ev ) {
-            if ( ! $( ev.target ).closest( '.tc-di-container' ).length ) {
+        $( document ).off( 'click.tconnDiDrop keydown.tconnDiDrop' ).on( 'click.tconnDiDrop', function ( ev ) {
+            if ( ! $( ev.target ).closest( '.tconn-di-container' ).length ) {
                 closeDropdown( $container );
             }
-        } ).on( 'keydown.tcDiDrop', function ( ev ) {
+        } ).on( 'keydown.tconnDiDrop', function ( ev ) {
             if ( 27 === ev.which ) {
                 closeDropdown( $container );
             }
@@ -78,11 +78,11 @@
     // Peer site selected → immediately look up the local slug on that peer
     // -------------------------------------------------------------------------
 
-    $( document ).on( 'change', '.tc-di-site-select', function () {
-        var $container   = $( this ).closest( '.tc-di-container' );
-        var $field       = $container.closest( '.tc-external-links-field' );
-        var $confirm     = $field.find( '.tc-di-confirm' );
-        var $lookupStatus = $container.find( '.tc-di-lookup-status' );
+    $( document ).on( 'change', '.tconn-di-site-select', function () {
+        var $container   = $( this ).closest( '.tconn-di-container' );
+        var $field       = $container.closest( '.tconn-external-links-field' );
+        var $confirm     = $field.find( '.tconn-di-confirm' );
+        var $lookupStatus = $container.find( '.tconn-di-lookup-status' );
         var peerSiteSlug       = $( this ).val();
         var localSlug    = $container.data( 'local-slug' );
         var termId       = $container.data( 'term-id' );
@@ -99,7 +99,7 @@
         $confirm.hide();
 
         $.post( ajaxurl, {
-            action:      'tc_di_preview_term',
+            action:      'tconn_di_preview_term',
             nonce:       nonce,
             term_id:     termId,
             peer_site_slug:     peerSiteSlug,
@@ -107,24 +107,24 @@
         } ).done( function ( resp ) {
             if ( resp.success ) {
                 var d        = resp.data;
-                var siteLabel = $container.find( '.tc-di-site-select option:selected' ).text();
+                var siteLabel = $container.find( '.tconn-di-site-select option:selected' ).text();
                 var pillLabel = siteLabel + ': ' + localSlug;
 
                 $lookupStatus.hide();
                 closeDropdown( $container );
 
                 // Pending pill.
-                $container.find( '.tc-di-add-btn' ).hide();
-                $container.find( '.tc-di-pending-pill' ).remove();
-                var $pendingPill = $( '<span class="tc-link-pill tc-di-pending-pill">' );
-                var $pillText    = $( '<span class="tc-di-pill-text">' ).text( pillLabel );
+                $container.find( '.tconn-di-add-btn' ).hide();
+                $container.find( '.tconn-di-pending-pill' ).remove();
+                var $pendingPill = $( '<span class="tconn-link-pill tconn-di-pending-pill">' );
+                var $pillText    = $( '<span class="tconn-di-pill-text">' ).text( pillLabel );
                 $pendingPill.append( $pillText );
-                $( '<button type="button" class="tc-link-pill-remove tc-di-cancel-pending">&times;</button>' )
+                $( '<button type="button" class="tconn-link-pill-remove tconn-di-cancel-pending">&times;</button>' )
                     .appendTo( $pendingPill );
                 $pendingPill.appendTo( $container );
 
                 // Store selection on confirm button.
-                $confirm.find( '.tc-di-confirm-btn' )
+                $confirm.find( '.tconn-di-confirm-btn' )
                     .data( 'peer-site-slug', peerSiteSlug )
                     .data( 'remote-slug', localSlug )
                     .data( 'term-id', termId )
@@ -132,25 +132,25 @@
                     .prop( 'disabled', false );
 
                 // Show sync_descendants checkbox only for hierarchical taxonomies.
-                $confirm.find( '.tc-di-sync-descendants-row' ).toggle( hierarchical );
+                $confirm.find( '.tconn-di-sync-descendants-row' ).toggle( hierarchical );
 
                 // Preview.
                 var hasDesc    = !! d.description;
                 var links      = d.delegated_links || [];
-                $confirm.find( '.tc-di-preview-desc' ).text( d.description || '' ).toggle( hasDesc );
+                $confirm.find( '.tconn-di-preview-desc' ).text( d.description || '' ).toggle( hasDesc );
                 var maps = '';
                 $.each( links, function ( i, entry ) {
                     var label = entry.label || entry.platform || entry.url;
-                    maps += '<span class="tc-link-pill" style="opacity:0.85">' +
+                    maps += '<span class="tconn-link-pill" style="opacity:0.85">' +
                         $( '<span>' ).text( label ).html() + '</span> ';
                 } );
-                $confirm.find( '.tc-di-preview-mappings' ).html( maps );
-                $confirm.find( '.tc-di-preview-box' ).toggle( hasDesc || links.length > 0 );
-                $confirm.find( '.tc-di-confirm-status' ).text( '' );
+                $confirm.find( '.tconn-di-preview-mappings' ).html( maps );
+                $confirm.find( '.tconn-di-preview-box' ).toggle( hasDesc || links.length > 0 );
+                $confirm.find( '.tconn-di-confirm-status' ).text( '' );
 
                 // Upgrade pending pill with link.
                 if ( d.link ) {
-                    $pendingPill.find( '.tc-di-pill-text' ).replaceWith(
+                    $pendingPill.find( '.tconn-di-pill-text' ).replaceWith(
                         $( '<a>' ).attr( { href: d.link, target: '_blank', rel: 'noopener noreferrer' } )
                             .css( { color: 'inherit', 'text-decoration': 'none' } )
                             .text( pillLabel + ' ↗' )
@@ -175,22 +175,22 @@
     // Confirm delegation
     // -------------------------------------------------------------------------
 
-    $( document ).on( 'click', '.tc-di-confirm-btn', function () {
+    $( document ).on( 'click', '.tconn-di-confirm-btn', function () {
         var $btn           = $( this ).prop( 'disabled', true );
         var termId         = $btn.data( 'term-id' );
         var peerSiteSlug         = $btn.data( 'peer-site-slug' );
         var remoteSlug     = $btn.data( 'remote-slug' );
         var nonce          = $btn.data( 'nonce' );
-        var $confirm       = $btn.closest( '.tc-di-confirm' );
-        var $status        = $confirm.find( '.tc-di-confirm-status' );
-        var syncDesc     = $confirm.find( '.tc-di-sync-descendants' ).is( ':checked' ) ? 1 : 0;
-        var syncName     = $confirm.find( '.tc-di-sync-name' ).is( ':checked' ) ? 1 : 0;
-        var syncDescFlag = $confirm.find( '.tc-di-sync-description' ).is( ':checked' ) ? 1 : 0;
+        var $confirm       = $btn.closest( '.tconn-di-confirm' );
+        var $status        = $confirm.find( '.tconn-di-confirm-status' );
+        var syncDesc     = $confirm.find( '.tconn-di-sync-descendants' ).is( ':checked' ) ? 1 : 0;
+        var syncName     = $confirm.find( '.tconn-di-sync-name' ).is( ':checked' ) ? 1 : 0;
+        var syncDescFlag = $confirm.find( '.tconn-di-sync-description' ).is( ':checked' ) ? 1 : 0;
 
         $status.text( i18n.delegating || '' );
 
         var baseParams = {
-            action:           'tc_di_set_source',
+            action:           'tconn_di_set_source',
             nonce:            nonce,
             term_id:          termId,
             peer_site_slug:   peerSiteSlug,
@@ -261,14 +261,14 @@
     // Cancel (button or pending pill ×)
     // -------------------------------------------------------------------------
 
-    function tcDiCancelConfirm( $field ) {
-        $field.find( '.tc-di-confirm' ).hide();
-        $field.find( '.tc-di-pending-pill' ).remove();
-        $field.find( '.tc-di-add-btn' ).show();
+    function tconnDiCancelConfirm( $field ) {
+        $field.find( '.tconn-di-confirm' ).hide();
+        $field.find( '.tconn-di-pending-pill' ).remove();
+        $field.find( '.tconn-di-add-btn' ).show();
     }
 
-    $( document ).on( 'click', '.tc-di-cancel-confirm, .tc-di-cancel-pending', function () {
-        tcDiCancelConfirm( $( this ).closest( '.tc-external-links-field' ) );
+    $( document ).on( 'click', '.tconn-di-cancel-confirm, .tconn-di-cancel-pending', function () {
+        tconnDiCancelConfirm( $( this ).closest( '.tconn-external-links-field' ) );
     } );
 
     // -------------------------------------------------------------------------
@@ -276,17 +276,17 @@
     // -------------------------------------------------------------------------
 
     function openPanel( $panel ) {
-        $( '#tc-di-backdrop' ).show();
+        $( '#tconn-di-backdrop' ).show();
         $panel.show();
     }
 
     function closePanel( $panel ) {
         $panel.hide();
-        $( '#tc-di-backdrop' ).hide();
+        $( '#tconn-di-backdrop' ).hide();
     }
 
-    $( document ).on( 'click', '#tc-di-backdrop', function () {
-        closePanel( $( '#tc-di-remove-panel, #tc-di-settings-panel' ) );
+    $( document ).on( 'click', '#tconn-di-backdrop', function () {
+        closePanel( $( '#tconn-di-remove-panel, #tconn-di-settings-panel' ) );
     } );
 
     // -------------------------------------------------------------------------
@@ -295,40 +295,40 @@
 
     var $removeBtn = null;
 
-    $( document ).on( 'click', '.tc-di-remove-btn', function () {
+    $( document ).on( 'click', '.tconn-di-remove-btn', function () {
         $removeBtn = $( this );
         var syncName = $removeBtn.data( 'sync-name' );
         var syncDesc = $removeBtn.data( 'sync-description' );
 
-        $( '#tc-di-restore-name' ).prop( 'checked', true );
-        $( '#tc-di-restore-description' ).prop( 'checked', true );
-        $( '#tc-di-keep-peer-links' ).prop( 'checked', false );
-        $( '#tc-di-remove-status' ).text( '' );
-        $( '#tc-di-remove-confirm-btn' ).prop( 'disabled', false );
+        $( '#tconn-di-restore-name' ).prop( 'checked', true );
+        $( '#tconn-di-restore-description' ).prop( 'checked', true );
+        $( '#tconn-di-keep-peer-links' ).prop( 'checked', false );
+        $( '#tconn-di-remove-status' ).text( '' );
+        $( '#tconn-di-remove-confirm-btn' ).prop( 'disabled', false );
 
-        $( '#tc-di-remove-restore-name-row' ).toggle( '1' === String( syncName ) );
-        $( '#tc-di-remove-restore-desc-row' ).toggle( '1' === String( syncDesc ) );
+        $( '#tconn-di-remove-restore-name-row' ).toggle( '1' === String( syncName ) );
+        $( '#tconn-di-remove-restore-desc-row' ).toggle( '1' === String( syncDesc ) );
 
-        openPanel( $( '#tc-di-remove-panel' ) );
+        openPanel( $( '#tconn-di-remove-panel' ) );
     } );
 
-    $( document ).on( 'click', '#tc-di-remove-cancel-btn', function () {
-        closePanel( $( '#tc-di-remove-panel' ) );
+    $( document ).on( 'click', '#tconn-di-remove-cancel-btn', function () {
+        closePanel( $( '#tconn-di-remove-panel' ) );
         $removeBtn = null;
     } );
 
-    $( document ).on( 'click', '#tc-di-remove-confirm-btn', function () {
+    $( document ).on( 'click', '#tconn-di-remove-confirm-btn', function () {
         if ( ! $removeBtn ) { return; }
         var $btn        = $( this ).prop( 'disabled', true );
         var termId      = $removeBtn.data( 'term-id' );
         var nonce       = $removeBtn.data( 'nonce' );
-        var restoreName = $( '#tc-di-restore-name' ).is( ':checked' ) ? 1 : 0;
-        var restoreDesc = $( '#tc-di-restore-description' ).is( ':checked' ) ? 1 : 0;
-        var keepLinks   = $( '#tc-di-keep-peer-links' ).is( ':checked' ) ? 1 : 0;
-        var $status     = $( '#tc-di-remove-status' );
+        var restoreName = $( '#tconn-di-restore-name' ).is( ':checked' ) ? 1 : 0;
+        var restoreDesc = $( '#tconn-di-restore-description' ).is( ':checked' ) ? 1 : 0;
+        var keepLinks   = $( '#tconn-di-keep-peer-links' ).is( ':checked' ) ? 1 : 0;
+        var $status     = $( '#tconn-di-remove-status' );
 
         $.post( ajaxurl, {
-            action:              'tc_di_remove',
+            action:              'tconn_di_remove',
             nonce:               nonce,
             term_id:             termId,
             restore_name:        restoreName,
@@ -351,30 +351,30 @@
     // Sync settings
     // -------------------------------------------------------------------------
 
-    $( document ).on( 'click', '.tc-di-settings-btn', function () {
+    $( document ).on( 'click', '.tconn-di-settings-btn', function () {
         var $btn = $( this );
-        $( '#tc-di-settings-term-id' ).val( $btn.data( 'term-id' ) );
-        $( '#tc-di-settings-nonce' ).val( $btn.data( 'nonce' ) );
-        $( '#tc-di-settings-sync-name' ).prop( 'checked', '1' === String( $btn.data( 'sync-name' ) ) );
-        $( '#tc-di-settings-sync-description' ).prop( 'checked', '1' === String( $btn.data( 'sync-description' ) ) );
-        $( '#tc-di-settings-status' ).text( '' );
-        $( '#tc-di-settings-save-btn' ).prop( 'disabled', false );
-        openPanel( $( '#tc-di-settings-panel' ) );
+        $( '#tconn-di-settings-term-id' ).val( $btn.data( 'term-id' ) );
+        $( '#tconn-di-settings-nonce' ).val( $btn.data( 'nonce' ) );
+        $( '#tconn-di-settings-sync-name' ).prop( 'checked', '1' === String( $btn.data( 'sync-name' ) ) );
+        $( '#tconn-di-settings-sync-description' ).prop( 'checked', '1' === String( $btn.data( 'sync-description' ) ) );
+        $( '#tconn-di-settings-status' ).text( '' );
+        $( '#tconn-di-settings-save-btn' ).prop( 'disabled', false );
+        openPanel( $( '#tconn-di-settings-panel' ) );
     } );
 
-    $( document ).on( 'click', '#tc-di-settings-cancel-btn', function () {
-        closePanel( $( '#tc-di-settings-panel' ) );
+    $( document ).on( 'click', '#tconn-di-settings-cancel-btn', function () {
+        closePanel( $( '#tconn-di-settings-panel' ) );
     } );
 
-    $( document ).on( 'click', '#tc-di-settings-save-btn', function () {
+    $( document ).on( 'click', '#tconn-di-settings-save-btn', function () {
         var $btn  = $( this ).prop( 'disabled', true );
-        var $status = $( '#tc-di-settings-status' );
+        var $status = $( '#tconn-di-settings-status' );
         $.post( ajaxurl, {
-            action:           'tc_di_update_settings',
-            nonce:            $( '#tc-di-settings-nonce' ).val(),
-            term_id:          $( '#tc-di-settings-term-id' ).val(),
-            sync_name:        $( '#tc-di-settings-sync-name' ).is( ':checked' ) ? 1 : 0,
-            sync_description: $( '#tc-di-settings-sync-description' ).is( ':checked' ) ? 1 : 0,
+            action:           'tconn_di_update_settings',
+            nonce:            $( '#tconn-di-settings-nonce' ).val(),
+            term_id:          $( '#tconn-di-settings-term-id' ).val(),
+            sync_name:        $( '#tconn-di-settings-sync-name' ).is( ':checked' ) ? 1 : 0,
+            sync_description: $( '#tconn-di-settings-sync-description' ).is( ':checked' ) ? 1 : 0,
         } ).done( function ( resp ) {
             if ( resp.success ) {
                 window.location.reload();
@@ -392,15 +392,15 @@
     // Refresh cache
     // -------------------------------------------------------------------------
 
-    $( document ).on( 'click', '.tc-di-refresh-btn', function () {
+    $( document ).on( 'click', '.tconn-di-refresh-btn', function () {
         var $btn    = $( this ).prop( 'disabled', true );
         var termId  = $btn.data( 'term-id' );
         var nonce   = $btn.data( 'nonce' );
-        var $status = $btn.siblings( '.tc-di-action-status' );
+        var $status = $btn.siblings( '.tconn-di-action-status' );
 
         $status.text( i18n.refreshing || '' );
 
-        $.post( ajaxurl, { action: 'tc_di_refresh', nonce: nonce, term_id: termId } )
+        $.post( ajaxurl, { action: 'tconn_di_refresh', nonce: nonce, term_id: termId } )
             .done( function ( resp ) {
                 if ( resp.success ) {
                     window.location.reload();

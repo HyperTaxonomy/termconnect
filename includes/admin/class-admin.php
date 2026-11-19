@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class TC_Admin {
+class TConn_Admin {
 
     /**
      * Hook the admin menus and the plugin's Settings link.
@@ -23,7 +23,7 @@ class TC_Admin {
      */
     public static function register(): void {
         add_action( 'admin_menu', array( __CLASS__, 'register_menus' ), 15 );
-        add_filter( 'plugin_action_links_' . TC_PLUGIN_BASENAME, array( __CLASS__, 'add_settings_link' ) );
+        add_filter( 'plugin_action_links_' . TCONN_PLUGIN_BASENAME, array( __CLASS__, 'add_settings_link' ) );
     }
 
     /**
@@ -59,13 +59,13 @@ class TC_Admin {
             __( 'Terms', 'termconnect' ),
             __( 'Terms', 'termconnect' ),
             'manage_options',
-            'tc-terms',
+            'tconn-terms',
             '__return_empty_string',
             'dashicons-tag',
             6
         );
-        remove_submenu_page( 'tc-terms', 'tc-terms' );
-        return 'tc-terms';
+        remove_submenu_page( 'tconn-terms', 'tconn-terms' );
+        return 'tconn-terms';
     }
 
     /**
@@ -82,8 +82,8 @@ class TC_Admin {
             __( 'Peer Sites', 'termconnect' ),
             __( 'TermConnect Peer Sites', 'termconnect' ),
             'manage_options',
-            'tc-peer-sites',
-            'tc_render_peer_sites_page'
+            'tconn-peer-sites',
+            'tconn_render_peer_sites_page'
         );
 
         add_submenu_page(
@@ -91,8 +91,8 @@ class TC_Admin {
             __( 'Shared Vocabularies', 'termconnect' ),
             __( 'Shared Vocabularies', 'termconnect' ),
             'manage_options',
-            'tc-shared-vocabularies',
-            'tc_sv_render_page'
+            'tconn-shared-vocabularies',
+            'tconn_sv_render_page'
         );
 
         // Plugin settings live under Settings — the standard WP convention.
@@ -101,7 +101,7 @@ class TC_Admin {
             __( 'TermConnect', 'termconnect' ),
             'manage_options',
             'termconnect-settings',
-            array( 'TC_Settings_Page', 'render' )
+            array( 'TConn_Settings_Page', 'render' )
         );
     }
 }
@@ -113,10 +113,10 @@ class TC_Admin {
  *
  * @since 1.0.0
  */
-function tc_admin_justify_help_text() {
+function tconn_admin_justify_help_text() {
     $page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-    if ( in_array( $page, array( 'tc-peer-sites', 'tc-shared-vocabularies', 'termconnect-settings' ), true ) ) {
-        echo '<style>.wrap p:not(td p):not(th p):not(.notice p), .wrap p:has(+ table) { text-align: justify; hyphens: none; }</style>';
+    if ( in_array( $page, array( 'tconn-peer-sites', 'tconn-shared-vocabularies', 'termconnect-settings' ), true ) ) {
+        tconn_print_inline_style( 'tconn-admin-help-text', '.wrap p:not(td p):not(th p):not(.notice p), .wrap p:has(+ table) { text-align: justify; hyphens: none; }' );
     }
 }
-add_action( 'admin_head', 'tc_admin_justify_help_text' );
+add_action( 'admin_head', 'tconn_admin_justify_help_text' );

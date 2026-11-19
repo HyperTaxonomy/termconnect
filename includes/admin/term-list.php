@@ -24,23 +24,23 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
     if ( ! $taxonomy ) {
         return;
     }
-    if ( ! in_array( $taxonomy, TC_Settings::get_enabled_taxonomies(), true ) ) {
+    if ( ! in_array( $taxonomy, TConn_Settings::get_enabled_taxonomies(), true ) ) {
         return;
     }
 
     // Register the column header on both edit-tags and term screens — Screen Options
     // for a taxonomy is shared between the list and edit pages, so the column must be
     // registered on both to appear in Screen Options on the individual term edit page.
-    add_filter( "manage_edit-{$taxonomy}_columns",          'tc_add_ext_links_column',           99 );
-    add_filter( "manage_edit-{$taxonomy}_sortable_columns", 'tc_make_ext_links_column_sortable',  99 );
-    add_filter( "manage_edit-{$taxonomy}_columns",          'tc_add_di_issues_column',           100 );
-    add_filter( "manage_edit-{$taxonomy}_sortable_columns", 'tc_make_di_issues_column_sortable', 100 );
+    add_filter( "manage_edit-{$taxonomy}_columns",          'tconn_add_ext_links_column',           99 );
+    add_filter( "manage_edit-{$taxonomy}_sortable_columns", 'tconn_make_ext_links_column_sortable',  99 );
+    add_filter( "manage_edit-{$taxonomy}_columns",          'tconn_add_di_issues_column',           100 );
+    add_filter( "manage_edit-{$taxonomy}_sortable_columns", 'tconn_make_di_issues_column_sortable', 100 );
 
     // Hide Links and Sync columns by default.
     add_filter( 'default_hidden_columns', static function ( $hidden, $screen ) use ( $taxonomy ) {
         if ( $screen && "edit-{$taxonomy}" === $screen->id ) {
-            $hidden[] = 'tc_ext_links';
-            $hidden[] = 'tc_di_issues';
+            $hidden[] = 'tconn_ext_links';
+            $hidden[] = 'tconn_di_issues';
         }
         return $hidden;
     }, 10, 2 );
@@ -49,18 +49,18 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
         return;
     }
 
-    add_filter( "manage_{$taxonomy}_custom_column",         'tc_render_ext_links_column',        99, 3 );
-    add_filter( "manage_{$taxonomy}_custom_column",         'tc_render_di_issues_column',       100, 3 );
-    add_filter( 'terms_clauses',                            'tc_sort_terms_by_ext_links',        10, 3 );
-    add_filter( 'terms_clauses',                            'tc_sort_terms_by_di_issues',        10, 3 );
-    add_action( 'parse_term_query',                         'tc_apply_ext_links_filter' );
-    add_action( 'parse_term_query',                         'tc_apply_di_issues_filter' );
-    add_action( 'admin_footer',                             'tc_ext_links_filter_sync_script' );
+    add_filter( "manage_{$taxonomy}_custom_column",         'tconn_render_ext_links_column',        99, 3 );
+    add_filter( "manage_{$taxonomy}_custom_column",         'tconn_render_di_issues_column',       100, 3 );
+    add_filter( 'terms_clauses',                            'tconn_sort_terms_by_ext_links',        10, 3 );
+    add_filter( 'terms_clauses',                            'tconn_sort_terms_by_di_issues',        10, 3 );
+    add_action( 'parse_term_query',                         'tconn_apply_ext_links_filter' );
+    add_action( 'parse_term_query',                         'tconn_apply_di_issues_filter' );
+    add_action( 'admin_footer',                             'tconn_ext_links_filter_sync_script' );
 
     // Build link-type options for the JS-injected filter (WP fires restrict_manage_terms,
     // not restrict_manage_{taxonomy}, so PHP-only output is unreliable).
-    $link_types = function_exists( 'tc_get_enabled_link_types_for_taxonomy' )
-        ? tc_get_enabled_link_types_for_taxonomy( $taxonomy )
+    $link_types = function_exists( 'tconn_get_enabled_link_types_for_taxonomy' )
+        ? tconn_get_enabled_link_types_for_taxonomy( $taxonomy )
         : array();
     $link_type_options = array();
     foreach ( $link_types as $slug => $type ) {
@@ -68,7 +68,7 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
     }
 
     $filter_config = array(
-        'current'  => sanitize_text_field( wp_unslash( $_GET['tc_ext_links_filter'] ?? '' ) ),
+        'current'  => sanitize_text_field( wp_unslash( $_GET['tconn_ext_links_filter'] ?? '' ) ),
         'all'      => __( 'All External Links', 'termconnect' ),
         'yes'      => __( 'With External Links', 'termconnect' ),
         'no'       => __( 'No External Links', 'termconnect' ),
@@ -77,7 +77,7 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
     );
 
     $di_filter_config = array(
-        'current'       => sanitize_key( wp_unslash( $_GET['tc_di_issues_filter'] ?? '' ) ),
+        'current'       => sanitize_key( wp_unslash( $_GET['tconn_di_issues_filter'] ?? '' ) ),
         'all'           => __( 'All Sync Status', 'termconnect' ),
         'not_delegated' => __( 'Not Delegated', 'termconnect' ),
         'synced'        => __( 'Synced Successfully', 'termconnect' ),
@@ -86,25 +86,25 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
 
     add_action( 'admin_head', static function () use ( $filter_config, $di_filter_config ): void {
         ?>
-        <style>
-        .column-tc_ext_links { width: 72px; text-align: center; }
-        .wp-list-table th.column-tc_ext_links { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .wp-list-table th.column-tc_ext_links a { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; }
-        .wp-list-table th.column-tc_ext_links a > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
-        .tc-add-link { color: #a7aaad; text-decoration: none; font-size: 18px; line-height: 1; }
-        .tc-add-link:hover { color: #2271b1; }
-        .tc-ext-links-filter select { height: 32px !important; min-height: 0 !important; line-height: 30px !important; }
-        .column-tc_di_issues { width: 70px; text-align: center; }
-        .wp-list-table th.column-tc_di_issues { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .wp-list-table th.column-tc_di_issues a { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; }
-        .wp-list-table th.column-tc_di_issues a > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
-        .tc-di-issue-icon { color: #d63638; text-decoration: none; }
-        .tc-di-issue-icon:hover { color: #b32d2e; }
-        </style>
-        <script>
-        window.tcExtLinksFilter = <?php echo wp_json_encode( $filter_config ); ?>;
-        window.tcDiIssuesFilter = <?php echo wp_json_encode( $di_filter_config ); ?>;
-        </script>
+        <?php ob_start(); ?>
+        .column-tconn_ext_links { width: 72px; text-align: center; }
+        .wp-list-table th.column-tconn_ext_links { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .wp-list-table th.column-tconn_ext_links a { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; }
+        .wp-list-table th.column-tconn_ext_links a > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+        .tconn-add-link { color: #a7aaad; text-decoration: none; font-size: 18px; line-height: 1; }
+        .tconn-add-link:hover { color: #2271b1; }
+        .tconn-ext-links-filter select { height: 32px !important; min-height: 0 !important; line-height: 30px !important; }
+        .column-tconn_di_issues { width: 70px; text-align: center; }
+        .wp-list-table th.column-tconn_di_issues { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .wp-list-table th.column-tconn_di_issues a { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; }
+        .wp-list-table th.column-tconn_di_issues a > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+        .tconn-di-issue-icon { color: #d63638; text-decoration: none; }
+        .tconn-di-issue-icon:hover { color: #b32d2e; }
+        <?php tconn_print_inline_style( 'tconn-term-list', ob_get_clean() ); ?>
+        <?php ob_start(); ?>
+        window.tconnExtLinksFilter = <?php echo wp_json_encode( $filter_config ); ?>;
+        window.tconnDiIssuesFilter = <?php echo wp_json_encode( $di_filter_config ); ?>;
+        <?php tconn_add_inline_script( 'term-list', ob_get_clean() ); ?>
         <?php
     } );
 } );
@@ -118,12 +118,12 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
  *
  * @since 1.0.0
  */
-function tc_add_ext_links_column( array $columns ): array {
+function tconn_add_ext_links_column( array $columns ): array {
     // Insert after Visibility (htax_hidden) when HyperTaxonomy is active, otherwise append.
     if ( function_exists( 'htax_insert_column_after' ) ) {
-        return htax_insert_column_after( $columns, 'htax_hidden', 'tc_ext_links', __( 'Links', 'termconnect' ) );
+        return htax_insert_column_after( $columns, 'htax_hidden', 'tconn_ext_links', __( 'Links', 'termconnect' ) );
     }
-    $columns['tc_ext_links'] = __( 'Links', 'termconnect' );
+    $columns['tconn_ext_links'] = __( 'Links', 'termconnect' );
     return $columns;
 }
 
@@ -132,8 +132,8 @@ function tc_add_ext_links_column( array $columns ): array {
  *
  * @since 1.0.0
  */
-function tc_make_ext_links_column_sortable( array $sortable ): array {
-    $sortable['tc_ext_links'] = 'tc_ext_links';
+function tconn_make_ext_links_column_sortable( array $sortable ): array {
+    $sortable['tconn_ext_links'] = 'tconn_ext_links';
     return $sortable;
 }
 
@@ -142,8 +142,8 @@ function tc_make_ext_links_column_sortable( array $sortable ): array {
  *
  * @since 1.0.0
  */
-function tc_make_di_issues_column_sortable( array $sortable ): array {
-    $sortable['tc_di_issues'] = 'tc_di_issues';
+function tconn_make_di_issues_column_sortable( array $sortable ): array {
+    $sortable['tconn_di_issues'] = 'tconn_di_issues';
     return $sortable;
 }
 
@@ -152,11 +152,11 @@ function tc_make_di_issues_column_sortable( array $sortable ): array {
  *
  * @since 1.0.0
  */
-function tc_add_di_issues_column( array $columns ): array {
+function tconn_add_di_issues_column( array $columns ): array {
     if ( function_exists( 'htax_insert_column_after' ) ) {
-        return htax_insert_column_after( $columns, 'tc_ext_links', 'tc_di_issues', __( 'Sync', 'termconnect' ) );
+        return htax_insert_column_after( $columns, 'tconn_ext_links', 'tconn_di_issues', __( 'Sync', 'termconnect' ) );
     }
-    $columns['tc_di_issues'] = __( 'Sync', 'termconnect' );
+    $columns['tconn_di_issues'] = __( 'Sync', 'termconnect' );
     return $columns;
 }
 
@@ -165,17 +165,17 @@ function tc_add_di_issues_column( array $columns ): array {
  *
  * @since 1.0.0
  */
-function tc_render_di_issues_column( string $output, string $column, int $term_id ): string {
-    if ( 'tc_di_issues' !== $column ) {
+function tconn_render_di_issues_column( string $output, string $column, int $term_id ): string {
+    if ( 'tconn_di_issues' !== $column ) {
         return $output;
     }
-    $issues = get_term_meta( $term_id, TC_META_REL_SYNC_ISSUES, true );
+    $issues = get_term_meta( $term_id, TCONN_META_REL_SYNC_ISSUES, true );
     if ( empty( $issues ) || ! is_array( $issues ) ) {
         return $output;
     }
     $count    = count( $issues );
-    $edit_url = add_query_arg( 'tc_scroll', 'tc-delegated-identity-row', get_edit_term_link( $term_id ) );
-    return '<a href="' . esc_url( $edit_url ) . '" class="tc-di-issue-icon" title="'
+    $edit_url = add_query_arg( 'tconn_scroll', 'tconn-delegated-identity-row', get_edit_term_link( $term_id ) );
+    return '<a href="' . esc_url( $edit_url ) . '" class="tconn-di-issue-icon" title="'
         . esc_attr( sprintf(
             /* translators: %d: number of stale rows */
             _n( '%d stale relationship row', '%d stale relationship rows', $count, 'termconnect' ),
@@ -199,20 +199,20 @@ function tc_render_di_issues_column( string $output, string $column, int $term_i
  *
  * @since 1.0.0
  */
-function tc_render_ext_links_column( string $output, string $column, int $term_id ): string {
-    if ( 'tc_ext_links' !== $column ) {
+function tconn_render_ext_links_column( string $output, string $column, int $term_id ): string {
+    if ( 'tconn_ext_links' !== $column ) {
         return $output;
     }
 
-    $count = tc_count_ext_links_for_term( $term_id );
+    $count = tconn_count_ext_links_for_term( $term_id );
     $edit_url = get_edit_term_link( $term_id );
 
     if ( $count > 0 ) {
-        return '<a href="' . esc_url( $edit_url ) . '#tc-external-links">'
+        return '<a href="' . esc_url( $edit_url ) . '#tconn-external-links">'
             . esc_html( number_format_i18n( $count ) ) . '</a>';
     }
 
-    return '<a href="' . esc_url( $edit_url ) . '#tc-external-links" class="tc-add-link" aria-label="'
+    return '<a href="' . esc_url( $edit_url ) . '#tconn-external-links" class="tconn-add-link" aria-label="'
         . esc_attr__( 'Add external link', 'termconnect' ) . '">+</a>';
 }
 
@@ -222,11 +222,11 @@ function tc_render_ext_links_column( string $output, string $column, int $term_i
  * @param int $term_id Term ID.
  * @return int
  */
-function tc_count_ext_links_for_term( int $term_id ): int {
+function tconn_count_ext_links_for_term( int $term_id ): int {
     // From the term meta cache, which term lists load for all their rows in one query.
     $count = 0;
     foreach ( (array) get_term_meta( $term_id ) as $key => $values ) {
-        if ( 0 === strpos( (string) $key, '_tc_link_' ) ) {
+        if ( 0 === strpos( (string) $key, '_tconn_link_' ) ) {
             foreach ( (array) $values as $value ) {
                 if ( '' !== (string) $value ) {
                     $count++;
@@ -246,8 +246,8 @@ function tc_count_ext_links_for_term( int $term_id ): int {
  *
  * @since 1.0.0
  */
-function tc_sort_terms_by_ext_links( array $clauses, array $taxonomies, array $args ): array {
-    if ( ! is_admin() || ( $args['orderby'] ?? '' ) !== 'tc_ext_links' ) {
+function tconn_sort_terms_by_ext_links( array $clauses, array $taxonomies, array $args ): array {
+    if ( ! is_admin() || ( $args['orderby'] ?? '' ) !== 'tconn_ext_links' ) {
         return $clauses;
     }
 
@@ -261,7 +261,7 @@ function tc_sort_terms_by_ext_links( array $clauses, array $taxonomies, array $a
         SELECT COUNT(*)
         FROM {$wpdb->termmeta} tm
         WHERE tm.term_id = t.term_id
-          AND tm.meta_key LIKE '\_tc\_link\_%'
+          AND tm.meta_key LIKE '\_tconn\_link\_%'
           AND tm.meta_value != ''
     ) {$order}";
     $clauses['order'] = '';
@@ -274,8 +274,8 @@ function tc_sort_terms_by_ext_links( array $clauses, array $taxonomies, array $a
  *
  * @since 1.0.0
  */
-function tc_sort_terms_by_di_issues( array $clauses, array $taxonomies, array $args ): array {
-    if ( ! is_admin() || ( $args['orderby'] ?? '' ) !== 'tc_di_issues' ) {
+function tconn_sort_terms_by_di_issues( array $clauses, array $taxonomies, array $args ): array {
+    if ( ! is_admin() || ( $args['orderby'] ?? '' ) !== 'tconn_di_issues' ) {
         return $clauses;
     }
 
@@ -292,7 +292,7 @@ function tc_sort_terms_by_di_issues( array $clauses, array $taxonomies, array $a
             WHERE tm.term_id = t.term_id
               AND tm.meta_key = %s
         ) {$order}",
-        TC_META_REL_SYNC_ISSUES
+        TCONN_META_REL_SYNC_ISSUES
     );
     $clauses['order'] = '';
 
@@ -308,14 +308,14 @@ function tc_sort_terms_by_di_issues( array $clauses, array $taxonomies, array $a
  *
  * @since 1.0.0
  */
-function tc_apply_ext_links_filter( WP_Term_Query $query ): void {
+function tconn_apply_ext_links_filter( WP_Term_Query $query ): void {
     if ( ! is_admin() ) {
         return;
     }
 
     // Not sanitize_key(): the "By Link Type" value is `lt:<slug>` and sanitize_key
     // would strip the colon. The slug portion is sanitize_key'd below before use.
-    $filter = sanitize_text_field( wp_unslash( $_GET['tc_ext_links_filter'] ?? '' ) );
+    $filter = sanitize_text_field( wp_unslash( $_GET['tconn_ext_links_filter'] ?? '' ) );
     if ( '' === $filter ) {
         return;
     }
@@ -325,14 +325,14 @@ function tc_apply_ext_links_filter( WP_Term_Query $query ): void {
     if ( 'yes' === $filter ) {
         $ids = $wpdb->get_col(
             "SELECT DISTINCT term_id FROM {$wpdb->termmeta}
-             WHERE meta_key LIKE '\_tc\_link\_%' AND meta_value != ''"
+             WHERE meta_key LIKE '\_tconn\_link\_%' AND meta_value != ''"
         );
         $query->query_vars['include'] = array_map( 'intval', $ids ) ?: array( 0 );
 
     } elseif ( 'no' === $filter ) {
         $ids = $wpdb->get_col(
             "SELECT DISTINCT term_id FROM {$wpdb->termmeta}
-             WHERE meta_key LIKE '\_tc\_link\_%' AND meta_value != ''"
+             WHERE meta_key LIKE '\_tconn\_link\_%' AND meta_value != ''"
         );
         $query->query_vars['exclude'] = array_map( 'intval', $ids ) ?: array( 0 );
 
@@ -342,7 +342,7 @@ function tc_apply_ext_links_filter( WP_Term_Query $query ): void {
             $ids = $wpdb->get_col( $wpdb->prepare(
                 "SELECT DISTINCT term_id FROM {$wpdb->termmeta}
                  WHERE meta_key = %s AND meta_value != ''",
-                '_tc_link_' . $slug
+                '_tconn_link_' . $slug
             ) );
             $query->query_vars['include'] = array_map( 'intval', $ids ) ?: array( 0 );
         }
@@ -354,27 +354,27 @@ function tc_apply_ext_links_filter( WP_Term_Query $query ): void {
  *
  * @since 1.0.0
  */
-function tc_apply_di_issues_filter( WP_Term_Query $query ): void {
+function tconn_apply_di_issues_filter( WP_Term_Query $query ): void {
     if ( ! is_admin() ) {
         return;
     }
-    $filter = sanitize_key( wp_unslash( $_GET['tc_di_issues_filter'] ?? '' ) );
+    $filter = sanitize_key( wp_unslash( $_GET['tconn_di_issues_filter'] ?? '' ) );
     if ( '' === $filter ) {
         return;
     }
 
     if ( 'not_delegated' === $filter ) {
-        $ids = tc_get_term_ids_with_meta( TC_META_IDENTITY_SOURCE );
+        $ids = tconn_get_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE );
         $query->query_vars['exclude'] = $ids ?: array( 0 );
 
     } elseif ( 'synced' === $filter ) {
-        $delegated = tc_get_term_ids_with_meta( TC_META_IDENTITY_SOURCE );
-        $stale     = tc_get_term_ids_with_meta( TC_META_REL_SYNC_ISSUES );
+        $delegated = tconn_get_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE );
+        $stale     = tconn_get_term_ids_with_meta( TCONN_META_REL_SYNC_ISSUES );
         $synced    = array_values( array_diff( $delegated, $stale ) );
         $query->query_vars['include'] = $synced ?: array( 0 );
 
     } elseif ( 'stale' === $filter ) {
-        $ids = tc_get_term_ids_with_meta( TC_META_REL_SYNC_ISSUES );
+        $ids = tconn_get_term_ids_with_meta( TCONN_META_REL_SYNC_ISSUES );
         $query->query_vars['include'] = $ids ?: array( 0 );
     }
 }
@@ -388,9 +388,9 @@ function tc_apply_di_issues_filter( WP_Term_Query $query ): void {
  *
  * @since 1.0.0
  */
-function tc_ext_links_filter_sync_script(): void {
+function tconn_ext_links_filter_sync_script(): void {
     ?>
-    <script>
+    <?php ob_start(); ?>
     // Wrap in ready() so this runs after HyperTaxonomy's $(document).ready() handler has
     // registered its atcf:termFilterInserted listener.
     jQuery( document ).ready( function ( $ ) {
@@ -402,7 +402,7 @@ function tc_ext_links_filter_sync_script(): void {
 
         var $tableHead = $( '.wp-list-table thead' );
 
-        function tcMakeObserver( syncFn ) {
+        function tconnMakeObserver( syncFn ) {
             if ( ! $tableHead.length || ! window.MutationObserver ) { return; }
             var obs = new MutationObserver( function ( mutations ) {
                 var needsSync = false;
@@ -414,7 +414,7 @@ function tc_ext_links_filter_sync_script(): void {
             $tableHead.find( 'th' ).each( function () { obs.observe( this, { attributes: true } ); } );
         }
 
-        function tcInjectFilter( $container ) {
+        function tconnInjectFilter( $container ) {
             $searchForm.prepend( $container );
             $( document ).trigger( 'atcf:termFilterInserted', [ $container ] );
             // Fallback positioning when HyperTaxonomy is not active.
@@ -437,9 +437,9 @@ function tc_ext_links_filter_sync_script(): void {
         }
 
         // --- External Links filter — injected first so it appears first (leftmost) ---
-        var cfg = window.tcExtLinksFilter;
+        var cfg = window.tconnExtLinksFilter;
         if ( cfg ) {
-            var $sel = $( '<select id="tc_ext_links_filter" name="tc_ext_links_filter"></select>' );
+            var $sel = $( '<select id="tconn_ext_links_filter" name="tconn_ext_links_filter"></select>' );
             $sel.css( 'max-width', '150px' );
 
             $sel.append( $( '<option>' ).val( '' ).text( cfg.all ) );
@@ -458,75 +458,75 @@ function tc_ext_links_filter_sync_script(): void {
 
             // Use atcf-term-filters as a second class so HyperTaxonomy's proactive setTimeout(0)
             // absorption also finds this container, regardless of event timing.
-            var $container = $( '<div class="tc-ext-links-filter atcf-term-filters"></div>' ).append( $sel );
-            tcInjectFilter( $container );
+            var $container = $( '<div class="tconn-ext-links-filter atcf-term-filters"></div>' ).append( $sel );
+            tconnInjectFilter( $container );
 
             function syncTcExtLinksFilter() {
-                var $col = $( '.wp-list-table th.column-tc_ext_links' );
+                var $col = $( '.wp-list-table th.column-tconn_ext_links' );
                 var isHidden = $col.length && ( $col.hasClass( 'hidden' ) || $col.css( 'display' ) === 'none' );
-                $( '#tc_ext_links_filter' )[ isHidden ? 'hide' : 'show' ]();
+                $( '#tconn_ext_links_filter' )[ isHidden ? 'hide' : 'show' ]();
             }
             syncTcExtLinksFilter();
-            tcMakeObserver( syncTcExtLinksFilter );
+            tconnMakeObserver( syncTcExtLinksFilter );
         }
 
         // --- Sync Status (di issues) filter — inserted AFTER External Links filter ---
-        var diCfg = window.tcDiIssuesFilter;
+        var diCfg = window.tconnDiIssuesFilter;
         if ( diCfg ) {
-            var $diSel = $( '<select id="tc_di_issues_filter" name="tc_di_issues_filter"></select>' );
+            var $diSel = $( '<select id="tconn_di_issues_filter" name="tconn_di_issues_filter"></select>' );
             $diSel.css( 'max-width', '150px' );
             $diSel.append( $( '<option>' ).val( '' ).text( diCfg.all ) );
             $diSel.append( $( '<option>' ).val( 'not_delegated' ).text( diCfg.not_delegated ).prop( 'selected', diCfg.current === 'not_delegated' ) );
             $diSel.append( $( '<option>' ).val( 'synced' ).text( diCfg.synced ).prop( 'selected', diCfg.current === 'synced' ) );
             $diSel.append( $( '<option>' ).val( 'stale' ).text( diCfg.stale ).prop( 'selected', diCfg.current === 'stale' ) );
 
-            var $diContainer = $( '<div class="tc-di-issues-filter atcf-term-filters"></div>' ).append( $diSel );
+            var $diContainer = $( '<div class="tconn-di-issues-filter atcf-term-filters"></div>' ).append( $diSel );
             // Insert immediately after External Links container when present so order is
-            // [Ext Links] [Sync Status]; fall back to tcInjectFilter if Ext Links is absent.
+            // [Ext Links] [Sync Status]; fall back to tconnInjectFilter if Ext Links is absent.
             if ( cfg && $container && $container.length ) {
                 $container.after( $diContainer );
                 $( document ).trigger( 'atcf:termFilterInserted', [ $diContainer ] );
             } else {
-                tcInjectFilter( $diContainer );
+                tconnInjectFilter( $diContainer );
             }
 
             function syncTcDiIssuesFilter() {
-                var $col = $( '.wp-list-table th.column-tc_di_issues' );
+                var $col = $( '.wp-list-table th.column-tconn_di_issues' );
                 var isHidden = $col.length && ( $col.hasClass( 'hidden' ) || $col.css( 'display' ) === 'none' );
-                $( '#tc_di_issues_filter' )[ isHidden ? 'hide' : 'show' ]();
+                $( '#tconn_di_issues_filter' )[ isHidden ? 'hide' : 'show' ]();
             }
             syncTcDiIssuesFilter();
-            tcMakeObserver( syncTcDiIssuesFilter );
+            tconnMakeObserver( syncTcDiIssuesFilter );
         }
 
     } );
-    </script>
-    <script>
+    <?php tconn_add_inline_script( 'term-list', ob_get_clean() ); ?>
+    <?php ob_start(); ?>
     ( function ( $ ) {
         // Navigate on change (resets to page 1), same as ATCF's location filter.
-        $( document ).on( 'change', '#tc_ext_links_filter', function () {
+        $( document ).on( 'change', '#tconn_ext_links_filter', function () {
             var url = new URL( window.location.href );
             var val = $( this ).val();
             if ( val ) {
-                url.searchParams.set( 'tc_ext_links_filter', val );
+                url.searchParams.set( 'tconn_ext_links_filter', val );
             } else {
-                url.searchParams.delete( 'tc_ext_links_filter' );
+                url.searchParams.delete( 'tconn_ext_links_filter' );
             }
             url.searchParams.delete( 'paged' );
             window.location.href = url.toString();
         } );
-        $( document ).on( 'change', '#tc_di_issues_filter', function () {
+        $( document ).on( 'change', '#tconn_di_issues_filter', function () {
             var url = new URL( window.location.href );
             var val = $( this ).val();
             if ( val ) {
-                url.searchParams.set( 'tc_di_issues_filter', val );
+                url.searchParams.set( 'tconn_di_issues_filter', val );
             } else {
-                url.searchParams.delete( 'tc_di_issues_filter' );
+                url.searchParams.delete( 'tconn_di_issues_filter' );
             }
             url.searchParams.delete( 'paged' );
             window.location.href = url.toString();
         } );
     } )( jQuery );
-    </script>
+    <?php tconn_add_inline_script( 'term-list', ob_get_clean() ); ?>
     <?php
 }

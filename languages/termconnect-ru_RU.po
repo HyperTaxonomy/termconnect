@@ -1578,10 +1578,10 @@ msgstr "Списки внешних записей"
 
 #: includes/admin/settings.php:518
 msgid ""
-"Post lists fetched from peer sites for [tc_peer_posts] and HyperTaxonomy "
+"Post lists fetched from peer sites for [tconn_peer_posts] and HyperTaxonomy "
 "related posts."
 msgstr ""
-"Списки записей, получаемые со сторонних сайтов для [tc_peer_posts] и "
+"Списки записей, получаемые со сторонних сайтов для [tconn_peer_posts] и "
 "связанных записей HyperTaxonomy."
 
 #: includes/admin/settings.php:531
@@ -3356,8 +3356,8 @@ msgid "Template (style variant)"
 msgstr "Шаблон (вариант стиля)"
 
 #: blocks/peer-posts/src/index.js:291
-msgid "CSS class suffix added as tc-result-{template}."
-msgstr "Суффикс CSS-класса, добавляемый как tc-result-{template}."
+msgid "CSS class suffix added as tconn-result-{template}."
+msgstr "Суффикс CSS-класса, добавляемый как tconn-result-{template}."
 
 #: blocks/peer-posts/src/index.js:296
 msgid "Meta line"

@@ -6,11 +6,11 @@ nav_order: 6
 
 # Stored Settings
 
-TermConnect stores its settings in the `tc_settings` WordPress option.
+TermConnect stores its settings in the `tconn_settings` WordPress option.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `expose_links_api` | bool | `true` | When `true`, external links are included in REST responses when the request carries `X-TermConnect`. The consuming site may connect terms based on overlapping external links. When `false`, suppresses `tc_links` even for requests from TermConnect sites. |
+| `expose_links_api` | bool | `true` | When `true`, external links are included in REST responses when the request carries `X-TermConnect`. The consuming site may connect terms based on overlapping external links. When `false`, suppresses `tconn_links` even for requests from TermConnect sites. |
 | `link_types_show_see_also` | bool | `true` | Show "See also" section on term archives |
 | `see_also_format` | string | `'inline'` | `'inline'` or `'list'` |
 | `see_also_label` | string | `'See also:'` | Label prepended in inline format |
@@ -27,4 +27,4 @@ TermConnect stores its settings in the `tc_settings` WordPress option.
 | `delete_on_uninstall` | bool | `false` | Also delete link types, enabled taxonomies, Shared Vocabulary sources, term link and delegated identity data, and visitor link suggestions when the plugin is uninstalled (settings, scheduled tasks, caches and review queues are always removed) |
 | `external_site_blacklist` | string[] | `[]` | Blocked domains; each also blocks its subdomains |
 
-Enabled taxonomies are stored separately in `tc_enabled_taxonomies` as a flat array of taxonomy slugs. Link type definitions are stored in `tc_link_types`. Shared Vocabularies source configs are stored in `tc_shared_vocabularies`. The delegated identity redirect review queue is stored in `tc_identity_redirect_queue`. `tc_feed_reschedule` is a temporary flag set on activation: the next page load schedules every enabled feed, then deletes it.
+Enabled taxonomies are stored separately in `tconn_enabled_taxonomies` as a flat array of taxonomy slugs. Link type definitions are stored in `tconn_link_types`. Shared Vocabularies source configs are stored in `tconn_shared_vocabularies`. The delegated identity redirect review queue is stored in `tconn_identity_redirect_queue`. `tconn_feed_reschedule` is a temporary flag set on activation: the next page load schedules every enabled feed, then deletes it.

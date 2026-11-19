@@ -1380,7 +1380,7 @@ msgstr ""
 
 #: includes/admin/settings.php:518
 msgid ""
-"Post lists fetched from peer sites for [tc_peer_posts] and HyperTaxonomy "
+"Post lists fetched from peer sites for [tconn_peer_posts] and HyperTaxonomy "
 "related posts."
 msgstr ""
 
@@ -2963,7 +2963,7 @@ msgid "Template (style variant)"
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:291
-msgid "CSS class suffix added as tc-result-{template}."
+msgid "CSS class suffix added as tconn-result-{template}."
 msgstr ""
 
 #: blocks/peer-posts/src/index.js:296

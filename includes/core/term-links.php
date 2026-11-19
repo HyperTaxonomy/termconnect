@@ -4,8 +4,8 @@
  *
  * Registry, storage, and public API for external links on terms.
  * Link types (namespaces such as Wikidata, GeoNames) are stored in the
- * tc_link_types option as a flat array of definition arrays.
- * Per-term values are stored as _tc_link_{slug} term meta.
+ * tconn_link_types option as a flat array of definition arrays.
+ * Per-term values are stored as _tconn_link_{slug} term meta.
  *
  * @package TermConnect
  * @since 1.0.0
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param int $term_id
  * @return bool True if HT is active and the term has an outgoing redirect.
  */
-function tc_is_redirect(int $term_id): bool
+function tconn_is_redirect(int $term_id): bool
 {
     return function_exists('htax_is_redirect') && htax_is_redirect($term_id);
 }
@@ -37,7 +37,7 @@ function tc_is_redirect(int $term_id): bool
  *
  * @return int[]
  */
-function tc_get_all_redirect_term_ids(): array
+function tconn_get_all_redirect_term_ids(): array
 {
     if ( ! function_exists( 'htax_is_redirect' ) ) {
         return array();
@@ -63,14 +63,14 @@ function tc_get_all_redirect_term_ids(): array
 /**
  * Returns hardcoded definitions for all built-in link types.
  *
- * Used to seed tc_link_types on activation and to back-fill any types
+ * Used to seed tconn_link_types on activation and to back-fill any types
  * added in later versions that are not yet in the stored option.
  * All built-in types ship disabled; admins enable the ones relevant to their content.
  *
  * @since 1.0.0
  * @return array[] Indexed array of link type definition arrays.
  */
-function tc_get_builtin_link_types(): array {
+function tconn_get_builtin_link_types(): array {
     return array(
 
         // --- General reference ---
@@ -306,18 +306,18 @@ function tc_get_builtin_link_types(): array {
 /**
  * Returns all link type definitions, keyed by slug.
  *
- * Reads from the tc_link_types option. Built-in types not yet present in the
+ * Reads from the tconn_link_types option. Built-in types not yet present in the
  * stored option (added in a later version of HT) are merged in as disabled
  * defaults so they appear in the admin without requiring a re-activation.
  *
  * Third-party plugins may add custom link types programmatically via the
- * tc_link_types filter, which receives the full keyed array.
+ * tconn_link_types filter, which receives the full keyed array.
  *
  * @since 1.0.0
  * @return array[] [ slug => definition ]
  */
-function tc_get_all_link_types(): array {
-    $stored = get_option( 'tc_link_types', array() );
+function tconn_get_all_link_types(): array {
+    $stored = get_option( 'tconn_link_types', array() );
     if ( ! is_array( $stored ) ) {
         $stored = array();
     }
@@ -330,13 +330,13 @@ function tc_get_all_link_types(): array {
     }
 
     // Back-fill built-in types not yet in the stored option.
-    foreach ( tc_get_builtin_link_types() as $default ) {
+    foreach ( tconn_get_builtin_link_types() as $default ) {
         if ( ! isset( $by_slug[ $default['slug'] ] ) ) {
             $by_slug[ $default['slug'] ] = $default;
         }
     }
 
-    return apply_filters( 'tc_link_types', $by_slug );
+    return apply_filters( 'tconn_link_types', $by_slug );
 }
 
 /**
@@ -350,9 +350,9 @@ function tc_get_all_link_types(): array {
  * @since 1.0.0
  * @return array[]
  */
-function tc_get_manageable_link_types(): array {
+function tconn_get_manageable_link_types(): array {
     return array_filter(
-        tc_get_all_link_types(),
+        tconn_get_all_link_types(),
         static function ( $type ) {
             return empty( $type['provider'] );
         }
@@ -365,7 +365,7 @@ function tc_get_manageable_link_types(): array {
  * sorted by label.
  *
  * Only genuine TermConnect peers are listed. Provider-registered link types are
- * excluded via tc_get_manageable_link_types() — this keeps companion-plugin
+ * excluded via tconn_get_manageable_link_types() — this keeps companion-plugin
  * entries (e.g. TermConnect Social' social networks and its "Local site"
  * type) out of the picker — and the platform filter limits the result to
  * WordPress peers and feeds.
@@ -373,9 +373,9 @@ function tc_get_manageable_link_types(): array {
  * @since 1.0.0
  * @return array[] List of array{ slug: string, label: string, platform: string }.
  */
-function tc_get_browsable_peers(): array {
+function tconn_get_browsable_peers(): array {
     $out = array();
-    foreach ( tc_get_manageable_link_types() as $slug => $type ) {
+    foreach ( tconn_get_manageable_link_types() as $slug => $type ) {
         if ( empty( $type['enabled'] ) ) {
             continue;
         }
@@ -403,9 +403,9 @@ function tc_get_browsable_peers(): array {
  * @since 1.0.0
  * @return array[]
  */
-function tc_get_enabled_link_types(): array {
+function tconn_get_enabled_link_types(): array {
     return array_filter(
-        tc_get_all_link_types(),
+        tconn_get_all_link_types(),
         static function ( $type ) {
             return ! empty( $type['enabled'] );
         }
@@ -423,9 +423,9 @@ function tc_get_enabled_link_types(): array {
  * @param string $taxonomy Taxonomy slug.
  * @return array[]
  */
-function tc_get_enabled_link_types_for_taxonomy( string $taxonomy ): array {
+function tconn_get_enabled_link_types_for_taxonomy( string $taxonomy ): array {
     return array_filter(
-        tc_get_all_link_types(),
+        tconn_get_all_link_types(),
         static function ( $type ) use ( $taxonomy ) {
             if ( empty( $type['enabled'] ) ) {
                 return false;
@@ -445,9 +445,9 @@ function tc_get_enabled_link_types_for_taxonomy( string $taxonomy ): array {
  * @param string $platform Platform slug: 'wordpress', 'feed', or 'other'.
  * @return array[]
  */
-function tc_get_platform_link_types( string $platform ): array {
+function tconn_get_platform_link_types( string $platform ): array {
     return array_filter(
-        tc_get_all_link_types(),
+        tconn_get_all_link_types(),
         static function ( $type ) use ( $platform ) {
             return ! empty( $type['enabled'] ) && isset( $type['platform'] ) && $type['platform'] === $platform;
         }
@@ -461,13 +461,13 @@ function tc_get_platform_link_types( string $platform ): array {
  * @param string $slug Link type slug.
  * @return array|null
  */
-function tc_get_link_type( string $slug ): ?array {
-    $types = tc_get_all_link_types();
+function tconn_get_link_type( string $slug ): ?array {
+    $types = tconn_get_all_link_types();
     return isset( $types[ $slug ] ) ? $types[ $slug ] : null;
 }
 
 /**
- * Persists the tc_link_types option from the keyed-by-slug array.
+ * Persists the tconn_link_types option from the keyed-by-slug array.
  *
  * Converts the associative array back to an indexed array before saving so
  * the option format stays consistent (array of definitions, not a map).
@@ -476,16 +476,16 @@ function tc_get_link_type( string $slug ): ?array {
  * @param array[] $types [ slug => definition ]
  * @return bool True if the option was updated.
  */
-function tc_set_link_types( array $types ): bool {
+function tconn_set_link_types( array $types ): bool {
     // Never persist plugin-managed (provider) types — they are always supplied fresh
-    // via the tc_link_types filter, so storing them would create orphans on uninstall.
+    // via the tconn_link_types filter, so storing them would create orphans on uninstall.
     $types = array_filter(
         $types,
         static function ( $t ) {
             return empty( $t['provider'] );
         }
     );
-    return (bool) update_option( 'tc_link_types', array_values( $types ) );
+    return (bool) update_option( 'tconn_link_types', array_values( $types ) );
 }
 
 // ==============================================================================
@@ -494,7 +494,7 @@ function tc_set_link_types( array $types ): bool {
 
 /**
  * Whether a taxonomy is enabled in TermConnect by a companion plugin (through the
- * tc_enabled_taxonomies filter) rather than by the saved option.
+ * tconn_enabled_taxonomies filter) rather than by the saved option.
  *
  * Such taxonomies are treated as parallel across the network — mapped 1:1 to the
  * identically-named taxonomy on each peer — because mapping them that way is the
@@ -505,15 +505,15 @@ function tc_set_link_types( array $types ): bool {
  * @param string $taxonomy Taxonomy slug.
  * @return bool
  */
-function tc_is_companion_taxonomy( string $taxonomy ): bool {
+function tconn_is_companion_taxonomy( string $taxonomy ): bool {
 	if ( '' === $taxonomy ) {
 		return false;
 	}
-	$stored = (array) get_option( 'tc_enabled_taxonomies', array() );
+	$stored = (array) get_option( 'tconn_enabled_taxonomies', array() );
 	if ( in_array( $taxonomy, $stored, true ) ) {
 		return false;
 	}
-	return in_array( $taxonomy, TC_Settings::get_enabled_taxonomies(), true );
+	return in_array( $taxonomy, TConn_Settings::get_enabled_taxonomies(), true );
 }
 
 /**
@@ -521,7 +521,7 @@ function tc_is_companion_taxonomy( string $taxonomy ): bool {
  *
  * A WordPress peer link type stores a single remote_taxonomy, so it cannot, on its
  * own, map more than one local taxonomy. Companion taxonomies (see
- * tc_is_companion_taxonomy()) therefore map 1:1 by identical name, ignoring the
+ * tconn_is_companion_taxonomy()) therefore map 1:1 by identical name, ignoring the
  * configured remote_taxonomy; for taxonomies the admin enabled explicitly the
  * configured remote_taxonomy wins, falling back to the local taxonomy when blank.
  *
@@ -530,8 +530,8 @@ function tc_is_companion_taxonomy( string $taxonomy ): bool {
  * @param string $local_taxonomy Taxonomy of the term being linked.
  * @return string Peer taxonomy slug (may be '').
  */
-function tc_wp_peer_remote_taxonomy( array $type, string $local_taxonomy ): string {
-	if ( '' !== $local_taxonomy && tc_is_companion_taxonomy( $local_taxonomy ) ) {
+function tconn_wp_peer_remote_taxonomy( array $type, string $local_taxonomy ): string {
+	if ( '' !== $local_taxonomy && tconn_is_companion_taxonomy( $local_taxonomy ) ) {
 		return $local_taxonomy;
 	}
 	$remote = (string) ( $type['remote_taxonomy'] ?? '' );
@@ -551,7 +551,7 @@ function tc_wp_peer_remote_taxonomy( array $type, string $local_taxonomy ): stri
  * @param string $taxonomy Taxonomy slug.
  * @return bool
  */
-function tc_taxonomy_peer_authors( string $taxonomy ): bool {
+function tconn_taxonomy_peer_authors( string $taxonomy ): bool {
 	/**
 	 * Filters whether a taxonomy maps WordPress-peer links to authors.
 	 *
@@ -559,15 +559,15 @@ function tc_taxonomy_peer_authors( string $taxonomy ): bool {
 	 * @param bool   $is_author Default false.
 	 * @param string $taxonomy  Taxonomy slug.
 	 */
-	return (bool) apply_filters( 'tc_taxonomy_peer_authors', false, $taxonomy );
+	return (bool) apply_filters( 'tconn_taxonomy_peer_authors', false, $taxonomy );
 }
 
 /**
  * Derive the taxonomy archive path segment for a WordPress peer link type.
  *
- * For a "people" taxonomy (see tc_taxonomy_peer_authors()) this is the author base
+ * For a "people" taxonomy (see tconn_taxonomy_peer_authors()) this is the author base
  * ('author'). Otherwise it resolves the effective peer taxonomy (see
- * tc_wp_peer_remote_taxonomy()), then maps it to a URL path: a known REST base
+ * tconn_wp_peer_remote_taxonomy()), then maps it to a URL path: a known REST base
  * (e.g. 'tags' → 'tag') first, otherwise the taxonomy's own rewrite slug (correct
  * for shared/companion taxonomies and for built-ins, e.g. 'post_tag' → 'tag'),
  * otherwise the slug as-is.
@@ -579,7 +579,7 @@ function tc_taxonomy_peer_authors( string $taxonomy ): bool {
  * @param string $taxonomy Local taxonomy of the term being linked.
  * @return string
  */
-function tc_wp_link_type_archive_path( array $type, string $taxonomy = '' ): string {
+function tconn_wp_link_type_archive_path( array $type, string $taxonomy = '' ): string {
 	static $rest_to_path = array(
 		'tags'       => 'tag',
 		'categories' => 'category',
@@ -589,11 +589,11 @@ function tc_wp_link_type_archive_path( array $type, string $taxonomy = '' ): str
 		'category' => 'category',
 	);
 
-	if ( '' !== $taxonomy && tc_taxonomy_peer_authors( $taxonomy ) ) {
+	if ( '' !== $taxonomy && tconn_taxonomy_peer_authors( $taxonomy ) ) {
 		return 'author';
 	}
 
-	$remote = tc_wp_peer_remote_taxonomy( $type, $taxonomy );
+	$remote = tconn_wp_peer_remote_taxonomy( $type, $taxonomy );
 	if ( '' === $remote ) {
 		return '';
 	}
@@ -627,8 +627,8 @@ function tc_wp_link_type_archive_path( array $type, string $taxonomy = '' ): str
  *                         remote_taxonomy is blank; ignored for other platforms.
  * @return string|null
  */
-function tc_get_link_uri( string $slug, string $id, string $taxonomy = '' ): ?string {
-	$type = tc_get_link_type( $slug );
+function tconn_get_link_uri( string $slug, string $id, string $taxonomy = '' ): ?string {
+	$type = tconn_get_link_type( $slug );
 	if ( null === $type || '' === $id ) {
 		return null;
 	}
@@ -641,8 +641,8 @@ function tc_get_link_uri( string $slug, string $id, string $taxonomy = '' ): ?st
 
 	$uri = null;
 	if ( 'wordpress' === $platform ) {
-		$origin = tc_external_get_site_origin( $type['uri_prefix'] );
-		$path   = '' !== $origin ? tc_wp_link_type_archive_path( $type, $taxonomy ) : '';
+		$origin = tconn_external_get_site_origin( $type['uri_prefix'] );
+		$path   = '' !== $origin ? tconn_wp_link_type_archive_path( $type, $taxonomy ) : '';
 		if ( '' !== $origin && '' !== $path ) {
 			$uri = $origin . '/' . $path . '/' . rawurlencode( $id );
 		}
@@ -665,7 +665,7 @@ function tc_get_link_uri( string $slug, string $id, string $taxonomy = '' ): ?st
 	 * @param array       $type     Link type definition.
 	 * @param string      $taxonomy Local taxonomy slug for context (may be empty).
 	 */
-	return apply_filters( 'tc_link_uri', $uri, $slug, $id, $type, $taxonomy );
+	return apply_filters( 'tconn_link_uri', $uri, $slug, $id, $type, $taxonomy );
 }
 
 /**
@@ -679,7 +679,7 @@ function tc_get_link_uri( string $slug, string $id, string $taxonomy = '' ): ?st
  * @param string $taxonomy Local taxonomy slug of the term being edited.
  * @return string URL prefix ending with '/', or empty string when a link cannot be derived.
  */
-function tc_link_type_display_prefix( array $type, string $taxonomy = '' ): string {
+function tconn_link_type_display_prefix( array $type, string $taxonomy = '' ): string {
 	$platform = $type['platform'] ?? 'other';
 
 	if ( 'feed' === $platform ) {
@@ -687,8 +687,8 @@ function tc_link_type_display_prefix( array $type, string $taxonomy = '' ): stri
 	}
 
 	if ( 'wordpress' === $platform ) {
-		$origin = tc_external_get_site_origin( $type['uri_prefix'] );
-		$path   = tc_wp_link_type_archive_path( $type, $taxonomy );
+		$origin = tconn_external_get_site_origin( $type['uri_prefix'] );
+		$path   = tconn_wp_link_type_archive_path( $type, $taxonomy );
 		if ( '' !== $origin && '' !== $path ) {
 			return $origin . '/' . $path . '/';
 		}
@@ -707,16 +707,16 @@ function tc_link_type_display_prefix( array $type, string $taxonomy = '' ): stri
  *
  * Returns null for types that have no public suggest API or require credentials.
  * The 'url' template uses {query} as a placeholder for the URL-encoded search term.
- * The 'parser' key identifies the response format handled by tc_parse_suggest_response().
+ * The 'parser' key identifies the response format handled by tconn_parse_suggest_response().
  *
  * @since 1.0.0
  * @param string $slug     Link type slug.
  * @param string $taxonomy Taxonomy of the term being edited, if known. Passed to the
- *                         'tc_suggest_config' filter so companions can offer suggestions
+ *                         'tconn_suggest_config' filter so companions can offer suggestions
  *                         only where they make sense (e.g. profiles on a mention taxonomy).
  * @return array|null { url: string, parser: string } or null.
  */
-function tc_get_suggest_config( string $slug, string $taxonomy = '' ): ?array {
+function tconn_get_suggest_config( string $slug, string $taxonomy = '' ): ?array {
 	static $configs = null;
 	if ( null === $configs ) {
 		$configs = array(
@@ -775,7 +775,7 @@ function tc_get_suggest_config( string $slug, string $taxonomy = '' ): ?array {
 		return $configs[ $slug ];
 	}
 
-	$type = tc_get_link_type( $slug );
+	$type = tconn_get_link_type( $slug );
 
 	// Fallback: if the link type declares platform=mediawiki, derive the API URL from its uri_prefix.
 	if ( $type && 'mediawiki' === ( $type['platform'] ?? '' ) && ! empty( $type['uri_prefix'] ) ) {
@@ -800,7 +800,7 @@ function tc_get_suggest_config( string $slug, string $taxonomy = '' ): ?array {
 	 * value), so arbitrary-URL SSRF is not possible. Set 'free_text' => true to let
 	 * the user keep typed input that does not match a suggestion (suggestions are
 	 * advisory rather than required — appropriate for handles the user may know
-	 * exactly). Pair with the 'tc_parse_suggest_response' filter to turn the
+	 * exactly). Pair with the 'tconn_parse_suggest_response' filter to turn the
 	 * response into { value, label } suggestions for a custom parser id.
 	 *
 	 * @since 1.0.0
@@ -809,7 +809,7 @@ function tc_get_suggest_config( string $slug, string $taxonomy = '' ): ?array {
 	 * @param array|null $type     Link type definition, if known.
 	 * @param string     $taxonomy Taxonomy of the term being edited, if known.
 	 */
-	return apply_filters( 'tc_suggest_config', null, $slug, $type, $taxonomy );
+	return apply_filters( 'tconn_suggest_config', null, $slug, $type, $taxonomy );
 }
 
 /**
@@ -820,11 +820,11 @@ function tc_get_suggest_config( string $slug, string $taxonomy = '' ): ?array {
  *
  * @since 1.0.0
  * @param string $body   Raw HTTP response body.
- * @param string $parser Parser identifier matching tc_get_suggest_config()['parser'].
+ * @param string $parser Parser identifier matching tconn_get_suggest_config()['parser'].
  * @return array[]
  */
-function tc_parse_suggest_response( string $body, string $parser ): array {
-	$data    = tc_external_json_decode( $body );
+function tconn_parse_suggest_response( string $body, string $parser ): array {
+	$data    = tconn_external_json_decode( $body );
 	$results = array();
 
 	switch ( $parser ) {
@@ -955,7 +955,7 @@ case 'lcsh':
 	 * Filters parsed suggest results, enabling custom parser ids.
 	 *
 	 * Companion plugins handling a custom parser id (declared through the
-	 * 'tc_suggest_config' filter) return an array of
+	 * 'tconn_suggest_config' filter) return an array of
 	 * [ 'value' => string, 'label' => string ] items.
 	 *
 	 * @since 1.0.0
@@ -963,7 +963,7 @@ case 'lcsh':
 	 * @param string  $body    Raw response body.
 	 * @param string  $parser  Parser id.
 	 */
-	$results = apply_filters( 'tc_parse_suggest_response', $results, $body, $parser );
+	$results = apply_filters( 'tconn_parse_suggest_response', $results, $body, $parser );
 
 	// Decode HTML entities in labels — some APIs return encoded strings (e.g. "&amp;") and
 	// jQuery UI Autocomplete renders labels as plain text, not HTML.
@@ -989,8 +989,8 @@ case 'lcsh':
  * @param string $slug    Link type slug.
  * @return string The identifier, or '' when none is stored.
  */
-function tc_get_term_link_id( int $term_id, string $slug ): string {
-    $meta = get_term_meta( $term_id, '_tc_link_' . $slug, true );
+function tconn_get_term_link_id( int $term_id, string $slug ): string {
+    $meta = get_term_meta( $term_id, '_tconn_link_' . $slug, true );
     return is_array( $meta ) ? (string) ( $meta['id'] ?? '' ) : (string) $meta;
 }
 
@@ -1008,36 +1008,36 @@ function tc_get_term_link_id( int $term_id, string $slug ): string {
  * @param bool $include_redirect_data When true, return data even if the term is a redirect.
  * @return array [ slug => id ]
  */
-function tc_get_term_links( int $term_id, bool $include_redirect_data = false ): array {
+function tconn_get_term_links( int $term_id, bool $include_redirect_data = false ): array {
     if ( ! $include_redirect_data ) {
         $term = get_term( $term_id );
         if ( $term instanceof WP_Term
-             && tc_is_redirect( $term_id )
+             && tconn_is_redirect( $term_id )
              && function_exists( 'htax_taxonomy_has_feature' )
              && htax_taxonomy_has_feature( $term->taxonomy, 'redirects' ) ) {
             return array();
         }
     }
 
-    return array_map( fn( $entry ) => $entry['id'], tc_get_term_links_data( $term_id ) );
+    return array_map( fn( $entry ) => $entry['id'], tconn_get_term_links_data( $term_id ) );
 }
 
 /**
  * Returns full structured link data for enabled types on a term, keyed by slug.
  *
- * Unlike tc_get_term_links() which returns [ slug => id ], this returns the full
+ * Unlike tconn_get_term_links() which returns [ slug => id ], this returns the full
  * { id, label, fetched_at } arrays for use in REST output and term-edit display.
  *
  * When $reset is true, clears the per-request static cache entry for the term
  * without returning data. Pass true after bulk meta operations that bypass the
- * normal tc_set_term_link() / tc_remove_term_link() write path.
+ * normal tconn_set_term_link() / tconn_remove_term_link() write path.
  *
  * @since 1.0.0
  * @param int  $term_id Term ID.
  * @param bool $reset   When true, evict the term from the static cache and return an empty array.
  * @return array[] [ slug => { id, label, fetched_at } ]
  */
-function tc_get_term_links_data( int $term_id, bool $reset = false ): array {
+function tconn_get_term_links_data( int $term_id, bool $reset = false ): array {
     static $cache = array();
     if ( $reset ) {
         unset( $cache[ $term_id ] );
@@ -1055,23 +1055,23 @@ function tc_get_term_links_data( int $term_id, bool $reset = false ): array {
     if ( ! $term instanceof WP_Term ) {
         return array(); // Not cached: a term that doesn't resolve here may for someone else.
     }
-    $enabled = tc_get_enabled_link_types_for_taxonomy( $term->taxonomy );
+    $enabled = tconn_get_enabled_link_types_for_taxonomy( $term->taxonomy );
 
     if ( empty( $enabled ) ) {
         return $cache[ $term_id ] = array();
     }
 
     // Persistent per-term cache. Stores { slug => {id, label, fetched_at} } for all non-empty
-    // _tc_link_* meta, regardless of which link types are currently enabled, so enabled-type
-    // changes don't stale it. Keyed as tc_links_{term_id}; invalidated by tc_flush_term_link_cache().
-    $raw = get_transient( 'tc_links_' . $term_id );
+    // _tconn_link_* meta, regardless of which link types are currently enabled, so enabled-type
+    // changes don't stale it. Keyed as tconn_links_{term_id}; invalidated by tconn_flush_term_link_cache().
+    $raw = get_transient( 'tconn_links_' . $term_id );
     if ( false === $raw ) {
         global $wpdb;
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT meta_key, meta_value FROM {$wpdb->termmeta}
              WHERE term_id = %d AND meta_key LIKE %s AND meta_value != ''",
             $term_id,
-            $wpdb->esc_like( '_tc_link_' ) . '%'
+            $wpdb->esc_like( '_tconn_link_' ) . '%'
         ) );
         $raw = array();
         foreach ( (array) $rows as $row ) {
@@ -1087,7 +1087,7 @@ function tc_get_term_links_data( int $term_id, bool $reset = false ): array {
                 $raw[ $slug_key ] = array( 'id' => $meta, 'label' => '', 'fetched_at' => 0 );
             }
         }
-        set_transient( 'tc_links_' . $term_id, $raw, 0 );
+        set_transient( 'tconn_links_' . $term_id, $raw, 0 );
     }
 
     $data = array();
@@ -1102,22 +1102,22 @@ function tc_get_term_links_data( int $term_id, bool $reset = false ): array {
 
 /**
  * Invalidate the external link cache for a single term.
- * Call whenever any _tc_link_* meta changes for this term.
+ * Call whenever any _tconn_link_* meta changes for this term.
  *
  * @param int $term_id Term ID.
  */
-function tc_flush_term_link_cache( int $term_id ): void {
-    delete_transient( 'tc_links_' . $term_id );
-    delete_transient( 'tc_uris_' . $term_id );
-    tc_get_term_links_data( $term_id, true );
-    tc_build_merged_links( $term_id, true );
-    do_action( 'tc_term_uris_changed', $term_id );
+function tconn_flush_term_link_cache( int $term_id ): void {
+    delete_transient( 'tconn_links_' . $term_id );
+    delete_transient( 'tconn_uris_' . $term_id );
+    tconn_get_term_links_data( $term_id, true );
+    tconn_build_merged_links( $term_id, true );
+    do_action( 'tconn_term_uris_changed', $term_id );
 }
 
 /**
  * Sets (creates or updates) an external link value on a term.
  *
- * Stores a structured { id, label, fetched_at } array and rebuilds the _tc_uris index.
+ * Stores a structured { id, label, fetched_at } array and rebuilds the _tconn_uris index.
  * The label should be pre-formatted as "TypeName: Item name" (e.g. "Wikidata: Python").
  * When fetched_at is 0 the current time is used.
  *
@@ -1130,8 +1130,8 @@ function tc_flush_term_link_cache( int $term_id ): void {
  * @param int    $fetched_at Optional Unix timestamp when the label was fetched; 0 = now.
  * @return bool True on success.
  */
-function tc_set_term_link( int $term_id, string $slug, string $id, string $label = '', int $fetched_at = 0 ): bool {
-    $type = tc_get_link_type( $slug );
+function tconn_set_term_link( int $term_id, string $slug, string $id, string $label = '', int $fetched_at = 0 ): bool {
+    $type = tconn_get_link_type( $slug );
     if ( null === $type ) {
         return false;
     }
@@ -1148,9 +1148,9 @@ function tc_set_term_link( int $term_id, string $slug, string $id, string $label
      * @param string $slug Link type slug.
      * @param array  $type Link type definition.
      */
-    $id = (string) apply_filters( 'tc_link_value', $id, $slug, $type );
+    $id = (string) apply_filters( 'tconn_link_value', $id, $slug, $type );
     if ( '' === $id ) {
-        return tc_remove_term_link( $term_id, $slug );
+        return tconn_remove_term_link( $term_id, $slug );
     }
 
     $meta   = array(
@@ -1158,9 +1158,9 @@ function tc_set_term_link( int $term_id, string $slug, string $id, string $label
         'label'      => $label,
         'fetched_at' => $fetched_at > 0 ? $fetched_at : time(),
     );
-    $result = false !== update_term_meta( $term_id, '_tc_link_' . $slug, $meta );
-    tc_flush_term_link_cache( $term_id );
-    tc_rebuild_uri_index( $term_id );
+    $result = false !== update_term_meta( $term_id, '_tconn_link_' . $slug, $meta );
+    tconn_flush_term_link_cache( $term_id );
+    tconn_rebuild_uri_index( $term_id );
     return $result;
 }
 
@@ -1172,34 +1172,34 @@ function tc_set_term_link( int $term_id, string $slug, string $id, string $label
  * @param string $slug    Link type slug.
  * @return bool True on success.
  */
-function tc_remove_term_link( int $term_id, string $slug ): bool {
-    $result = (bool) delete_term_meta( $term_id, '_tc_link_' . $slug );
-    tc_flush_term_link_cache( $term_id );
-    tc_rebuild_uri_index( $term_id );
+function tconn_remove_term_link( int $term_id, string $slug ): bool {
+    $result = (bool) delete_term_meta( $term_id, '_tconn_link_' . $slug );
+    tconn_flush_term_link_cache( $term_id );
+    tconn_rebuild_uri_index( $term_id );
     return $result;
 }
 
 /**
- * Returns all local term IDs whose _tc_uris index contains the given URI.
+ * Returns all local term IDs whose _tconn_uris index contains the given URI.
  *
- * Queries the _tc_uris multi-value meta which is rebuilt by tc_rebuild_uri_index()
+ * Queries the _tconn_uris multi-value meta which is rebuilt by tconn_rebuild_uri_index()
  * on every link change and covers both local and delegated links.
  *
  * @since 1.0.0
  * @param string $uri Full URI to match.
  * @return int[]
  */
-function tc_get_terms_by_uri( string $uri ): array {
+function tconn_get_terms_by_uri( string $uri ): array {
     global $wpdb;
     $results = $wpdb->get_col(
         $wpdb->prepare(
-            "SELECT term_id FROM {$wpdb->termmeta} WHERE meta_key = '_tc_uris' AND meta_value = %s",
+            "SELECT term_id FROM {$wpdb->termmeta} WHERE meta_key = '_tconn_uris' AND meta_value = %s",
             $uri
         )
     );
     $ids = array_map( 'intval', $results );
 
-    $redirect_ids = tc_get_all_redirect_term_ids();
+    $redirect_ids = tconn_get_all_redirect_term_ids();
     if ( ! empty( $redirect_ids ) ) {
         _prime_term_caches( $ids );
         $ids = array_values( array_filter( $ids, function ( $tid ) use ( $redirect_ids ) {
@@ -1219,10 +1219,10 @@ function tc_get_terms_by_uri( string $uri ): array {
 // ==============================================================================
 
 /**
- * Rebuilds the _tc_uris multi-value meta and its transient for a term.
+ * Rebuilds the _tconn_uris multi-value meta and its transient for a term.
  *
  * The URI index is a flat list of all URLs associated with the term, derived
- * from both local _tc_link_{slug} meta and _tc_delegated_links_data. It is
+ * from both local _tconn_link_{slug} meta and _tconn_delegated_links_data. It is
  * used for term matching queries (htax_term_uri REST filter) and shared with
  * HyperTaxonomy and WP-SKOS via the htax_term_uris filter.
  *
@@ -1234,7 +1234,7 @@ function tc_get_terms_by_uri( string $uri ): array {
  * @since 1.0.0
  * @param int $term_id Term ID.
  */
-function tc_rebuild_uri_index( int $term_id ): void {
+function tconn_rebuild_uri_index( int $term_id ): void {
     $term     = get_term( $term_id );
     $taxonomy = $term instanceof WP_Term ? $term->taxonomy : '';
 
@@ -1245,7 +1245,7 @@ function tc_rebuild_uri_index( int $term_id ): void {
         "SELECT meta_key, meta_value FROM {$wpdb->termmeta}
          WHERE term_id = %d AND meta_key LIKE %s AND meta_value != ''",
         $term_id,
-        $wpdb->esc_like( '_tc_link_' ) . '%'
+        $wpdb->esc_like( '_tconn_link_' ) . '%'
     ) );
     $stored_ids = array();
     foreach ( (array) $meta_rows as $row ) {
@@ -1259,12 +1259,12 @@ function tc_rebuild_uri_index( int $term_id ): void {
     }
 
     $local_entries = array();
-    foreach ( tc_get_all_link_types() as $slug => $type ) {
+    foreach ( tconn_get_all_link_types() as $slug => $type ) {
         if ( ! isset( $stored_ids[ $slug ] ) ) {
             continue;
         }
         $id  = $stored_ids[ $slug ];
-        $url = tc_get_link_uri( $slug, $id, $taxonomy );
+        $url = tconn_get_link_uri( $slug, $id, $taxonomy );
         if ( null === $url || '' === $url ) {
             continue;
         }
@@ -1275,7 +1275,7 @@ function tc_rebuild_uri_index( int $term_id ): void {
     }
 
     // Collect delegated links indexed by URL.
-    $delegated_data   = get_term_meta( $term_id, '_tc_delegated_links_data', true );
+    $delegated_data   = get_term_meta( $term_id, '_tconn_delegated_links_data', true );
     $delegated_by_url = array();
     if ( is_array( $delegated_data ) ) {
         foreach ( $delegated_data as $entry ) {
@@ -1325,24 +1325,24 @@ function tc_rebuild_uri_index( int $term_id ): void {
      * @param string[] $final_urls URIs to index for the term.
      * @param int      $term_id    Term ID.
      */
-    $final_urls = (array) apply_filters( 'tc_index_extra_uris', $final_urls, $term_id );
+    $final_urls = (array) apply_filters( 'tconn_index_extra_uris', $final_urls, $term_id );
     $final_urls = array_values( array_unique( array_filter( array_map( 'strval', $final_urls ) ) ) );
 
     // Write multi-value meta (delete all rows first, then re-add).
-    delete_term_meta( $term_id, '_tc_uris' );
+    delete_term_meta( $term_id, '_tconn_uris' );
     foreach ( $final_urls as $url ) {
-        add_term_meta( $term_id, '_tc_uris', $url );
+        add_term_meta( $term_id, '_tconn_uris', $url );
     }
 
     // Update transient cache. TTL=0: explicit invalidation only (rebuilt on every link change).
-    set_transient( 'tc_uris_' . $term_id, $final_urls, 0 );
+    set_transient( 'tconn_uris_' . $term_id, $final_urls, 0 );
 }
 
 /**
  * Builds the merged external links list for a term, combining local and delegated data.
  *
  * Returns a flat array of { url, platform, label, fetched_at } objects, with the same
- * override logic used by tc_rebuild_uri_index():
+ * override logic used by tconn_rebuild_uri_index():
  *  - Same URL in local and delegated → output once; use the label with the newer fetched_at.
  *  - Delegated URL shares the same uri_prefix as a local URL → local is suppressed.
  *  - Different sites → both included.
@@ -1352,7 +1352,7 @@ function tc_rebuild_uri_index( int $term_id ): void {
  * When $reset is true, evict the term from the static cache and return an empty array.
  * Pass true after any operation that changes a term's links outside the normal write path.
  *
- * Used by the tc_links REST field, tc_rest_build_links_data() (HT integration), and the
+ * Used by the tconn_links REST field, tconn_rest_build_links_data() (HT integration), and the
  * "See also" display on term archives.
  *
  * @since 1.0.0
@@ -1360,7 +1360,7 @@ function tc_rebuild_uri_index( int $term_id ): void {
  * @param bool $reset   When true, evict the term from the static cache and return an empty array.
  * @return array[] [ { url, platform, label, fetched_at } ]
  */
-function tc_build_merged_links( int $term_id, bool $reset = false ): array {
+function tconn_build_merged_links( int $term_id, bool $reset = false ): array {
     static $cache = array();
     if ( $reset ) {
         unset( $cache[ $term_id ] );
@@ -1379,9 +1379,9 @@ function tc_build_merged_links( int $term_id, bool $reset = false ): array {
 
     // Local links indexed by URL.
     $local_by_url = array();
-    foreach ( tc_get_term_links_data( $term_id ) as $slug => $meta ) {
-        $type = tc_get_link_type( $slug );
-        $url  = tc_get_link_uri( $slug, $meta['id'], $taxonomy );
+    foreach ( tconn_get_term_links_data( $term_id ) as $slug => $meta ) {
+        $type = tconn_get_link_type( $slug );
+        $url  = tconn_get_link_uri( $slug, $meta['id'], $taxonomy );
         if ( null === $url || '' === $url ) {
             continue;
         }
@@ -1396,7 +1396,7 @@ function tc_build_merged_links( int $term_id, bool $reset = false ): array {
     }
 
     // Delegated links indexed by URL.
-    $delegated_data   = get_term_meta( $term_id, '_tc_delegated_links_data', true );
+    $delegated_data   = get_term_meta( $term_id, '_tconn_delegated_links_data', true );
     $delegated_by_url = array();
     if ( is_array( $delegated_data ) ) {
         foreach ( $delegated_data as $entry ) {
@@ -1462,36 +1462,36 @@ function tc_build_merged_links( int $term_id, bool $reset = false ): array {
 }
 
 // ==============================================================================
-// SAVE HANDLER (called by tc_save_term_data orchestrator)
+// SAVE HANDLER (called by tconn_save_term_data orchestrator)
 // ==============================================================================
 
 /**
  * Saves external link values submitted from the term edit form.
  *
- * Processes tc_links[{slug}] POST values for all enabled link types.
+ * Processes tconn_links[{slug}] POST values for all enabled link types.
  * Empty value = remove existing meta. Non-empty = create or update.
  * Skips types whose taxonomy restriction excludes the term's taxonomy.
- * Only runs when the tc_links_present sentinel is in the POST data.
+ * Only runs when the tconn_links_present sentinel is in the POST data.
  *
- * Called by tc_save_term_data() after nonce and permission checks.
+ * Called by tconn_save_term_data() after nonce and permission checks.
  *
  * @since 1.0.0
  * @param int $term_id Term ID.
  */
-function tc_save_term_links( int $term_id ): void {
+function tconn_save_term_links( int $term_id ): void {
     // Only for the term edit and add-term forms, verified by their nonces.
-    if ( ! isset( $_POST['tc_links_present'] ) || ! tc_verify_term_nonce( $term_id ) ) {
+    if ( ! isset( $_POST['tconn_links_present'] ) || ! tconn_verify_term_nonce( $term_id ) ) {
         return;
     }
 
-    $submitted = isset( $_POST['tc_links'] ) && is_array( $_POST['tc_links'] )
-        ? map_deep( wp_unslash( $_POST['tc_links'] ), 'sanitize_text_field' )
+    $submitted = isset( $_POST['tconn_links'] ) && is_array( $_POST['tconn_links'] )
+        ? map_deep( wp_unslash( $_POST['tconn_links'] ), 'sanitize_text_field' )
         : array();
 
     $term     = get_term( $term_id );
     $taxonomy = $term instanceof WP_Term ? $term->taxonomy : '';
 
-    foreach ( tc_get_all_link_types() as $slug => $type ) {
+    foreach ( tconn_get_all_link_types() as $slug => $type ) {
         if ( ! array_key_exists( $slug, $submitted ) ) {
             continue;
         }
@@ -1501,22 +1501,22 @@ function tc_save_term_links( int $term_id ): void {
         }
         $id = sanitize_text_field( $submitted[ $slug ] );
         if ( '' === $id ) {
-            tc_remove_term_link( $term_id, $slug );
+            tconn_remove_term_link( $term_id, $slug );
         } else {
-            $labels     = isset( $_POST['tc_link_labels'] ) && is_array( $_POST['tc_link_labels'] )
-                ? map_deep( wp_unslash( $_POST['tc_link_labels'] ), 'sanitize_text_field' )
+            $labels     = isset( $_POST['tconn_link_labels'] ) && is_array( $_POST['tconn_link_labels'] )
+                ? map_deep( wp_unslash( $_POST['tconn_link_labels'] ), 'sanitize_text_field' )
                 : array();
-            $timestamps = isset( $_POST['tc_link_fetched'] ) && is_array( $_POST['tc_link_fetched'] )
-                ? map_deep( wp_unslash( $_POST['tc_link_fetched'] ), 'intval' )
+            $timestamps = isset( $_POST['tconn_link_fetched'] ) && is_array( $_POST['tconn_link_fetched'] )
+                ? map_deep( wp_unslash( $_POST['tconn_link_fetched'] ), 'intval' )
                 : array();
             $label      = sanitize_text_field( $labels[ $slug ] ?? '' );
             $fetched_at = (int) ( $timestamps[ $slug ] ?? 0 );
-            tc_set_term_link( $term_id, $slug, $id, $label, $fetched_at );
+            tconn_set_term_link( $term_id, $slug, $id, $label, $fetched_at );
 
             // Trash pending suggestions for this term whose URL matches the link just saved.
             $prefix = $type['uri_prefix'] ?? '';
-            if ( $prefix && function_exists( 'tc_pending_suggested_link_ids' ) ) {
-                foreach ( tc_pending_suggested_link_ids( $term_id, $prefix . $id ) as $cid ) {
+            if ( $prefix && function_exists( 'tconn_pending_suggested_link_ids' ) ) {
+                foreach ( tconn_pending_suggested_link_ids( $term_id, $prefix . $id ) as $cid ) {
                     wp_trash_comment( $cid );
                 }
             }
@@ -1529,15 +1529,15 @@ function tc_save_term_links( int $term_id ): void {
 // ==============================================================================
 
 /**
- * Deletes _tc_link_{slug} term meta for terms whose taxonomy violates the
+ * Deletes _tconn_link_{slug} term meta for terms whose taxonomy violates the
  * type's 'taxonomies' restriction. A no-op when the restriction list is empty.
  *
  * @since 1.0.0
  * @param string $slug Link type slug.
  * @return int Number of term meta rows deleted.
  */
-function tc_remove_invalid_term_links( string $slug ): int {
-    $type = tc_get_link_type( $slug );
+function tconn_remove_invalid_term_links( string $slug ): int {
+    $type = tconn_get_link_type( $slug );
     if ( ! $type || empty( $type['taxonomies'] ) ) {
         return 0;
     }
@@ -1545,7 +1545,7 @@ function tc_remove_invalid_term_links( string $slug ): int {
     global $wpdb;
 
     $allowed      = $type['taxonomies'];
-    $meta_key     = '_tc_link_' . $slug;
+    $meta_key     = '_tconn_link_' . $slug;
     $placeholders = implode( ', ', array_fill( 0, count( $allowed ), '%s' ) );
 
     $affected_ids = $wpdb->get_col( $wpdb->prepare(
@@ -1567,8 +1567,8 @@ function tc_remove_invalid_term_links( string $slug ): int {
     );
 
     foreach ( array_unique( array_map( 'intval', $affected_ids ) ) as $tid ) {
-        tc_flush_term_link_cache( $tid );
-        tc_rebuild_uri_index( $tid );
+        tconn_flush_term_link_cache( $tid );
+        tconn_rebuild_uri_index( $tid );
     }
 
     return $affected;
@@ -1576,5 +1576,5 @@ function tc_remove_invalid_term_links( string $slug ): int {
 
 // Save term link data whenever any term is created or updated.
 add_action( 'saved_term', static function ( $term_id ) {
-    tc_save_term_links( (int) $term_id );
+    tconn_save_term_links( (int) $term_id );
 }, 20 );

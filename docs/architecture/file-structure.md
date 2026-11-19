@@ -32,16 +32,16 @@ termconnect/
 ├── .wordpress-org/                             # WordPress.org listing assets: icons, banners, screenshots (not in the zip)
 ├── assets/
 │   ├── css/
-│   │   ├── tc-peer-browse.css                  # Styles for [tc_peer_browse] — the interactive topic browser.
-│   │   ├── tc-post-list.css                    # Shared base layout for TermConnect post lists.
-│   │   ├── tc-suggest-link.css                 # "See also" row and "Suggest a related concept" form on term archives.
-│   │   └── tc-term-edit.css                    # TermConnect — Term Edit: External Links component
+│   │   ├── tconn-peer-browse.css                  # Styles for [tconn_peer_browse] — the interactive topic browser.
+│   │   ├── tconn-post-list.css                    # Shared base layout for TermConnect post lists.
+│   │   ├── tconn-suggest-link.css                 # "See also" row and "Suggest a related concept" form on term archives.
+│   │   └── tconn-term-edit.css                    # TermConnect — Term Edit: External Links component
 │   └── js/
-│       ├── tc-di-health.js                     # TermConnect — Site Health: delegated identity rename check and recovery actions
-│       ├── tc-external-posts.js                # Load more button for [tc_peer_posts]
-│       ├── tc-peer-browse.js                   # Interactive topic browser for [tc_peer_browse].
-│       ├── tc-suggest-link.js                  # "Suggest a related concept" form on term archives.
-│       └── tc-term-edit.js                     # TermConnect — Term Edit: Delegated Identity inline UI
+│       ├── tconn-di-health.js                     # TermConnect — Site Health: delegated identity rename check and recovery actions
+│       ├── tconn-external-posts.js                # Load more button for [tconn_peer_posts]
+│       ├── tconn-peer-browse.js                   # Interactive topic browser for [tconn_peer_browse].
+│       ├── tconn-suggest-link.js                  # "Suggest a related concept" form on term archives.
+│       └── tconn-term-edit.js                     # TermConnect — Term Edit: Delegated Identity inline UI
 ├── blocks/
 │   ├── peer-browse/
 │   │   ├── block.json                          # Block metadata: attributes, scripts and styles
@@ -97,7 +97,7 @@ termconnect/
 
 ### 1. Main file (`termconnect.php`)
 
-1. Define `TC_PLUGIN_DIR`, `TC_PLUGIN_URL`, `TC_VERSION` and `TC_PLUGIN_BASENAME`.
+1. Define `TCONN_PLUGIN_DIR`, `TCONN_PLUGIN_URL`, `TCONN_VERSION` and `TCONN_PLUGIN_BASENAME`.
 2. Register the activation and deactivation hooks.
 3. Load translations on `init`.
 4. Require `includes/bootstrap.php` on `plugins_loaded` at priority 20, so other plugins, including HyperTaxonomy, have loaded first.
@@ -105,13 +105,13 @@ termconnect/
 ### 2. Bootstrap (`includes/bootstrap.php`)
 
 1. **Core, always:** `helpers.php`, `settings.php`, `term-links.php`, `feed-platform.php`, `peer-site-health.php`, `external-posts.php`, `display.php`, `rest-api.php`, `delegated-identity.php` and `suggested-links.php`, from `includes/core/`.
-   `core/settings.php` holds `TC_Settings::get_enabled_taxonomies()`, needed on the front end, in cron and in REST requests; the settings screen is `TC_Settings_Page` in `admin/settings.php`.
+   `core/settings.php` holds `TConn_Settings::get_enabled_taxonomies()`, needed on the front end, in cron and in REST requests; the settings screen is `TConn_Settings_Page` in `admin/settings.php`.
 2. **`includes/admin/shared-vocabulary-sync.php`:** in admin, AJAX and cron requests only.
-3. **The admin files:** in admin and AJAX requests only, followed by `TC_Admin::register()`.
+3. **The admin files:** in admin and AJAX requests only, followed by `TConn_Admin::register()`.
 4. **`includes/integration/class-hypertaxonomy-integration.php`, always.** It hooks HyperTaxonomy's filters and actions, which do nothing while HyperTaxonomy is inactive.
-5. **The shortcode classes:** `[tc_peer_posts]` and `[tc_peer_browse]`.
+5. **The shortcode classes:** `[tconn_peer_posts]` and `[tconn_peer_browse]`.
 
 ### Activation and deactivation
 
-- **Activation** (`tc_plugin_activate()`) schedules `tc_refresh_identity_caches` (twice daily) and `tc_sync_shared_vocabularies` (hourly), removes stale entries from the shared vocabulary review queues, adds the `tc_link_reverse` index to the term meta table, and sets `tc_feed_reschedule` so feed polling is scheduled again on the next load.
-- **Deactivation** (`tc_plugin_deactivate()`) unschedules both events and every `tc_feed_poll` event.
+- **Activation** (`tconn_plugin_activate()`) schedules `tconn_refresh_identity_caches` (twice daily) and `tconn_sync_shared_vocabularies` (hourly), removes stale entries from the shared vocabulary review queues, adds the `tconn_link_reverse` index to the term meta table, and sets `tconn_feed_reschedule` so feed polling is scheduled again on the next load.
+- **Deactivation** (`tconn_plugin_deactivate()`) unschedules both events and every `tconn_feed_poll` event.

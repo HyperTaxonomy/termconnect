@@ -20,17 +20,17 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TC_PLUGIN_DIR',      plugin_dir_path( __FILE__ ) );
-define( 'TC_PLUGIN_URL',      plugin_dir_url( __FILE__ ) );
-define( 'TC_VERSION',         '1.0.0' );
-define( 'TC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define( 'TCONN_PLUGIN_DIR',      plugin_dir_path( __FILE__ ) );
+define( 'TCONN_PLUGIN_URL',      plugin_dir_url( __FILE__ ) );
+define( 'TCONN_VERSION',         '1.0.0' );
+define( 'TCONN_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
-register_activation_hook( __FILE__, 'tc_plugin_activate' );
-register_deactivation_hook( __FILE__, 'tc_plugin_deactivate' );
+register_activation_hook( __FILE__, 'tconn_plugin_activate' );
+register_deactivation_hook( __FILE__, 'tconn_plugin_deactivate' );
 
 // Load translations. Hooked on init (not plugins_loaded) per WordPress 6.7+ guidance.
 add_action( 'init', static function () {
-    load_plugin_textdomain( 'termconnect', false, dirname( TC_PLUGIN_BASENAME ) . '/languages' );
+    load_plugin_textdomain( 'termconnect', false, dirname( TCONN_PLUGIN_BASENAME ) . '/languages' );
 } );
 
 /**
@@ -38,19 +38,19 @@ add_action( 'init', static function () {
  *
  * @since 1.0.0
  */
-function tc_plugin_activate(): void {
-    if ( ! wp_next_scheduled( 'tc_refresh_identity_caches' ) ) {
-        wp_schedule_event( time(), 'twicedaily', 'tc_refresh_identity_caches' );
+function tconn_plugin_activate(): void {
+    if ( ! wp_next_scheduled( 'tconn_refresh_identity_caches' ) ) {
+        wp_schedule_event( time(), 'twicedaily', 'tconn_refresh_identity_caches' );
     }
-    if ( ! wp_next_scheduled( 'tc_sync_shared_vocabularies' ) ) {
-        wp_schedule_event( time(), 'hourly', 'tc_sync_shared_vocabularies' );
+    if ( ! wp_next_scheduled( 'tconn_sync_shared_vocabularies' ) ) {
+        wp_schedule_event( time(), 'hourly', 'tconn_sync_shared_vocabularies' );
     }
-    tc_activation_purge_stale_sv_queues();
-    tc_add_indexes();
+    tconn_activation_purge_stale_sv_queues();
+    tconn_add_indexes();
     // Deactivation unschedules feed polling. The feed code and its cron schedules aren't
-    // loaded during the activation request, so tc_feed_reschedule_after_activation()
+    // loaded during the activation request, so tconn_feed_reschedule_after_activation()
     // restores the events on the next load.
-    update_option( 'tc_feed_reschedule', 1, true );
+    update_option( 'tconn_feed_reschedule', 1, true );
 }
 
 /**
@@ -58,31 +58,31 @@ function tc_plugin_activate(): void {
  *
  * @since 1.0.0
  */
-function tc_add_indexes(): void {
+function tconn_add_indexes(): void {
     global $wpdb;
     $wpdb->suppress_errors();
     // Reverse lookup: find all terms linked to a given external identifier.
-    $wpdb->query( "ALTER TABLE {$wpdb->termmeta} ADD INDEX tc_link_reverse (meta_key(60), meta_value(64))" );
+    $wpdb->query( "ALTER TABLE {$wpdb->termmeta} ADD INDEX tconn_link_reverse (meta_key(60), meta_value(64))" );
     $wpdb->show_errors();
 }
 
 /**
  * Remove stale entries from SV-related option queues on plugin activation.
  *
- * tc_merge_proposals and tc_sv_misplaced_queue store local term IDs. If terms
+ * tconn_merge_proposals and tconn_sv_misplaced_queue store local term IDs. If terms
  * were deleted while TC was inactive, those queues can contain entries that no
  * longer correspond to real terms.
  *
- * tc_shared_vocabularies 'terms' and 'roots' scope sources store a roots array
+ * tconn_shared_vocabularies 'terms' and 'roots' scope sources store a roots array
  * whose entries each represent one local mirror term. If a mirror term was
  * deleted while TC was inactive, its roots entry must be removed here so the
  * next sync does not recreate it. 'full' and 'group' scopes are dynamic and
  * require no cleanup.
  */
-function tc_activation_purge_stale_sv_queues(): void {
+function tconn_activation_purge_stale_sv_queues(): void {
     global $wpdb;
 
-    $proposals = get_option( 'tc_merge_proposals', array() );
+    $proposals = get_option( 'tconn_merge_proposals', array() );
     if ( ! empty( $proposals ) ) {
         $filtered = array_filter(
             $proposals,
@@ -94,11 +94,11 @@ function tc_activation_purge_stale_sv_queues(): void {
             }
         );
         if ( count( $filtered ) !== count( $proposals ) ) {
-            update_option( 'tc_merge_proposals', $filtered, false );
+            update_option( 'tconn_merge_proposals', $filtered, false );
         }
     }
 
-    $misplaced = get_option( 'tc_sv_misplaced_queue', array() );
+    $misplaced = get_option( 'tconn_sv_misplaced_queue', array() );
     if ( ! empty( $misplaced ) ) {
         $filtered = array_filter(
             $misplaced,
@@ -108,16 +108,16 @@ function tc_activation_purge_stale_sv_queues(): void {
             }
         );
         if ( count( $filtered ) !== count( $misplaced ) ) {
-            update_option( 'tc_sv_misplaced_queue', $filtered, false );
+            update_option( 'tconn_sv_misplaced_queue', $filtered, false );
         }
     }
 
     // Build an index of live delegations from term meta.
-    // Uses the literal meta key (_tc_identity_source = TC_META_IDENTITY_SOURCE)
+    // Uses the literal meta key (_tconn_identity_source = TCONN_META_IDENTITY_SOURCE)
     // because bootstrap.php is not loaded during activation.
     $all_meta   = $wpdb->get_results( $wpdb->prepare(
         "SELECT meta_value FROM {$wpdb->termmeta} WHERE meta_key = %s",
-        '_tc_identity_source'
+        '_tconn_identity_source'
     ) );
     $live_index = array(); // [sv_source_id][remote_slug] => true
     foreach ( $all_meta as $row ) {
@@ -127,7 +127,7 @@ function tc_activation_purge_stale_sv_queues(): void {
         }
     }
 
-    $sources = get_option( 'tc_shared_vocabularies', array() );
+    $sources = get_option( 'tconn_shared_vocabularies', array() );
     if ( ! empty( $sources ) ) {
         $changed = false;
         foreach ( $sources as &$src ) {
@@ -153,7 +153,7 @@ function tc_activation_purge_stale_sv_queues(): void {
                 $sources,
                 static fn( $s ) => ! ( ( $s['scope'] ?? '' ) === 'terms' && empty( $s['roots'] ) )
             ) );
-            update_option( 'tc_shared_vocabularies', $sources );
+            update_option( 'tconn_shared_vocabularies', $sources );
         }
     }
 }
@@ -163,23 +163,23 @@ function tc_activation_purge_stale_sv_queues(): void {
  *
  * @since 1.0.0
  */
-function tc_plugin_deactivate(): void {
-    $timestamp = wp_next_scheduled( 'tc_refresh_identity_caches' );
+function tconn_plugin_deactivate(): void {
+    $timestamp = wp_next_scheduled( 'tconn_refresh_identity_caches' );
     if ( $timestamp ) {
-        wp_unschedule_event( $timestamp, 'tc_refresh_identity_caches' );
+        wp_unschedule_event( $timestamp, 'tconn_refresh_identity_caches' );
     }
-    $timestamp = wp_next_scheduled( 'tc_sync_shared_vocabularies' );
+    $timestamp = wp_next_scheduled( 'tconn_sync_shared_vocabularies' );
     if ( $timestamp ) {
-        wp_unschedule_event( $timestamp, 'tc_sync_shared_vocabularies' );
+        wp_unschedule_event( $timestamp, 'tconn_sync_shared_vocabularies' );
     }
-    // Per-feed-link-type tc_feed_poll events (one per slug, scheduled by
-    // tc_feed_schedule()) are not covered by the two unschedules above —
+    // Per-feed-link-type tconn_feed_poll events (one per slug, scheduled by
+    // tconn_feed_schedule()) are not covered by the two unschedules above —
     // without this, they linger in the cron option across a
     // deactivate/reactivate cycle. Matches the same call already in
     // uninstall.php.
-    wp_unschedule_hook( 'tc_feed_poll' );
+    wp_unschedule_hook( 'tconn_feed_poll' );
 }
 
 add_action( 'plugins_loaded', static function () {
-    require_once TC_PLUGIN_DIR . 'includes/bootstrap.php';
+    require_once TCONN_PLUGIN_DIR . 'includes/bootstrap.php';
 }, 20 );
