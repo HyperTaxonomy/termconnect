@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<ruleset name="TermConnect">
+    <description>WordPress Coding Standards for TermConnect plugin.</description>
+
+    <file>.</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/dist/*</exclude-pattern>
+    <exclude-pattern>*/build/*</exclude-pattern>
+    <!-- Local developer scripts; not shipped (see utils/package.sh). -->
+    <exclude-pattern>*/utils/*</exclude-pattern>
+
+    <arg name="extensions" value="php"/>
+    <arg name="tab-width" value="4"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <config name="minimum_wp_version" value="6.6"/>
+    <config name="testVersion" value="7.4-"/>
+
+    <rule ref="PHPCompatibilityWP"/>
+
+    <rule ref="WordPress">
+        <!-- Project uses 4-space indentation, like HyperTaxonomy. -->
+        <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+
+        <!-- Designed for tab-indented code: with 4-space indentation it flags
+             deliberate alignment of continuation lines. -->
+        <exclude name="Universal.WhiteSpace.PrecisionAlignment"/>
+
+        <!-- Not a WordPress rule (Squiz). WordPress Core itself does not require
+             inline comments to end with a full stop. -->
+        <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+
+        <!-- Alignment of => and = is a formatting opinion, not correctness. -->
+        <exclude name="WordPress.Arrays.MultipleStatementAlignment"/>
+
+        <!-- Pedantic multi-line function call structure not required by WP guidelines. -->
+        <exclude name="PEAR.Functions.FunctionCallSignature"/>
+
+        <!-- Translators comments are good practice but noisy during development. -->
+        <exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
+        <exclude name="WordPress.WP.I18n.MultipleOrderedPlaceholders"/>
+    </rule>
+
+    <!-- Indent with 4 spaces, never tabs (the WordPress default is tabs). -->
+    <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
+    <rule ref="Generic.WhiteSpace.ScopeIndent">
+        <properties>
+            <property name="indent" value="4"/>
+            <property name="tabIndent" value="false"/>
+        </properties>
+    </rule>
+    <rule ref="WordPress.Arrays.ArrayIndentation">
+        <properties>
+            <property name="tabIndent" value="false"/>
+        </properties>
+    </rule>
+
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="termconnect"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="tconn"/>
+                <element value="termconnect"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>
