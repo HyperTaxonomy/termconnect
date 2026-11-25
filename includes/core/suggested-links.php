@@ -69,7 +69,7 @@ function tconn_pending_suggested_link_ids( int $term_id, string $url = '' ): arr
 // ============================================================================
 
 add_action( 'wp_ajax_nopriv_tconn_suggested_link_submit', 'tconn_ajax_suggested_link_submit' );
-add_action( 'wp_ajax_tconn_suggested_link_submit',        'tconn_ajax_suggested_link_submit' );
+add_action( 'wp_ajax_tconn_suggested_link_submit', 'tconn_ajax_suggested_link_submit' );
 
 /**
  * Accept an anonymous or logged-in identifier suggestion for a term.
@@ -199,9 +199,9 @@ function tconn_suggested_link_notify_admin( int $comment_id, WP_Term $term ): vo
     $author_ip = $comment->comment_author_IP;
 
     /* translators: %s: term name */
-    $msg  = sprintf( __( 'A new identifier suggestion for the term "%s" is waiting for your review', 'termconnect' ), $term_name ) . "\r\n";
+    $msg       = sprintf( __( 'A new identifier suggestion for the term "%s" is waiting for your review', 'termconnect' ), $term_name ) . "\r\n";
     $term_link = get_term_link( $term );
-    $msg .= ( is_string( $term_link ) ? $term_link : '' ) . "\r\n\r\n";
+    $msg      .= ( is_string( $term_link ) ? $term_link : '' ) . "\r\n\r\n";
 
     if ( $comment->comment_author ) {
         /* translators: 1: submitter name, 2: IP address */
@@ -226,9 +226,9 @@ function tconn_suggested_link_notify_admin( int $comment_id, WP_Term $term ): vo
     }
 
     // Check whether the URL comes from a configured HyperTaxonomy peer site.
-    $url_scheme  = (string) wp_parse_url( $comment->comment_author_url, PHP_URL_SCHEME );
-    $url_host    = (string) wp_parse_url( $comment->comment_author_url, PHP_URL_HOST );
-    $url_origin  = rtrim( $url_scheme . '://' . $url_host, '/' );
+    $url_scheme   = (string) wp_parse_url( $comment->comment_author_url, PHP_URL_SCHEME );
+    $url_host     = (string) wp_parse_url( $comment->comment_author_url, PHP_URL_HOST );
+    $url_origin   = rtrim( $url_scheme . '://' . $url_host, '/' );
     $is_peer_site = $url_origin !== '://' && function_exists( 'tconn_external_is_ht_enabled' ) && tconn_external_is_ht_enabled( $url_origin );
 
     if ( $comment->comment_content ) {

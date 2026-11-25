@@ -230,8 +230,8 @@ function tconn_ajax_peer_site_identifier_suggest(): void {
     }
 
     $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
-    $query    = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
-    $taxonomy = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
+    $query          = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
+    $taxonomy       = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
 
     if ( '' === $peer_site_slug || mb_strlen( $query ) < 2 ) {
         wp_send_json_success( array() );
@@ -270,9 +270,9 @@ function tconn_ajax_wp_peer_suggest(): void {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
-    $peer_site_slug  = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
-    $query    = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
-    $local_tx = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
+    $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
+    $query          = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
+    $local_tx       = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
 
     if ( '' === $peer_site_slug || mb_strlen( $query ) < 2 ) {
         wp_send_json_success( array() );
@@ -629,13 +629,13 @@ function tconn_handle_peer_site_add(): void {
         return;
     }
 
-    $taxonomies      = isset( $_POST['tconn_lt_taxonomies'] ) && is_array( $_POST['tconn_lt_taxonomies'] )
+    $taxonomies       = isset( $_POST['tconn_lt_taxonomies'] ) && is_array( $_POST['tconn_lt_taxonomies'] )
         ? array_map( 'sanitize_key', wp_unslash( $_POST['tconn_lt_taxonomies'] ) )
         : array();
-    $remote_taxonomy = 'wordpress' === $platform
+    $remote_taxonomy  = 'wordpress' === $platform
         ? sanitize_key( wp_unslash( $_POST['tconn_lt_remote_taxonomy'] ?? '' ) )
         : '';
-    $poll_interval   = 'feed' === $platform
+    $poll_interval    = 'feed' === $platform
         ? max( 300, min( 86400, intval( wp_unslash( $_POST['tconn_lt_poll_interval'] ?? 3600 ) ) ) )
         : 0;
     $max_cached_posts = 'feed' === $platform
@@ -948,7 +948,8 @@ function tconn_render_peer_sites_page(): void {
     <?php tconn_print_inline_style( 'tconn-peer-sites', ob_get_clean() ); ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'Peer Sites', 'termconnect' ); ?></h1>
-        <p><?php
+        <p>
+        <?php
             esc_html_e( 'Manage external sites, feeds and services where your terms can have identifiers. Enable the namespaces relevant to your content; once enabled, you can add identifiers to individual terms from their edit screens.', 'termconnect' );
             echo ' ';
             esc_html_e( 'When a local term shares an identifier with a term on a peer WordPress site, TermConnect can delegate its identity to the peer — keeping the name, description, and external links in sync automatically.', 'termconnect' );
@@ -958,7 +959,8 @@ function tconn_render_peer_sites_page(): void {
                 esc_html__( 'A collection of terms whose identity is delegated to a peer site is called a %s.', 'termconnect' ),
                 '<a href="' . esc_url( admin_url( 'admin.php?page=tconn-shared-vocabularies' ) ) . '">' . esc_html__( 'Shared Vocabulary', 'termconnect' ) . '</a>'
             );
-        ?></p>
+        ?>
+        </p>
 
         <?php
         $error_key = 'tconn_lt_error_' . get_current_user_id();
@@ -977,33 +979,33 @@ function tconn_render_peer_sites_page(): void {
         <h2 style="margin:1em 0 .5em"><?php esc_html_e( 'Enabled', 'termconnect' ); ?></h2>
         <?php if ( ! empty( $enabled_types ) ) : ?>
         <p class="description" style="margin-bottom:.5em"><?php esc_html_e( 'Drag rows up or down to change their display order. Links to the identifiers from enabled namespaces will appear in this order in the "See also" section on term archive pages — if that feature is enabled in Settings and the namespace has "Show on archives" checked.', 'termconnect' ); ?></p>
-        <?php
-        $cache_op_nonce = wp_create_nonce( 'tconn_clear_peer_cache' );
+            <?php
+            $cache_op_nonce = wp_create_nonce( 'tconn_clear_peer_cache' );
 
-        // Pre-load mapped term counts for WP peer and feed types in one query.
-        global $wpdb;
-        $active_slugs = array_keys( array_filter( $enabled_types, static function ( $t ) {
-            $plat = $t['platform'] ?? 'other';
-            return 'wordpress' === $plat || 'feed' === $plat;
-        } ) );
-        $mapped_counts = array();
-        if ( ! empty( $active_slugs ) ) {
-            $meta_keys    = array_map( static fn( $s ) => '_tconn_link_' . $s, $active_slugs );
-            $placeholders = implode( ', ', array_fill( 0, count( $meta_keys ), '%s' ) );
-            $rows = $wpdb->get_results( $wpdb->prepare(
+            // Pre-load mapped term counts for WP peer and feed types in one query.
+            global $wpdb;
+            $active_slugs  = array_keys( array_filter( $enabled_types, static function ( $t ) {
+                $plat = $t['platform'] ?? 'other';
+                return 'wordpress' === $plat || 'feed' === $plat;
+            } ) );
+            $mapped_counts = array();
+            if ( ! empty( $active_slugs ) ) {
+                $meta_keys    = array_map( static fn( $s ) => '_tconn_link_' . $s, $active_slugs );
+                $placeholders = implode( ', ', array_fill( 0, count( $meta_keys ), '%s' ) );
+                $rows         = $wpdb->get_results( $wpdb->prepare(
                 "SELECT meta_key, COUNT(*) AS cnt FROM {$wpdb->termmeta}
                  WHERE meta_key IN ($placeholders) AND meta_value != ''
                  GROUP BY meta_key",
                 ...$meta_keys
-            ) );
-            foreach ( $rows as $row ) {
-                $mapped_counts[ substr( $row->meta_key, strlen( '_tconn_link_' ) ) ] = (int) $row->cnt;
+                ) );
+                foreach ( $rows as $row ) {
+                    $mapped_counts[ substr( $row->meta_key, strlen( '_tconn_link_' ) ) ] = (int) $row->cnt;
+                }
+                foreach ( $active_slugs as $as ) {
+                    $mapped_counts[ $as ] = $mapped_counts[ $as ] ?? 0;
+                }
             }
-            foreach ( $active_slugs as $as ) {
-                $mapped_counts[ $as ] = $mapped_counts[ $as ] ?? 0;
-            }
-        }
-        ?>
+            ?>
         <table id="tconn-peer-sites-enabled" class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
@@ -1018,9 +1020,10 @@ function tconn_render_peer_sites_page(): void {
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ( $enabled_types as $slug => $type ) :
+            <?php
+            foreach ( $enabled_types as $slug => $type ) :
                 $plat = $type['platform'] ?? 'other';
-            ?>
+                ?>
                 <tr data-slug="<?php echo esc_attr( $slug ); ?>">
                     <td><span class="tconn-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'termconnect' ); ?>">&#8942;</span></td>
                     <td><strong><?php echo esc_html( $type['label'] ); ?></strong>
@@ -1067,16 +1070,17 @@ function tconn_render_peer_sites_page(): void {
                         </form>
                     </td>
                     <td style="font-size:12px" class="tconn-peer-site-status-cell" data-peer-site-slug="<?php echo esc_attr( $slug ); ?>">
-                    <?php if ( 'wordpress' === $plat ) :
+                    <?php
+                    if ( 'wordpress' === $plat ) :
                         $health = tconn_peer_site_health_get( $slug );
                         $stats  = get_option( 'tconn_ext_ltfetch_' . $slug, array() );
                         $count  = (int) ( $stats['count'] ?? 0 );
-                        $time   = (int) ( $stats['time']  ?? 0 );
+                        $time   = (int) ( $stats['time'] ?? 0 );
                         switch ( $health['status'] ) {
                             case 'degraded':
-                                $dot_color  = '#dba617';
-                                $hlabel     = __( 'Degraded', 'termconnect' );
-                                $hdetail    = sprintf(
+                                $dot_color = '#dba617';
+                                $hlabel    = __( 'Degraded', 'termconnect' );
+                                $hdetail   = sprintf(
                                     /* translators: %d: number of consecutive failures */
                                     esc_html( _n( '%d failure', '%d failures', (int) $health['consecutive_failures'], 'termconnect' ) ),
                                     (int) $health['consecutive_failures']
@@ -1088,11 +1092,14 @@ function tconn_render_peer_sites_page(): void {
                             default:
                                 $dot_color = '#46b450';
                                 $hlabel    = __( 'OK', 'termconnect' );
-                                $hdetail = '';
+                                $hdetail   = '';
                         }
                         ?>
                         <span style="color:<?php echo esc_attr( $dot_color ); ?>" aria-hidden="true">&#9679;</span> <?php echo esc_html( $hlabel ); ?>
-                        <?php if ( $hdetail ) : ?><br><small style="color:#888"><?php echo wp_kses_post( $hdetail ); ?></small><?php endif; ?>
+                        <?php
+                        if ( $hdetail ) :
+                            ?>
+                            <br><small style="color:#888"><?php echo wp_kses_post( $hdetail ); ?></small><?php endif; ?>
                         <span class="tconn-peer-stats-counts" style="display:block;margin-top:2px">
                             <?php $mc = $mapped_counts[ $slug ] ?? 0; ?>
                             <small style="color:#888"><?php /* translators: %d: number of terms */ echo esc_html( sprintf( _n( '%d term mapped', '%d terms mapped', $mc, 'termconnect' ), $mc ) ); ?></small>
@@ -1101,22 +1108,27 @@ function tconn_render_peer_sites_page(): void {
                                 <br><small class="tconn-peer-stats-time" style="color:#aaa"><?php /* translators: %s: time span, such as "5 mins" */ echo esc_html( sprintf( __( 'Fetched %s ago', 'termconnect' ), human_time_diff( $time ) ) ); ?></small>
                             <?php endif; ?>
                         </span>
-                    <?php elseif ( 'feed' === $plat ) :
+                        <?php
+                    elseif ( 'feed' === $plat ) :
                         $stat       = get_option( 'tconn_feed_poll_stat_' . $slug, array() );
                         $post_count = (int) ( $stat['post_count'] ?? 0 );
-                        $cat_count  = (int) ( $stat['cat_count']  ?? 0 );
-                        $last_time  = (int) ( $stat['time']       ?? 0 );
+                        $cat_count  = (int) ( $stat['cat_count'] ?? 0 );
+                        $last_time  = (int) ( $stat['time'] ?? 0 );
                         $next_ts    = wp_next_scheduled( 'tconn_feed_poll', array( $slug ) );
                         ?>
                         <?php $mc = $mapped_counts[ $slug ] ?? 0; ?>
                         <small style="color:#888"><?php /* translators: %d: number of terms */ echo esc_html( sprintf( _n( '%d term mapped', '%d terms mapped', $mc, 'termconnect' ), $mc ) ); ?></small>
                         <br><span class="tconn-feed-stat-posts">
-                            <small style="color:#aaa"><?php echo esc_html( sprintf(
+                            <small style="color:#aaa">
+                            <?php
+                            echo esc_html( sprintf(
                                 /* translators: 1: post count 2: category count */
                                 _n( '%1$d post, %2$d categories', '%1$d posts, %2$d categories', $post_count, 'termconnect' ),
                                 $post_count,
                                 $cat_count
-                            ) ); ?></small>
+                            ) );
+                            ?>
+                            </small>
                         </span>
                         <?php if ( $last_time > 0 ) : ?>
                             <br><small class="tconn-feed-stat-time" style="color:#aaa"><?php /* translators: %s: time span, such as "5 mins" */ echo esc_html( sprintf( __( 'Last poll performed %s ago', 'termconnect' ), human_time_diff( $last_time ) ) ); ?></small>
@@ -1172,7 +1184,7 @@ function tconn_render_peer_sites_page(): void {
             <?php endforeach; ?>
             </tbody>
         </table>
-        <?php ob_start(); ?>
+            <?php ob_start(); ?>
         (function() {
             document.querySelectorAll('.tconn-clear-peer-cache, .tconn-clear-feed-cache').forEach(function( btn ) {
                 btn.addEventListener('click', function() {
@@ -1228,7 +1240,7 @@ function tconn_render_peer_sites_page(): void {
                 });
             });
         })();
-        <?php tconn_add_inline_script( 'peer-sites', ob_get_clean() ); ?>
+            <?php tconn_add_inline_script( 'peer-sites', ob_get_clean() ); ?>
         <?php else : ?>
         <p style="color:#888"><?php esc_html_e( 'No peer sites enabled yet. Enable peer sites from the list below.', 'termconnect' ); ?></p>
         <?php endif; ?>

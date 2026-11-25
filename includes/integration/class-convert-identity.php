@@ -164,8 +164,11 @@ class TConn_Convert_Identity extends TConn_Operation_Identity {
             $unreachable = array_merge( $unreachable, $covering['unreachable'] );
             $new_claim   = $covering['claimants'][0] ?? null;
             if ( null !== $new_claim ) {
-                $source_id = (string) ( $new_claim['source']['id'] ?? '' );
-                $taken[ $source_id ]            = $taken[ $source_id ] ?? array( 'claim' => $new_claim, 'terms' => array() );
+                $source_id                      = (string) ( $new_claim['source']['id'] ?? '' );
+                $taken[ $source_id ]            = $taken[ $source_id ] ?? array(
+                    'claim' => $new_claim,
+                    'terms' => array(),
+                );
                 $taken[ $source_id ]['terms'][] = $term->name;
             }
 
@@ -173,7 +176,7 @@ class TConn_Convert_Identity extends TConn_Operation_Identity {
             if ( null === $identity ) {
                 continue;
             }
-            $info = self::describe( $term, self::check_remote( $identity, $term->taxonomy ) );
+            $info   = self::describe( $term, self::check_remote( $identity, $term->taxonomy ) );
             $notice = self::unreachable_peer_notice( $info );
             if ( $notice ) {
                 $notices[] = $notice;
@@ -252,10 +255,10 @@ class TConn_Convert_Identity extends TConn_Operation_Identity {
      * @param array  $options         Conversion options; TermConnect's are under self::SECTION.
      */
     public static function before_convert( $term_ids, $from_taxonomy, $to_taxonomy, $create_redirect, $options = array() ): void {
-        self::$plans        = array();
-        self::$messages     = array();
-        self::$options      = (array) $options;
-        $chosen             = (array) ( $options[ self::SECTION ] ?? array() );
+        self::$plans    = array();
+        self::$messages = array();
+        self::$options  = (array) $options;
+        $chosen         = (array) ( $options[ self::SECTION ] ?? array() );
 
         foreach ( (array) $term_ids as $term_id ) {
             $term = get_term( (int) $term_id, (string) $from_taxonomy );
@@ -318,11 +321,20 @@ class TConn_Convert_Identity extends TConn_Operation_Identity {
     public static function after_convert_term( $new_term_id, $old_taxonomy, $new_taxonomy, $old_term_id ): void {
         $new_term_id = (int) $new_term_id;
         $old_term_id = (int) $old_term_id;
-        $plan        = self::$plans[ $old_term_id ] ?? array( 'reverse' => false, 'old' => 'keep', 'new' => 'none', 'info' => null );
+        $plan        = self::$plans[ $old_term_id ] ?? array(
+            'reverse' => false,
+            'old' => 'keep',
+            'new' => 'none',
+            'info' => null,
+        );
         unset( self::$plans[ $old_term_id ] );
 
         $old_term = get_term( $old_term_id, (string) $old_taxonomy );
-        $snapshot = self::$snapshots[ $old_term_id ] ?? array( 'identity' => null, 'links' => array(), 'term' => null );
+        $snapshot = self::$snapshots[ $old_term_id ] ?? array(
+            'identity' => null,
+            'links' => array(),
+            'term' => null,
+        );
         unset( self::$snapshots[ $old_term_id ] );
         $alive    = $old_term instanceof WP_Term;
         $identity = $alive ? tconn_get_identity_source( $old_term_id ) : $snapshot['identity'];
@@ -344,7 +356,10 @@ class TConn_Convert_Identity extends TConn_Operation_Identity {
 
         if ( $alive && 'drop' === $plan['old'] ) {
             // The stub keeps its name: it is what visitors' old links point to.
-            tconn_remove_identity_source( $old_term_id, array( 'restore_name' => false, 'restore_description' => false ) );
+            tconn_remove_identity_source( $old_term_id, array(
+                'restore_name' => false,
+                'restore_description' => false,
+            ) );
             foreach ( $plan['info'] ? self::own_row( $plan['info'] ) : array() as $source_id => $remote_slug ) {
                 tconn_sv_remove_root( (string) $source_id, (string) $remote_slug );
             }
@@ -359,8 +374,8 @@ class TConn_Convert_Identity extends TConn_Operation_Identity {
         }
 
         if ( 'delegate' === $plan['new'] ) {
-            $remote = tconn_fetch_remote_identity( $identity['peer_site_slug'], (string) $new_taxonomy, $identity['remote_slug'] );
-            $result = is_wp_error( $remote ) ? $remote : tconn_set_identity_source(
+            $remote           = tconn_fetch_remote_identity( $identity['peer_site_slug'], (string) $new_taxonomy, $identity['remote_slug'] );
+            $result           = is_wp_error( $remote ) ? $remote : tconn_set_identity_source(
                 $new_term_id,
                 $identity['peer_site_slug'],
                 $identity['remote_slug'],

@@ -198,7 +198,7 @@ function tconn_get_term_links_see_also_html( WP_Term $term ): string {
             $anchors[] = '<a href="' . esc_url( $item['url'] ) . '" rel="noopener noreferrer" target="_blank">'
                 . esc_html( $text ) . '</a>';
         }
-        $label = $options['see_also_label'] ?? __( 'See also:', 'termconnect' );
+        $label         = $options['see_also_label'] ?? __( 'See also:', 'termconnect' );
         $see_also_html = '<p class="tconn-term-links-see-also">'
             . ( '' !== $label ? esc_html( trim( $label ) ) . ' ' : '' )
             . implode( ' &middot; ', $anchors )

@@ -10,16 +10,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-add_action( 'wp_ajax_tconn_di_preview_term',    'tconn_ajax_di_preview_term' );
-add_action( 'wp_ajax_tconn_di_set_source',      'tconn_ajax_di_set_source' );
-add_action( 'wp_ajax_tconn_di_remove',          'tconn_ajax_di_remove' );
-add_action( 'wp_ajax_tconn_di_refresh',         'tconn_ajax_di_refresh' );
-add_action( 'wp_ajax_tconn_di_resync_all',      'tconn_ajax_di_resync_all' );
+add_action( 'wp_ajax_tconn_di_preview_term', 'tconn_ajax_di_preview_term' );
+add_action( 'wp_ajax_tconn_di_set_source', 'tconn_ajax_di_set_source' );
+add_action( 'wp_ajax_tconn_di_remove', 'tconn_ajax_di_remove' );
+add_action( 'wp_ajax_tconn_di_refresh', 'tconn_ajax_di_refresh' );
+add_action( 'wp_ajax_tconn_di_resync_all', 'tconn_ajax_di_resync_all' );
 add_action( 'wp_ajax_tconn_di_update_settings', 'tconn_ajax_di_update_settings' );
-add_action( 'wp_ajax_tconn_di_check_rename',    'tconn_ajax_di_check_rename' );
-add_action( 'wp_ajax_tconn_di_relink_rename',   'tconn_ajax_di_relink_rename' );
-add_action( 'wp_ajax_tconn_di_add_link',        'tconn_ajax_di_add_link' );
-add_action( 'wp_ajax_tconn_di_redelegate',      'tconn_ajax_di_redelegate' );
+add_action( 'wp_ajax_tconn_di_check_rename', 'tconn_ajax_di_check_rename' );
+add_action( 'wp_ajax_tconn_di_relink_rename', 'tconn_ajax_di_relink_rename' );
+add_action( 'wp_ajax_tconn_di_add_link', 'tconn_ajax_di_add_link' );
+add_action( 'wp_ajax_tconn_di_redelegate', 'tconn_ajax_di_redelegate' );
 add_action( 'wp_ajax_tconn_di_follow_redirect', 'tconn_ajax_di_follow_redirect' );
 add_action( 'wp_ajax_tconn_di_decline_redirect', 'tconn_ajax_di_decline_redirect' );
 
@@ -117,9 +117,15 @@ function tconn_ajax_di_set_source(): void {
         $existing_sv_id = null;
         $conflicting_sv = null;
         foreach ( get_option( 'tconn_shared_vocabularies', array() ) as $src ) {
-            if ( ( $src['peer_site_slug'] ?? '' ) !== $peer_site_slug ) { continue; }
-            if ( ( $src['taxonomy'] ?? '' ) !== $term->taxonomy ) { continue; }
-            if ( ( $src['scope'] ?? '' ) !== $target_scope ) { continue; }
+            if ( ( $src['peer_site_slug'] ?? '' ) !== $peer_site_slug ) {
+                continue;
+            }
+            if ( ( $src['taxonomy'] ?? '' ) !== $term->taxonomy ) {
+                continue;
+            }
+            if ( ( $src['scope'] ?? '' ) !== $target_scope ) {
+                continue;
+            }
 
             if ( (bool) ( $src['sync_name'] ?? true ) === (bool) $sync_name
                 && (bool) ( $src['sync_description'] ?? true ) === (bool) $sync_description ) {
@@ -186,7 +192,13 @@ function tconn_ajax_di_set_source(): void {
                 'peer_site_slug'               => $peer_site_slug,
                 'taxonomy'                     => $term->taxonomy,
                 'scope'                        => $target_scope,
-                'roots'                        => $remote_term_id ? array( array( 'remote_term_id' => $remote_term_id, 'remote_slug' => sanitize_title( $remote_slug ), 'remote_name' => $remote['name'] ?? '' ) ) : array(),
+                'roots'                        => $remote_term_id ? array(
+                    array(
+                        'remote_term_id' => $remote_term_id,
+                        'remote_slug' => sanitize_title( $remote_slug ),
+                        'remote_name' => $remote['name'] ?? '',
+                    ),
+                ) : array(),
                 'group_id'                     => 0,
                 'group_name'                   => '',
                 'misplacement'                 => 'flag',
@@ -197,7 +209,11 @@ function tconn_ajax_di_set_source(): void {
                 'sync_name'                    => (bool) $sync_name,
                 'sync_description'             => (bool) $sync_description,
                 'last_sync'                    => time(),
-                'last_sync_result'             => tconn_sv_format_sync_result( array( 'synced' => 1, 'created' => 0, 'renamed' => 0 ) ),
+                'last_sync_result'             => tconn_sv_format_sync_result( array(
+                    'synced' => 1,
+                    'created' => 0,
+                    'renamed' => 0,
+                ) ),
                 'status'                       => 'active',
             );
         }
@@ -260,10 +276,10 @@ function tconn_ajax_di_remove(): void {
             if ( ( $src['id'] ?? '' ) !== $sv_source_id ) {
                 continue;
             }
-            $scope            = $src['scope'] ?? '';
-            $remote_slug_key  = $identity['remote_slug'] ?? '';
-            $roots            = $src['roots'] ?? array();
-            $is_listed        = false;
+            $scope           = $src['scope'] ?? '';
+            $remote_slug_key = $identity['remote_slug'] ?? '';
+            $roots           = $src['roots'] ?? array();
+            $is_listed       = false;
             foreach ( $roots as $r ) {
                 if ( ( $r['remote_slug'] ?? '' ) === $remote_slug_key ) {
                     $is_listed = true;
@@ -337,7 +353,7 @@ function tconn_ajax_di_resync_all(): void {
     // the last run didn't reach.
     $last_fetched = array();
     foreach ( $rows as $row ) {
-        $source = maybe_unserialize( $row->meta_value );
+        $source                              = maybe_unserialize( $row->meta_value );
         $last_fetched[ (int) $row->term_id ] = is_array( $source ) ? (int) ( $source['last_fetched'] ?? 0 ) : 0;
     }
     asort( $last_fetched );
@@ -363,9 +379,9 @@ function tconn_ajax_di_resync_all(): void {
         }
         $result = tconn_refresh_identity_cache( (int) $term_id );
         if ( is_wp_error( $result ) ) {
-            $errors++;
+            ++$errors;
         } else {
-            $refreshed++;
+            ++$refreshed;
         }
     }
 

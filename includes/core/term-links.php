@@ -26,8 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param int $term_id
  * @return bool True if HT is active and the term has an outgoing redirect.
  */
-function tconn_is_redirect(int $term_id): bool
-{
+function tconn_is_redirect( int $term_id ): bool {
     return function_exists('htax_is_redirect') && htax_is_redirect($term_id);
 }
 
@@ -37,14 +36,13 @@ function tconn_is_redirect(int $term_id): bool
  *
  * @return int[]
  */
-function tconn_get_all_redirect_term_ids(): array
-{
+function tconn_get_all_redirect_term_ids(): array {
     if ( ! function_exists( 'htax_is_redirect' ) ) {
         return array();
     }
     global $wpdb;
     $table = $wpdb->prefix . 'htax_term_relationships';
-    if ( ! $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) ) {
+    if ( ! $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) ) {
         return array();
     }
     return array_map(
@@ -506,14 +504,14 @@ function tconn_set_link_types( array $types ): bool {
  * @return bool
  */
 function tconn_is_companion_taxonomy( string $taxonomy ): bool {
-	if ( '' === $taxonomy ) {
-		return false;
-	}
-	$stored = (array) get_option( 'tconn_enabled_taxonomies', array() );
-	if ( in_array( $taxonomy, $stored, true ) ) {
-		return false;
-	}
-	return in_array( $taxonomy, TConn_Settings::get_enabled_taxonomies(), true );
+    if ( '' === $taxonomy ) {
+        return false;
+    }
+    $stored = (array) get_option( 'tconn_enabled_taxonomies', array() );
+    if ( in_array( $taxonomy, $stored, true ) ) {
+        return false;
+    }
+    return in_array( $taxonomy, TConn_Settings::get_enabled_taxonomies(), true );
 }
 
 /**
@@ -531,11 +529,11 @@ function tconn_is_companion_taxonomy( string $taxonomy ): bool {
  * @return string Peer taxonomy slug (may be '').
  */
 function tconn_wp_peer_remote_taxonomy( array $type, string $local_taxonomy ): string {
-	if ( '' !== $local_taxonomy && tconn_is_companion_taxonomy( $local_taxonomy ) ) {
-		return $local_taxonomy;
-	}
-	$remote = (string) ( $type['remote_taxonomy'] ?? '' );
-	return '' !== $remote ? $remote : $local_taxonomy;
+    if ( '' !== $local_taxonomy && tconn_is_companion_taxonomy( $local_taxonomy ) ) {
+        return $local_taxonomy;
+    }
+    $remote = (string) ( $type['remote_taxonomy'] ?? '' );
+    return '' !== $remote ? $remote : $local_taxonomy;
 }
 
 /**
@@ -552,14 +550,14 @@ function tconn_wp_peer_remote_taxonomy( array $type, string $local_taxonomy ): s
  * @return bool
  */
 function tconn_taxonomy_peer_authors( string $taxonomy ): bool {
-	/**
-	 * Filters whether a taxonomy maps WordPress-peer links to authors.
-	 *
-	 * @since 1.0.0
-	 * @param bool   $is_author Default false.
-	 * @param string $taxonomy  Taxonomy slug.
-	 */
-	return (bool) apply_filters( 'tconn_taxonomy_peer_authors', false, $taxonomy );
+    /**
+     * Filters whether a taxonomy maps WordPress-peer links to authors.
+     *
+     * @since 1.0.0
+     * @param bool   $is_author Default false.
+     * @param string $taxonomy  Taxonomy slug.
+     */
+    return (bool) apply_filters( 'tconn_taxonomy_peer_authors', false, $taxonomy );
 }
 
 /**
@@ -580,34 +578,34 @@ function tconn_taxonomy_peer_authors( string $taxonomy ): bool {
  * @return string
  */
 function tconn_wp_link_type_archive_path( array $type, string $taxonomy = '' ): string {
-	static $rest_to_path = array(
-		'tags'       => 'tag',
-		'categories' => 'category',
-	);
-	static $slug_to_path = array(
-		'post_tag' => 'tag',
-		'category' => 'category',
-	);
+    static $rest_to_path = array(
+        'tags'       => 'tag',
+        'categories' => 'category',
+    );
+    static $slug_to_path = array(
+        'post_tag' => 'tag',
+        'category' => 'category',
+    );
 
-	if ( '' !== $taxonomy && tconn_taxonomy_peer_authors( $taxonomy ) ) {
-		return 'author';
-	}
+    if ( '' !== $taxonomy && tconn_taxonomy_peer_authors( $taxonomy ) ) {
+        return 'author';
+    }
 
-	$remote = tconn_wp_peer_remote_taxonomy( $type, $taxonomy );
-	if ( '' === $remote ) {
-		return '';
-	}
+    $remote = tconn_wp_peer_remote_taxonomy( $type, $taxonomy );
+    if ( '' === $remote ) {
+        return '';
+    }
 
-	if ( isset( $rest_to_path[ $remote ] ) ) {
-		return $rest_to_path[ $remote ];
-	}
+    if ( isset( $rest_to_path[ $remote ] ) ) {
+        return $rest_to_path[ $remote ];
+    }
 
-	$tax_obj = get_taxonomy( $remote );
-	if ( $tax_obj && ! empty( $tax_obj->rewrite['slug'] ) ) {
-		return (string) $tax_obj->rewrite['slug'];
-	}
+    $tax_obj = get_taxonomy( $remote );
+    if ( $tax_obj && ! empty( $tax_obj->rewrite['slug'] ) ) {
+        return (string) $tax_obj->rewrite['slug'];
+    }
 
-	return $slug_to_path[ $remote ] ?? $remote;
+    return $slug_to_path[ $remote ] ?? $remote;
 }
 
 /**
@@ -628,44 +626,44 @@ function tconn_wp_link_type_archive_path( array $type, string $taxonomy = '' ): 
  * @return string|null
  */
 function tconn_get_link_uri( string $slug, string $id, string $taxonomy = '' ): ?string {
-	$type = tconn_get_link_type( $slug );
-	if ( null === $type || '' === $id ) {
-		return null;
-	}
+    $type = tconn_get_link_type( $slug );
+    if ( null === $type || '' === $id ) {
+        return null;
+    }
 
-	$platform = $type['platform'] ?? 'other';
+    $platform = $type['platform'] ?? 'other';
 
-	if ( 'feed' === $platform ) {
-		return null;
-	}
+    if ( 'feed' === $platform ) {
+        return null;
+    }
 
-	$uri = null;
-	if ( 'wordpress' === $platform ) {
-		$origin = tconn_external_get_site_origin( $type['uri_prefix'] );
-		$path   = '' !== $origin ? tconn_wp_link_type_archive_path( $type, $taxonomy ) : '';
-		if ( '' !== $origin && '' !== $path ) {
-			$uri = $origin . '/' . $path . '/' . rawurlencode( $id );
-		}
-	} else {
-		$uri = $type['uri_prefix'] . $id;
-	}
+    $uri = null;
+    if ( 'wordpress' === $platform ) {
+        $origin = tconn_external_get_site_origin( $type['uri_prefix'] );
+        $path   = '' !== $origin ? tconn_wp_link_type_archive_path( $type, $taxonomy ) : '';
+        if ( '' !== $origin && '' !== $path ) {
+            $uri = $origin . '/' . $path . '/' . rawurlencode( $id );
+        }
+    } else {
+        $uri = $type['uri_prefix'] . $id;
+    }
 
-	/**
-	 * Filters the constructed URI for a link type + identifier pair.
-	 *
-	 * Lets companion plugins build per-network, per-taxonomy URLs that the default
-	 * `uri_prefix . id` concatenation cannot express — e.g. a social-network plugin
-	 * that emits a hashtag URL for one taxonomy and a profile URL for another, or
-	 * that needs a transform (Mastodon `@user@instance` → `https://instance/@user`).
-	 *
-	 * @since 1.0.0
-	 * @param string|null $uri      Constructed URI, or null when none could be derived.
-	 * @param string      $slug     Link type slug.
-	 * @param string      $id       Identifier within the namespace.
-	 * @param array       $type     Link type definition.
-	 * @param string      $taxonomy Local taxonomy slug for context (may be empty).
-	 */
-	return apply_filters( 'tconn_link_uri', $uri, $slug, $id, $type, $taxonomy );
+    /**
+     * Filters the constructed URI for a link type + identifier pair.
+     *
+     * Lets companion plugins build per-network, per-taxonomy URLs that the default
+     * `uri_prefix . id` concatenation cannot express — e.g. a social-network plugin
+     * that emits a hashtag URL for one taxonomy and a profile URL for another, or
+     * that needs a transform (Mastodon `@user@instance` → `https://instance/@user`).
+     *
+     * @since 1.0.0
+     * @param string|null $uri      Constructed URI, or null when none could be derived.
+     * @param string      $slug     Link type slug.
+     * @param string      $id       Identifier within the namespace.
+     * @param array       $type     Link type definition.
+     * @param string      $taxonomy Local taxonomy slug for context (may be empty).
+     */
+    return apply_filters( 'tconn_link_uri', $uri, $slug, $id, $type, $taxonomy );
 }
 
 /**
@@ -680,22 +678,22 @@ function tconn_get_link_uri( string $slug, string $id, string $taxonomy = '' ): 
  * @return string URL prefix ending with '/', or empty string when a link cannot be derived.
  */
 function tconn_link_type_display_prefix( array $type, string $taxonomy = '' ): string {
-	$platform = $type['platform'] ?? 'other';
+    $platform = $type['platform'] ?? 'other';
 
-	if ( 'feed' === $platform ) {
-		return '';
-	}
+    if ( 'feed' === $platform ) {
+        return '';
+    }
 
-	if ( 'wordpress' === $platform ) {
-		$origin = tconn_external_get_site_origin( $type['uri_prefix'] );
-		$path   = tconn_wp_link_type_archive_path( $type, $taxonomy );
-		if ( '' !== $origin && '' !== $path ) {
-			return $origin . '/' . $path . '/';
-		}
-		return '';
-	}
+    if ( 'wordpress' === $platform ) {
+        $origin = tconn_external_get_site_origin( $type['uri_prefix'] );
+        $path   = tconn_wp_link_type_archive_path( $type, $taxonomy );
+        if ( '' !== $origin && '' !== $path ) {
+            return $origin . '/' . $path . '/';
+        }
+        return '';
+    }
 
-	return $type['uri_prefix'] ?? '';
+    return $type['uri_prefix'] ?? '';
 }
 
 // ==============================================================================
@@ -717,99 +715,99 @@ function tconn_link_type_display_prefix( array $type, string $taxonomy = '' ): s
  * @return array|null { url: string, parser: string } or null.
  */
 function tconn_get_suggest_config( string $slug, string $taxonomy = '' ): ?array {
-	static $configs = null;
-	if ( null === $configs ) {
-		$configs = array(
-			'wikidata'      => array(
-				'url'    => 'https://www.wikidata.org/w/api.php?action=wbsearchentities&search={query}&language=en&type=item&format=json&limit=8',
-				'parser' => 'wikidata',
-			),
-			'wikipedia'     => array(
-				'url'    => 'https://en.wikipedia.org/w/api.php?action=opensearch&search={query}&limit=8&format=json&redirects=resolve',
-				'parser' => 'mediawiki',
-			),
-			'wikiquote'     => array(
-				'url'    => 'https://en.wikiquote.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
-				'parser' => 'mediawiki',
-			),
-			'wiktionary'    => array(
-				'url'    => 'https://en.wiktionary.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
-				'parser' => 'mediawiki',
-			),
-			'wikivoyage'    => array(
-				'url'    => 'https://en.wikivoyage.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
-				'parser' => 'mediawiki',
-			),
-			'wikispecies'   => array(
-				'url'    => 'https://species.wikimedia.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
-				'parser' => 'mediawiki',
-			),
-			'openstreetmap' => array(
-				'url'    => 'https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=8&addressdetails=0',
-				'parser' => 'nominatim',
-			),
-			'inaturalist'   => array(
-				'url'    => 'https://api.inaturalist.org/v1/taxa?q={query}&per_page=8',
-				'parser' => 'inaturalist',
-			),
-			'gbif'          => array(
-				'url'    => 'https://api.gbif.org/v1/species/suggest?q={query}&limit=8',
-				'parser' => 'gbif',
-			),
-			// viaf: AutoSuggest endpoint now returns Cloudflare challenge HTML for server-side
-			// requests; no server-accessible alternative exists. Plain ID field only.
-			'lcsh'          => array(
-				'url'    => 'https://id.loc.gov/suggest/?q={query}&rdftype=Topic&count=8',
-				'parser' => 'lcsh',
-			),
-			'openalex'      => array(
-				'url'    => 'https://api.openalex.org/autocomplete/concepts?q={query}',
-				'parser' => 'openalex',
-			),
-			// Types with no public suggest API: grokipedia, merriam-webster (key required),
-			// geonames (username required), orcid (OAuth), mesh, getty-aat, getty-tgn (SPARQL),
-			// schema-org (finite vocabulary), gs1.
-		);
-	}
-	if ( isset( $configs[ $slug ] ) ) {
-		return $configs[ $slug ];
-	}
+    static $configs = null;
+    if ( null === $configs ) {
+        $configs = array(
+            'wikidata'      => array(
+                'url'    => 'https://www.wikidata.org/w/api.php?action=wbsearchentities&search={query}&language=en&type=item&format=json&limit=8',
+                'parser' => 'wikidata',
+            ),
+            'wikipedia'     => array(
+                'url'    => 'https://en.wikipedia.org/w/api.php?action=opensearch&search={query}&limit=8&format=json&redirects=resolve',
+                'parser' => 'mediawiki',
+            ),
+            'wikiquote'     => array(
+                'url'    => 'https://en.wikiquote.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
+                'parser' => 'mediawiki',
+            ),
+            'wiktionary'    => array(
+                'url'    => 'https://en.wiktionary.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
+                'parser' => 'mediawiki',
+            ),
+            'wikivoyage'    => array(
+                'url'    => 'https://en.wikivoyage.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
+                'parser' => 'mediawiki',
+            ),
+            'wikispecies'   => array(
+                'url'    => 'https://species.wikimedia.org/w/api.php?action=opensearch&search={query}&limit=8&format=json',
+                'parser' => 'mediawiki',
+            ),
+            'openstreetmap' => array(
+                'url'    => 'https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=8&addressdetails=0',
+                'parser' => 'nominatim',
+            ),
+            'inaturalist'   => array(
+                'url'    => 'https://api.inaturalist.org/v1/taxa?q={query}&per_page=8',
+                'parser' => 'inaturalist',
+            ),
+            'gbif'          => array(
+                'url'    => 'https://api.gbif.org/v1/species/suggest?q={query}&limit=8',
+                'parser' => 'gbif',
+            ),
+            // viaf: AutoSuggest endpoint now returns Cloudflare challenge HTML for server-side
+            // requests; no server-accessible alternative exists. Plain ID field only.
+            'lcsh'          => array(
+                'url'    => 'https://id.loc.gov/suggest/?q={query}&rdftype=Topic&count=8',
+                'parser' => 'lcsh',
+            ),
+            'openalex'      => array(
+                'url'    => 'https://api.openalex.org/autocomplete/concepts?q={query}',
+                'parser' => 'openalex',
+            ),
+            // Types with no public suggest API: grokipedia, merriam-webster (key required),
+            // geonames (username required), orcid (OAuth), mesh, getty-aat, getty-tgn (SPARQL),
+            // schema-org (finite vocabulary), gs1.
+        );
+    }
+    if ( isset( $configs[ $slug ] ) ) {
+        return $configs[ $slug ];
+    }
 
-	$type = tconn_get_link_type( $slug );
+    $type = tconn_get_link_type( $slug );
 
-	// Fallback: if the link type declares platform=mediawiki, derive the API URL from its uri_prefix.
-	if ( $type && 'mediawiki' === ( $type['platform'] ?? '' ) && ! empty( $type['uri_prefix'] ) ) {
-		$scheme = wp_parse_url( $type['uri_prefix'], PHP_URL_SCHEME );
-		$host   = wp_parse_url( $type['uri_prefix'], PHP_URL_HOST );
-		if ( $scheme && $host ) {
-			return array(
-				'url'    => $scheme . '://' . $host . '/w/api.php?action=opensearch&search={query}&limit=8&format=json',
-				'parser' => 'mediawiki',
-			);
-		}
-	}
+    // Fallback: if the link type declares platform=mediawiki, derive the API URL from its uri_prefix.
+    if ( $type && 'mediawiki' === ( $type['platform'] ?? '' ) && ! empty( $type['uri_prefix'] ) ) {
+        $scheme = wp_parse_url( $type['uri_prefix'], PHP_URL_SCHEME );
+        $host   = wp_parse_url( $type['uri_prefix'], PHP_URL_HOST );
+        if ( $scheme && $host ) {
+            return array(
+                'url'    => $scheme . '://' . $host . '/w/api.php?action=opensearch&search={query}&limit=8&format=json',
+                'parser' => 'mediawiki',
+            );
+        }
+    }
 
-	/**
-	 * Filters the suggest configuration for a link type with no built-in config.
-	 *
-	 * Companion plugins that register their own external link types can return
-	 * [ 'url' => <template>, 'parser' => <id>, 'free_text' => bool ] to enable
-	 * autocomplete on the term-edit identifier field. {query} in the URL template
-	 * is replaced with the URL-encoded search term and the request is made
-	 * server-side to that fixed endpoint only (the term is the sole interpolated
-	 * value), so arbitrary-URL SSRF is not possible. Set 'free_text' => true to let
-	 * the user keep typed input that does not match a suggestion (suggestions are
-	 * advisory rather than required — appropriate for handles the user may know
-	 * exactly). Pair with the 'tconn_parse_suggest_response' filter to turn the
-	 * response into { value, label } suggestions for a custom parser id.
-	 *
-	 * @since 1.0.0
-	 * @param array|null $config   Suggest config, or null for none.
-	 * @param string     $slug     Link type slug.
-	 * @param array|null $type     Link type definition, if known.
-	 * @param string     $taxonomy Taxonomy of the term being edited, if known.
-	 */
-	return apply_filters( 'tconn_suggest_config', null, $slug, $type, $taxonomy );
+    /**
+     * Filters the suggest configuration for a link type with no built-in config.
+     *
+     * Companion plugins that register their own external link types can return
+     * [ 'url' => <template>, 'parser' => <id>, 'free_text' => bool ] to enable
+     * autocomplete on the term-edit identifier field. {query} in the URL template
+     * is replaced with the URL-encoded search term and the request is made
+     * server-side to that fixed endpoint only (the term is the sole interpolated
+     * value), so arbitrary-URL SSRF is not possible. Set 'free_text' => true to let
+     * the user keep typed input that does not match a suggestion (suggestions are
+     * advisory rather than required — appropriate for handles the user may know
+     * exactly). Pair with the 'tconn_parse_suggest_response' filter to turn the
+     * response into { value, label } suggestions for a custom parser id.
+     *
+     * @since 1.0.0
+     * @param array|null $config   Suggest config, or null for none.
+     * @param string     $slug     Link type slug.
+     * @param array|null $type     Link type definition, if known.
+     * @param string     $taxonomy Taxonomy of the term being edited, if known.
+     */
+    return apply_filters( 'tconn_suggest_config', null, $slug, $type, $taxonomy );
 }
 
 /**
@@ -824,155 +822,165 @@ function tconn_get_suggest_config( string $slug, string $taxonomy = '' ): ?array
  * @return array[]
  */
 function tconn_parse_suggest_response( string $body, string $parser ): array {
-	$data    = tconn_external_json_decode( $body );
-	$results = array();
+    $data    = tconn_external_json_decode( $body );
+    $results = array();
 
-	switch ( $parser ) {
+    switch ( $parser ) {
 
-		case 'wikidata':
-			if ( ! isset( $data['search'] ) ) {
-				break;
-			}
-			foreach ( $data['search'] as $item ) {
-				$id   = (string) ( $item['id'] ?? '' );
-				$name = (string) ( $item['label'] ?? $id );
-				$desc = (string) ( $item['description'] ?? '' );
-				if ( '' !== $id ) {
-					$results[] = array(
-						'value' => $id,
-						'label' => $desc ? "$name ($desc)" : $name,
-					);
-				}
-			}
-			break;
+        case 'wikidata':
+            if ( ! isset( $data['search'] ) ) {
+                break;
+            }
+            foreach ( $data['search'] as $item ) {
+                $id   = (string) ( $item['id'] ?? '' );
+                $name = (string) ( $item['label'] ?? $id );
+                $desc = (string) ( $item['description'] ?? '' );
+                if ( '' !== $id ) {
+                    $results[] = array(
+                        'value' => $id,
+                        'label' => $desc ? "$name ($desc)" : $name,
+                    );
+                }
+            }
+            break;
 
-		case 'mediawiki':
-			// OpenSearch response: four-element array — query string, titles, descriptions, URLs.
-			if ( ! is_array( $data ) || ! isset( $data[1] ) ) {
-				break;
-			}
-			$titles = (array) $data[1];
-			$descs  = (array) ( $data[2] ?? array() );
-			foreach ( $titles as $i => $title ) {
-				$slug = str_replace( ' ', '_', (string) $title );
-				$desc = (string) ( $descs[ $i ] ?? '' );
+        case 'mediawiki':
+            // OpenSearch response: four-element array — query string, titles, descriptions, URLs.
+            if ( ! is_array( $data ) || ! isset( $data[1] ) ) {
+                break;
+            }
+            $titles = (array) $data[1];
+            $descs  = (array) ( $data[2] ?? array() );
+            foreach ( $titles as $i => $title ) {
+                $slug = str_replace( ' ', '_', (string) $title );
+                $desc = (string) ( $descs[ $i ] ?? '' );
 
-				$results[] = array(
-					'value' => $slug,
-					'label' => $desc ? "$title — $desc" : (string) $title,
-				);
-			}
-			break;
+                $results[] = array(
+                    'value' => $slug,
+                    'label' => $desc ? "$title — $desc" : (string) $title,
+                );
+            }
+            break;
 
-		case 'nominatim':
-			// Nominatim returns osm_type (N/W/R) and numeric osm_id separately.
-			// The stored value must be "{type}/{id}" (e.g. "way/5013364") so the
-			// uri_prefix "https://www.openstreetmap.org/" produces a valid URL.
-			if ( ! is_array( $data ) ) {
-				break;
-			}
-			$osm_type_map = array( 'N' => 'node', 'W' => 'way', 'R' => 'relation' );
-			foreach ( $data as $item ) {
-				$raw_type = strtoupper( substr( (string) ( $item['osm_type'] ?? '' ), 0, 1 ) );
-				$type     = $osm_type_map[ $raw_type ] ?? strtolower( (string) ( $item['osm_type'] ?? '' ) );
-				$osm_id   = (string) ( $item['osm_id'] ?? '' );
-				$label    = (string) ( $item['display_name'] ?? '' );
-				if ( '' !== $type && '' !== $osm_id && '' !== $label ) {
-					$results[] = array(
-						'value' => $type . '/' . $osm_id,
-						'label' => $label,
-					);
-				}
-			}
-			break;
+        case 'nominatim':
+            // Nominatim returns osm_type (N/W/R) and numeric osm_id separately.
+            // The stored value must be "{type}/{id}" (e.g. "way/5013364") so the
+            // uri_prefix "https://www.openstreetmap.org/" produces a valid URL.
+            if ( ! is_array( $data ) ) {
+                break;
+            }
+            $osm_type_map = array(
+                'N' => 'node',
+                'W' => 'way',
+                'R' => 'relation',
+            );
+            foreach ( $data as $item ) {
+                $raw_type = strtoupper( substr( (string) ( $item['osm_type'] ?? '' ), 0, 1 ) );
+                $type     = $osm_type_map[ $raw_type ] ?? strtolower( (string) ( $item['osm_type'] ?? '' ) );
+                $osm_id   = (string) ( $item['osm_id'] ?? '' );
+                $label    = (string) ( $item['display_name'] ?? '' );
+                if ( '' !== $type && '' !== $osm_id && '' !== $label ) {
+                    $results[] = array(
+                        'value' => $type . '/' . $osm_id,
+                        'label' => $label,
+                    );
+                }
+            }
+            break;
 
-		case 'inaturalist':
-			if ( ! isset( $data['results'] ) ) {
-				break;
-			}
-			foreach ( $data['results'] as $item ) {
-				$id     = (string) ( $item['id'] ?? '' );
-				$name   = (string) ( $item['name'] ?? '' );
-				$common = (string) ( $item['preferred_common_name'] ?? '' );
-				if ( '' !== $id ) {
-					$results[] = array(
-						'value' => $id,
-						'label' => $common ? "$name ($common)" : $name,
-					);
-				}
-			}
-			break;
+        case 'inaturalist':
+            if ( ! isset( $data['results'] ) ) {
+                break;
+            }
+            foreach ( $data['results'] as $item ) {
+                $id     = (string) ( $item['id'] ?? '' );
+                $name   = (string) ( $item['name'] ?? '' );
+                $common = (string) ( $item['preferred_common_name'] ?? '' );
+                if ( '' !== $id ) {
+                    $results[] = array(
+                        'value' => $id,
+                        'label' => $common ? "$name ($common)" : $name,
+                    );
+                }
+            }
+            break;
 
-		case 'gbif':
-			if ( ! is_array( $data ) ) {
-				break;
-			}
-			foreach ( $data as $item ) {
-				$id     = (string) ( $item['key'] ?? '' );   // suggest endpoint uses 'key', not 'usageKey'
-				$name   = (string) ( $item['canonicalName'] ?? $item['scientificName'] ?? '' );
-				$common = (string) ( $item['vernacularName'] ?? '' );
-				if ( '' !== $id ) {
-					$results[] = array(
-						'value' => $id,
-						'label' => $common ? "$name ($common)" : $name,
-					);
-				}
-			}
-			break;
+        case 'gbif':
+            if ( ! is_array( $data ) ) {
+                break;
+            }
+            foreach ( $data as $item ) {
+                $id     = (string) ( $item['key'] ?? '' );   // suggest endpoint uses 'key', not 'usageKey'
+                $name   = (string) ( $item['canonicalName'] ?? $item['scientificName'] ?? '' );
+                $common = (string) ( $item['vernacularName'] ?? '' );
+                if ( '' !== $id ) {
+                    $results[] = array(
+                        'value' => $id,
+                        'label' => $common ? "$name ($common)" : $name,
+                    );
+                }
+            }
+            break;
 
-case 'lcsh':
-			// Same OpenSearch format as mediawiki but identifier = last URI path segment.
-			if ( ! is_array( $data ) || ! isset( $data[1] ) ) {
-				break;
-			}
-			$labels = (array) $data[1];
-			$uris   = (array) ( $data[3] ?? array() );
-			foreach ( $labels as $i => $label ) {
-				$uri = (string) ( $uris[ $i ] ?? '' );
-				$id  = $uri ? basename( rtrim( $uri, '/' ) ) : '';
-				if ( '' !== $id ) {
-					$results[] = array( 'value' => $id, 'label' => (string) $label );
-				}
-			}
-			break;
+        case 'lcsh':
+            // Same OpenSearch format as mediawiki but identifier = last URI path segment.
+            if ( ! is_array( $data ) || ! isset( $data[1] ) ) {
+                break;
+            }
+            $labels = (array) $data[1];
+            $uris   = (array) ( $data[3] ?? array() );
+            foreach ( $labels as $i => $label ) {
+                $uri = (string) ( $uris[ $i ] ?? '' );
+                $id  = $uri ? basename( rtrim( $uri, '/' ) ) : '';
+                if ( '' !== $id ) {
+                    $results[] = array(
+                        'value' => $id,
+                        'label' => (string) $label,
+                    );
+                }
+            }
+            break;
 
-		case 'openalex':
-			if ( ! isset( $data['results'] ) ) {
-				break;
-			}
-			foreach ( $data['results'] as $item ) {
-				$id_url = (string) ( $item['id'] ?? '' );
-				$id     = $id_url ? basename( $id_url ) : '';
-				$label  = (string) ( $item['display_name'] ?? '' );
-				if ( '' !== $id ) {
-					$results[] = array( 'value' => $id, 'label' => $label );
-				}
-			}
-			break;
-	}
+        case 'openalex':
+            if ( ! isset( $data['results'] ) ) {
+                break;
+            }
+            foreach ( $data['results'] as $item ) {
+                $id_url = (string) ( $item['id'] ?? '' );
+                $id     = $id_url ? basename( $id_url ) : '';
+                $label  = (string) ( $item['display_name'] ?? '' );
+                if ( '' !== $id ) {
+                    $results[] = array(
+                        'value' => $id,
+                        'label' => $label,
+                    );
+                }
+            }
+            break;
+    }
 
-	/**
-	 * Filters parsed suggest results, enabling custom parser ids.
-	 *
-	 * Companion plugins handling a custom parser id (declared through the
-	 * 'tconn_suggest_config' filter) return an array of
-	 * [ 'value' => string, 'label' => string ] items.
-	 *
-	 * @since 1.0.0
-	 * @param array[] $results Parsed results (empty for an unrecognized parser).
-	 * @param string  $body    Raw response body.
-	 * @param string  $parser  Parser id.
-	 */
-	$results = apply_filters( 'tconn_parse_suggest_response', $results, $body, $parser );
+    /**
+     * Filters parsed suggest results, enabling custom parser ids.
+     *
+     * Companion plugins handling a custom parser id (declared through the
+     * 'tconn_suggest_config' filter) return an array of
+     * [ 'value' => string, 'label' => string ] items.
+     *
+     * @since 1.0.0
+     * @param array[] $results Parsed results (empty for an unrecognized parser).
+     * @param string  $body    Raw response body.
+     * @param string  $parser  Parser id.
+     */
+    $results = apply_filters( 'tconn_parse_suggest_response', $results, $body, $parser );
 
-	// Decode HTML entities in labels — some APIs return encoded strings (e.g. "&amp;") and
-	// jQuery UI Autocomplete renders labels as plain text, not HTML.
-	foreach ( $results as &$result ) {
-		$result['label'] = html_entity_decode( $result['label'], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-	}
-	unset( $result );
+    // Decode HTML entities in labels — some APIs return encoded strings (e.g. "&amp;") and
+    // jQuery UI Autocomplete renders labels as plain text, not HTML.
+    foreach ( $results as &$result ) {
+        $result['label'] = html_entity_decode( $result['label'], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+    }
+    unset( $result );
 
-	return $results;
+    return $results;
 }
 
 // ==============================================================================
@@ -1073,7 +1081,7 @@ function tconn_get_term_links_data( int $term_id, bool $reset = false ): array {
             $term_id,
             $wpdb->esc_like( '_tconn_link_' ) . '%'
         ) );
-        $raw = array();
+        $raw  = array();
         foreach ( (array) $rows as $row ) {
             $slug_key = substr( $row->meta_key, strlen( '_tconn_link_' ) );
             $meta     = maybe_unserialize( $row->meta_value );
@@ -1084,7 +1092,11 @@ function tconn_get_term_links_data( int $term_id, bool $reset = false ): array {
                     'fetched_at' => (int) ( $meta['fetched_at'] ?? 0 ),
                 );
             } elseif ( is_string( $meta ) && '' !== $meta ) {
-                $raw[ $slug_key ] = array( 'id' => $meta, 'label' => '', 'fetched_at' => 0 );
+                $raw[ $slug_key ] = array(
+                    'id' => $meta,
+                    'label' => '',
+                    'fetched_at' => 0,
+                );
             }
         }
         set_transient( 'tconn_links_' . $term_id, $raw, 0 );
@@ -1197,7 +1209,7 @@ function tconn_get_terms_by_uri( string $uri ): array {
             $uri
         )
     );
-    $ids = array_map( 'intval', $results );
+    $ids     = array_map( 'intval', $results );
 
     $redirect_ids = tconn_get_all_redirect_term_ids();
     if ( ! empty( $redirect_ids ) ) {
@@ -1241,7 +1253,7 @@ function tconn_rebuild_uri_index( int $term_id ): void {
     // Collect local links: slug => { url, uri_prefix }
     // Single batch query to avoid one query per link type.
     global $wpdb;
-    $meta_rows = $wpdb->get_results( $wpdb->prepare(
+    $meta_rows  = $wpdb->get_results( $wpdb->prepare(
         "SELECT meta_key, meta_value FROM {$wpdb->termmeta}
          WHERE term_id = %d AND meta_key LIKE %s AND meta_value != ''",
         $term_id,
@@ -1428,7 +1440,7 @@ function tconn_build_merged_links( int $term_id, bool $reset = false ): array {
         $fetched_at = $local['fetched_at'];
         if ( isset( $delegated_by_url[ $url ] ) ) {
             $delegated_merged[ $url ] = true;
-            $d = $delegated_by_url[ $url ];
+            $d                        = $delegated_by_url[ $url ];
             if ( (int) ( $d['fetched_at'] ?? 0 ) >= $fetched_at ) {
                 $label      = (string) ( $d['label'] ?? '' );
                 $fetched_at = (int) $d['fetched_at'];

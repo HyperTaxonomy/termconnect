@@ -60,15 +60,15 @@ function tconn_process_external_post_placeholders( string $text, array $post, ar
     }
 
     $replacements = array(
-        '{title}'    => esc_html( $post['title']   ?? '' ),
-        '{url}'      => esc_url( $post['url']       ?? '' ),
+        '{title}'    => esc_html( $post['title'] ?? '' ),
+        '{url}'      => esc_url( $post['url'] ?? '' ),
         '{date}'     => esc_html( $date ),
         '{modified}' => esc_html( $modified ),
         '{excerpt}'  => esc_html( $post['excerpt'] ?? '' ),
         '{label}'    => esc_html( $label ),
         '{hostname}' => esc_html( $hostname ),
-        '{origin}'   => esc_url( $post['origin']   ?? '' ),
-        '{author}'   => esc_html( $post['author']  ?? '' ),
+        '{origin}'   => esc_url( $post['origin'] ?? '' ),
+        '{author}'   => esc_html( $post['author'] ?? '' ),
     );
 
     return str_replace( array_keys( $replacements ), array_values( $replacements ), $text );
@@ -300,7 +300,7 @@ class TConn_Shortcode_PeerPosts {
             $source_weights = function_exists( 'htax_get_post_term_strengths' )
                 ? htax_get_post_term_strengths( $post_id, $term_ids )
                 : array();
-            $scores = htax_get_local_post_scores( $term_ids, array(
+            $scores         = htax_get_local_post_scores( $term_ids, array(
                 'exclude'      => array( $post_id ),
                 'term_weights' => $source_weights,
             ) );
@@ -432,9 +432,9 @@ class TConn_Shortcode_PeerPosts {
         $peer_fetches = array(); // list of [ origin => string, w => float, posts => array ]
 
         foreach ( $origin_groups as $group_tuples ) {
-            $origin   = $group_tuples[0]['origin'];
-            $taxonomy = $group_tuples[0]['remote_taxonomy'];
-            $peer_site_slug  = $group_tuples[0]['peer_site_slug'];
+            $origin         = $group_tuples[0]['origin'];
+            $taxonomy       = $group_tuples[0]['remote_taxonomy'];
+            $peer_site_slug = $group_tuples[0]['peer_site_slug'];
 
             if ( tconn_external_is_blacklisted( $origin ) || ! tconn_external_validate_origin( $origin ) ) {
                 continue;
@@ -474,7 +474,11 @@ class TConn_Shortcode_PeerPosts {
             }
 
             // Hold this taxonomy's results for the per-peer weighted combine below.
-            $peer_fetches[] = array( 'origin' => $origin, 'w' => $w_i, 'posts' => $posts );
+            $peer_fetches[] = array(
+                'origin' => $origin,
+                'w' => $w_i,
+                'posts' => $posts,
+            );
 
             // FOAF expansion runs once per origin (on first encounter), seeded with
             // the origin already marked visited so it isn't rediscovered.
@@ -590,7 +594,11 @@ class TConn_Shortcode_PeerPosts {
                 $w = 1.0;
             }
             if ( ! isset( $acc[ $origin ] ) ) {
-                $acc[ $origin ] = array( 'total_w' => 0.0, 'num' => array(), 'rec' => array() );
+                $acc[ $origin ] = array(
+                    'total_w' => 0.0,
+                    'num' => array(),
+                    'rec' => array(),
+                );
             }
             $acc[ $origin ]['total_w'] += $w;
 
@@ -599,7 +607,7 @@ class TConn_Shortcode_PeerPosts {
                 if ( '' === $url ) {
                     continue;
                 }
-                $s_i = (float) ( $post['score'] ?? 0.0 );
+                $s_i                           = (float) ( $post['score'] ?? 0.0 );
                 $acc[ $origin ]['num'][ $url ] = ( $acc[ $origin ]['num'][ $url ] ?? 0.0 ) + ( $s_i * $w );
                 if ( ! isset( $acc[ $origin ]['rec'][ $url ] ) ) {
                     $acc[ $origin ]['rec'][ $url ] = $post;
@@ -679,9 +687,9 @@ class TConn_Shortcode_PeerPosts {
             $raw_atts = array();
         }
 
-        $defaults    = $this->get_defaults();
-        $html_keys   = array( 'prepend', 'append', 'meta' );
-        $atts        = array();
+        $defaults  = $this->get_defaults();
+        $html_keys = array( 'prepend', 'append', 'meta' );
+        $atts      = array();
         foreach ( $defaults as $key => $default ) {
             if ( ! isset( $raw_atts[ $key ] ) ) {
                 $atts[ $key ] = $default;
@@ -696,7 +704,10 @@ class TConn_Shortcode_PeerPosts {
         $all_posts = $this->collect_blended( $post_id, $p );
 
         if ( empty( $all_posts ) ) {
-            wp_send_json_success( array( 'html' => '', 'has_more' => false ) );
+            wp_send_json_success( array(
+                'html' => '',
+                'has_more' => false,
+            ) );
             return;
         }
 
@@ -988,11 +999,11 @@ class TConn_Shortcode_PeerPosts {
                 $local_tax = $lt->taxonomy;
             }
             if ( ! isset( $weight_cache[ $local_tax ] ) ) {
-                $w = ( '' !== $local_tax && function_exists( 'htax_get_relevance_weights' ) )
+                $w                          = ( '' !== $local_tax && function_exists( 'htax_get_relevance_weights' ) )
                     ? htax_get_relevance_weights( $local_tax )
                     : array();
-                $direct    = isset( $w['direct']['explicit'] ) ? (float) $w['direct']['explicit'] : 1.0;
-                $container = isset( $w['container']['explicit'] ) ? (float) $w['container']['explicit'] : 0.7;
+                $direct                     = isset( $w['direct']['explicit'] ) ? (float) $w['direct']['explicit'] : 1.0;
+                $container                  = isset( $w['container']['explicit'] ) ? (float) $w['container']['explicit'] : 0.7;
                 $weight_cache[ $local_tax ] = array(
                     'direct'    => $direct > 0 ? $direct : 1.0,
                     'container' => $container > 0 ? $container : 0.7,
@@ -1091,12 +1102,12 @@ class TConn_Shortcode_PeerPosts {
             if ( ! is_string( $uri ) || '' === $uri ) {
                 continue;
             }
-            $url = $origin . '/wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
+            $url      = $origin . '/wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
                 'htax_term_uri' => $uri,
                 '_fields'       => 'id',
                 'per_page'      => 1,
             ) );
-            $args = tconn_external_request_args( 5, tconn_external_peer_headers( tconn_external_is_ht_enabled( $origin ), false ) );
+            $args     = tconn_external_request_args( 5, tconn_external_peer_headers( tconn_external_is_ht_enabled( $origin ), false ) );
             $response = wp_remote_get( $url, $args );
             if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
                 continue;
@@ -1196,9 +1207,9 @@ class TConn_Shortcode_PeerPosts {
                 continue;
             }
 
-            $visited[]        = $peer_origin;
-            $peer_map         = array( $peer_id => array() );
-            $peer_id_to_slug  = array( $peer_id => $peer_slug );
+            $visited[]       = $peer_origin;
+            $peer_map        = array( $peer_id => array() );
+            $peer_id_to_slug = array( $peer_id => $peer_slug );
 
             $is_ht = tconn_external_is_ht_enabled( $peer_origin );
             if ( $is_ht ) {
@@ -1252,7 +1263,7 @@ class TConn_Shortcode_PeerPosts {
         usort( $posts, function ( $a, $b ) use ( $keys, &$peer_rank ) {
             foreach ( $keys as $k ) {
                 list( $field, $dir ) = $k;
-                $cmp = 0;
+                $cmp                 = 0;
                 switch ( $field ) {
                     case 'date':
                         $cmp = strcmp( (string) ( $a['date_gmt'] ?? '' ), (string) ( $b['date_gmt'] ?? '' ) );
@@ -1308,9 +1319,9 @@ class TConn_Shortcode_PeerPosts {
      * @return array<int,array{0:string,1:string}>
      */
     private function parse_orderby_keys( string $orderby ): array {
-        $valid    = array( 'peer', 'score', 'relevance', 'date', 'modified', 'title', 'foaf_depth' );
+        $valid       = array( 'peer', 'score', 'relevance', 'date', 'modified', 'title', 'foaf_depth' );
         $asc_default = array( 'title', 'peer' );
-        $keys     = array();
+        $keys        = array();
 
         foreach ( explode( ',', $orderby ) as $part ) {
             $part = trim( $part );
@@ -1319,9 +1330,9 @@ class TConn_Shortcode_PeerPosts {
             }
             if ( false !== strpos( $part, ':' ) ) {
                 list( $field, $dir ) = explode( ':', $part, 2 );
-                $field = strtolower( trim( $field ) );
-                $dir   = strtolower( trim( $dir ) );
-                $dir   = ( 'asc' === $dir ) ? 'asc' : 'desc';
+                $field               = strtolower( trim( $field ) );
+                $dir                 = strtolower( trim( $dir ) );
+                $dir                 = ( 'asc' === $dir ) ? 'asc' : 'desc';
             } else {
                 $field = strtolower( $part );
                 $dir   = in_array( $field, $asc_default, true ) ? 'asc' : 'desc';
@@ -1369,8 +1380,8 @@ class TConn_Shortcode_PeerPosts {
      * Rank a record for `peer` ordering: local first (-1), then by the origin→rank
      * map, with unknown origins last.
      *
-     * @param array              $rec
-     * @param array<string,int>  $peer_rank
+     * @param array             $rec
+     * @param array<string,int> $peer_rank
      * @return int
      */
     private function peer_rank_of( array $rec, array $peer_rank ): int {
@@ -1430,9 +1441,9 @@ class TConn_Shortcode_PeerPosts {
         $origin_labels = array();
         $needs_labels  = ( '' !== $meta_tpl || '' !== $prepend_tpl || '' !== $append_tpl )
             && (
-                strpos( $meta_tpl . $prepend_tpl . $append_tpl, '{label}' )    !== false
+                strpos( $meta_tpl . $prepend_tpl . $append_tpl, '{label}' ) !== false
                 || strpos( $meta_tpl . $prepend_tpl . $append_tpl, '{hostname}' ) !== false
-                || strpos( $meta_tpl . $prepend_tpl . $append_tpl, '{origin}' )  !== false
+                || strpos( $meta_tpl . $prepend_tpl . $append_tpl, '{origin}' ) !== false
             );
         if ( $needs_labels ) {
             foreach ( tconn_get_platform_link_types( 'wordpress' ) as $link_type ) {

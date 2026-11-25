@@ -182,7 +182,7 @@ add_filter( 'manage_edit-comments_columns', static function ( array $cols ): arr
     $new['tconn_proposed_url'] = __( 'Proposed URL', 'termconnect' );
     $new['tconn_comment']      = __( 'Note', 'termconnect' );
     $new['tconn_term']         = __( 'Term', 'termconnect' );
-    $new['date']            = $cols['date'] ?? __( 'Submitted on', 'termconnect' );
+    $new['date']               = $cols['date'] ?? __( 'Submitted on', 'termconnect' );
     return $new;
 } );
 
@@ -220,7 +220,11 @@ add_action( 'manage_comments_custom_column', static function ( string $col, int 
         // IP address — linked to filter suggestions by that IP, same pattern as native comments.
         if ( $comment->comment_author_IP ) {
             $ip_url = add_query_arg(
-                array( 's' => $comment->comment_author_IP, 'comment_status' => 'all', 'type' => 'tconn_suggested_link' ),
+                array(
+                    's' => $comment->comment_author_IP,
+                    'comment_status' => 'all',
+                    'type' => 'tconn_suggested_link',
+                ),
                 admin_url( 'edit-comments.php' )
             );
             echo '<br><a href="' . esc_url( $ip_url ) . '">' . esc_html( $comment->comment_author_IP ) . '</a>';
@@ -274,8 +278,8 @@ add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment 
     // Remove Reply — not meaningful for suggestions.
     unset( $actions['reply'] );
 
-    $url   = $comment->comment_author_url;
-    $term  = get_term( tconn_suggested_link_term_id( $comment ) );
+    $url  = $comment->comment_author_url;
+    $term = get_term( tconn_suggested_link_term_id( $comment ) );
 
     // Determine primary action. tconn_is_self_origin() expects a bare scheme://host origin,
     // so extract just that portion before comparing.
@@ -298,13 +302,13 @@ add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment 
         }
         unset( $actions['approve'] );
     } elseif ( $term && ! is_wp_error( $term ) ) {
-        $match     = tconn_suggested_link_match_url( $url );
+        $match       = tconn_suggested_link_match_url( $url );
         $link_exists = $match && tconn_suggested_link_exists( $term->term_id, $match['peer_site_slug'], $match['value'] );
 
         if ( $link_exists ) {
             unset( $actions['approve'] );
         } elseif ( $match && ! empty( $match['enabled'] ) ) {
-            $accept_url = add_query_arg( array(
+            $accept_url              = add_query_arg( array(
                 'taxonomy'  => $term->taxonomy,
                 'tag_ID'    => $term->term_id,
                 'tconn_lt'     => $match['peer_site_slug'],
@@ -315,15 +319,15 @@ add_filter( 'comment_row_actions', static function ( array $actions, WP_Comment 
             unset( $actions['approve'] );
         } elseif ( $match ) {
             // Known link type but not yet enabled — prompt admin to enable it.
-            $enable_url = admin_url( 'admin.php?page=tconn-peer-sites' );
+            $enable_url                 = admin_url( 'admin.php?page=tconn-peer-sites' );
             $actions['tconn_enable_lt'] = '<a href="' . esc_url( $enable_url ) . '">'
                 . esc_html__( 'Enable link type', 'termconnect' ) . '</a>';
             unset( $actions['approve'] );
         } else {
-            $label = ( function_exists( 'tconn_external_is_ht_enabled' ) && tconn_external_is_ht_enabled( rtrim( wp_parse_url( $url, PHP_URL_SCHEME ) . '://' . wp_parse_url( $url, PHP_URL_HOST ), '/' ) ) )
+            $label                   = ( function_exists( 'tconn_external_is_ht_enabled' ) && tconn_external_is_ht_enabled( rtrim( wp_parse_url( $url, PHP_URL_SCHEME ) . '://' . wp_parse_url( $url, PHP_URL_HOST ), '/' ) ) )
                 ? __( 'Add WordPress peer', 'termconnect' )
                 : __( 'Add link type', 'termconnect' );
-            $add_url = add_query_arg( 'tconn_suggest_url', rawurlencode( $url ), admin_url( 'admin.php?page=tconn-peer-sites' ) );
+            $add_url                 = add_query_arg( 'tconn_suggest_url', rawurlencode( $url ), admin_url( 'admin.php?page=tconn-peer-sites' ) );
             $actions['tconn_add_lt'] = '<a href="' . esc_url( $add_url ) . '">' . esc_html( $label ) . '</a>';
             unset( $actions['approve'] );
         }
@@ -421,7 +425,7 @@ add_filter( 'manage_edit-comments_sortable_columns', static function ( array $co
     }
     $cols['tconn_sender'] = 'comment_author';
     $cols['tconn_term']   = 'tconn_term_name'; // Custom; requires JOIN added in comments_clauses.
-    $cols['date']      = array( 'comment_date', false );
+    $cols['date']         = array( 'comment_date', false );
     return $cols;
 } );
 
@@ -433,7 +437,7 @@ add_action( 'pre_get_comments', static function ( WP_Comment_Query $q ): void {
     $orderby = sanitize_key( wp_unslash( $_GET['orderby'] ?? '' ) );
     if ( 'tconn_term_name' === $orderby ) {
         $q->query_vars['_tconn_term_name_order'] = sanitize_key( wp_unslash( $_GET['order'] ?? 'asc' ) );
-        $q->query_vars['orderby']             = 'comment_date'; // Valid placeholder so WP won't reject it.
+        $q->query_vars['orderby']                = 'comment_date'; // Valid placeholder so WP won't reject it.
     }
 }, 1 );
 

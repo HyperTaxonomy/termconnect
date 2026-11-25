@@ -28,12 +28,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TCONN_META_IDENTITY_SOURCE',      '_tconn_identity_source' );
+define( 'TCONN_META_IDENTITY_SOURCE', '_tconn_identity_source' );
 define( 'TCONN_META_DELEGATED_LINKS_DATA', '_tconn_delegated_links_data' );
 define( 'TCONN_META_ORIGINAL_DESCRIPTION', '_tconn_original_description' );
-define( 'TCONN_META_ORIGINAL_NAME',        '_tconn_original_name' );
-define( 'TCONN_META_REL_SYNC_ISSUES',      '_tconn_rel_sync_issues' );
-define( 'TCONN_IDENTITY_CACHE_TTL',        DAY_IN_SECONDS );
+define( 'TCONN_META_ORIGINAL_NAME', '_tconn_original_name' );
+define( 'TCONN_META_REL_SYNC_ISSUES', '_tconn_rel_sync_issues' );
+define( 'TCONN_IDENTITY_CACHE_TTL', DAY_IN_SECONDS );
 
 /**
  * Wall-clock seconds a single cron tick may spend making synchronous remote
@@ -446,8 +446,11 @@ function tconn_sv_remove_delegations_by_source( string $sv_source_id ): array {
                 ? $result->get_error_message()
                 : tconn_term_restore_mismatch( $term_id, $term->taxonomy, $restores );
             if ( '' !== $message ) {
-                $failed_term_ids[]  = $term_id;
-                $failures[]         = array( 'term_id' => $term_id, 'message' => $message );
+                $failed_term_ids[] = $term_id;
+                $failures[]        = array(
+                    'term_id' => $term_id,
+                    'message' => $message,
+                );
                 error_log( 'TermConnect: bulk delegation restore failed for term ' . $term_id . ': ' . $message );
             }
         }
@@ -471,7 +474,7 @@ function tconn_sv_remove_delegations_by_source( string $sv_source_id ): array {
             continue;
         }
         $key_placeholders = implode( ',', array_fill( 0, count( $ids_for_key ), '%d' ) );
-        $result            = $wpdb->query( $wpdb->prepare(
+        $result           = $wpdb->query( $wpdb->prepare(
             "DELETE FROM {$wpdb->termmeta} WHERE meta_key = %s AND term_id IN ({$key_placeholders})",
             array_merge( array( $meta_key ), $ids_for_key )
         ) );
@@ -551,7 +554,7 @@ function tconn_fetch_remote_identity( string $peer_site_slug, string $taxonomy, 
     }
 
     $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
-    $url = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base
+    $url       = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base
          . '?' . http_build_query( array(
              'slug'    => $remote_slug,
              '_fields' => 'id,slug,name,description,link,tconn_links,htax_redirect',
@@ -604,7 +607,7 @@ function tconn_fetch_remote_identity( string $peer_site_slug, string $taxonomy, 
     }
 
     // Extract delegated links from tconn_links. Format: [ { url, platform, label, type_label, fetched_at } ].
-    $tconn_links        = $term_data['tconn_links'] ?? array();
+    $tconn_links     = $term_data['tconn_links'] ?? array();
     $delegated_links = array();
     if ( is_array( $tconn_links ) ) {
         foreach ( $tconn_links as $entry ) {
@@ -688,13 +691,13 @@ function tconn_refresh_identity_cache( int $term_id ) {
         $max_depth   = max( 1, min( 5, (int) ( $settings['identity_chain_max_depth'] ?? 3 ) ) );
 
         if ( $auto_single ) {
-            $current_slug  = $remote['target_slug'] ?? '';
-            $current_tax   = $remote['target_taxonomy'] ?? $term->taxonomy;
-            $resolved      = null;
-            $hops          = 0;
+            $current_slug = $remote['target_slug'] ?? '';
+            $current_tax  = $remote['target_taxonomy'] ?? $term->taxonomy;
+            $resolved     = null;
+            $hops         = 0;
 
             while ( $current_slug && $hops < $max_depth ) {
-                $hops++;
+                ++$hops;
 
                 // Cannot auto-follow a redirect that crosses into a different taxonomy —
                 // the delegation is locked to the local taxonomy and the target would
@@ -710,8 +713,8 @@ function tconn_refresh_identity_cache( int $term_id ) {
                 }
 
                 if ( 'term' === ( $fetched['type'] ?? 'term' ) ) {
-                    $resolved             = $fetched;
-                    $resolved['_slug']    = $current_slug;
+                    $resolved          = $fetched;
+                    $resolved['_slug'] = $current_slug;
                     break;
                 }
 
@@ -764,8 +767,8 @@ function tconn_refresh_identity_cache( int $term_id ) {
     $source['last_fetched'] = time();
     unset( $source['declined_redirect_slug'] );
     tconn_identity_redirect_queue_remove( $term_id );
-    $old_remote_term_id     = (int) ( $source['remote_term_id'] ?? 0 );
-    $new_remote_term_id     = absint( $remote['term_id'] ?? $old_remote_term_id );
+    $old_remote_term_id       = (int) ( $source['remote_term_id'] ?? 0 );
+    $new_remote_term_id       = absint( $remote['term_id'] ?? $old_remote_term_id );
     $source['remote_term_id'] = $new_remote_term_id;
     $source['remote_link']    = esc_url_raw( $remote['link'] ?? $source['remote_link'] ?? '' );
     update_term_meta( $term_id, TCONN_META_IDENTITY_SOURCE, $source );
@@ -844,7 +847,7 @@ function tconn_sv_update_root_term_id( string $sv_source_id, string $remote_slug
                 if ( ( $root['remote_slug'] ?? '' ) === $remote_slug
                      && (int) ( $root['remote_term_id'] ?? 0 ) !== $new_term_id ) {
                     $root['remote_term_id'] = $new_term_id;
-                    $changed = true;
+                    $changed                = true;
                 }
             }
             unset( $root );
@@ -883,7 +886,7 @@ function tconn_sv_update_root_slug( string $sv_source_id, string $old_slug, stri
             foreach ( $src['roots'] as &$root ) {
                 if ( ( $root['remote_slug'] ?? '' ) === $old_slug ) {
                     $root['remote_slug'] = $new_slug;
-                    $changed = true;
+                    $changed             = true;
                 }
             }
             unset( $root );
@@ -1059,7 +1062,7 @@ function tconn_identity_redirect_queue_add( int $term_id, array $remote ): void 
         return;
     }
     try {
-        $queue = tconn_get_option_fresh( 'tconn_identity_redirect_queue', array() );
+        $queue                      = tconn_get_option_fresh( 'tconn_identity_redirect_queue', array() );
         $queue[ (string) $term_id ] = array(
             'term_id'     => $term_id,
             'detected_at' => time(),

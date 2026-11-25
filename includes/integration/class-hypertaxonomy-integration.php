@@ -52,18 +52,18 @@ class TConn_HT_Integration {
      * @since 1.0.0
      */
     public static function init(): void {
-        add_filter( 'htax_term_uris',             array( __CLASS__, 'provide_term_uris' ),        10, 2 );
+        add_filter( 'htax_term_uris', array( __CLASS__, 'provide_term_uris' ), 10, 2 );
         add_filter( 'htax_term_external_posts', array( __CLASS__, 'provide_term_external_posts' ), 10, 3 );
         add_filter( 'htax_peer_sites', array( __CLASS__, 'provide_peer_sites' ) );
-        add_action( 'rest_api_init',              array( __CLASS__, 'register_rest_fields' ) );
+        add_action( 'rest_api_init', array( __CLASS__, 'register_rest_fields' ) );
         add_action( 'htax_relationship_types_admin_footer', array( __CLASS__, 'render_rel_type_discovery' ) );
         add_action( 'wp_ajax_tconn_discover_rel_types', array( __CLASS__, 'ajax_discover_rel_types' ) );
         add_filter( 'htax_sync_remote_relationship_types', array( __CLASS__, 'sync_remote_relationship_types' ), 10, 2 );
         add_action( 'htax_before_merge_terms', array( __CLASS__, 'snapshot_links_before_merge' ), 10, 5 );
-        add_action( 'htax_after_merge_terms',  array( __CLASS__, 'apply_links_after_merge' ),     10, 4 );
-        add_action( 'deleted_term',             array( __CLASS__, 'clean_sv_queues_on_deleted' ),      10, 3 );
-        add_action( 'pre_delete_term',          array( __CLASS__, 'clean_sv_source_on_delete' ),       10, 2 );
-        add_action( 'delete_term_taxonomy',     array( __CLASS__, 'clean_sv_queues_on_bulk_deleted' ), 10, 1 );
+        add_action( 'htax_after_merge_terms', array( __CLASS__, 'apply_links_after_merge' ), 10, 4 );
+        add_action( 'deleted_term', array( __CLASS__, 'clean_sv_queues_on_deleted' ), 10, 3 );
+        add_action( 'pre_delete_term', array( __CLASS__, 'clean_sv_source_on_delete' ), 10, 2 );
+        add_action( 'delete_term_taxonomy', array( __CLASS__, 'clean_sv_queues_on_bulk_deleted' ), 10, 1 );
     }
 
     // --------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class TConn_HT_Integration {
      * @since 1.0.0
      */
     public static function provide_term_uris( array $uris, int $term_id ): array {
-        $cached  = get_transient( 'tconn_uris_' . $term_id );
+        $cached     = get_transient( 'tconn_uris_' . $term_id );
         $tconn_uris = is_array( $cached ) ? $cached : (array) get_term_meta( $term_id, '_tconn_uris' );
         return array_values( array_unique( array_merge( $uris, $tconn_uris ) ) );
     }
@@ -395,8 +395,8 @@ class TConn_HT_Integration {
             wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
         }
 
-        $peer_site_slug   = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
-        $origin           = tconn_peer_origin( $peer_site_slug );
+        $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
+        $origin         = tconn_peer_origin( $peer_site_slug );
 
         if ( ! $origin ) {
             wp_send_json_error( array( 'message' => __( 'Invalid peer site.', 'termconnect' ) ) );
@@ -479,13 +479,13 @@ class TConn_HT_Integration {
      * Put a term's external links on its stub and/or another term.
      *
      * @since 1.0.0
-     * @param array    $links          The term's links, by link type.
-     * @param int      $stub_id        Redirect stub term ID, or 0 for none.
-     * @param bool     $stub_has_links Whether the stub already has the links (it is the old
-     *                                 term, as in a conversion) or gets them only from here.
-     * @param int      $to_id          The term that can take them (merge target, new term).
-     * @param string   $choice         'stub', 'move', 'copy' or 'drop', as htax_carry_choice()
-     *                                 resolves it for this term.
+     * @param array      $links          The term's links, by link type.
+     * @param int        $stub_id        Redirect stub term ID, or 0 for none.
+     * @param bool       $stub_has_links Whether the stub already has the links (it is the old
+     *                                   term, as in a conversion) or gets them only from here.
+     * @param int        $to_id          The term that can take them (merge target, new term).
+     * @param string     $choice         'stub', 'move', 'copy' or 'drop', as htax_carry_choice()
+     *                                   resolves it for this term.
      * @param array|null $enabled      Link types the receiving term's taxonomy allows, or null
      *                                 for no limit.
      */
@@ -715,8 +715,8 @@ class TConn_HT_Integration {
                 $proposals = (array) $proposals;
                 $filtered  = array_filter(
                     $proposals,
-                    static function( $p ) use ( $id_set ): bool {
-                        return ! isset( $id_set[ (int) ( $p['orphan_term_id']    ?? 0 ) ] )
+                    static function ( $p ) use ( $id_set ): bool {
+                        return ! isset( $id_set[ (int) ( $p['orphan_term_id'] ?? 0 ) ] )
                             && ! isset( $id_set[ (int) ( $p['candidate_term_id'] ?? 0 ) ] );
                     }
                 );
@@ -729,7 +729,7 @@ class TConn_HT_Integration {
                 $misplaced = (array) $misplaced;
                 $filtered  = array_filter(
                     $misplaced,
-                    static function( $entry ) use ( $id_set ): bool {
+                    static function ( $entry ) use ( $id_set ): bool {
                         return ! isset( $id_set[ (int) ( $entry['term_id'] ?? 0 ) ] );
                     }
                 );

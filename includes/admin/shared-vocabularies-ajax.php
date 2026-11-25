@@ -10,16 +10,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-add_action( 'wp_ajax_tconn_sv_save',                    'tconn_sv_ajax_save' );
-add_action( 'wp_ajax_tconn_sv_delete',                  'tconn_sv_ajax_delete' );
-add_action( 'wp_ajax_tconn_sv_sync',                    'tconn_sv_ajax_sync' );
-add_action( 'wp_ajax_tconn_sv_reorder',                 'tconn_sv_ajax_reorder' );
-add_action( 'wp_ajax_tconn_sv_merge_proposal',          'tconn_sv_ajax_merge_proposal' );
-add_action( 'wp_ajax_tconn_sv_dismiss_merge',           'tconn_sv_ajax_dismiss_merge' );
+add_action( 'wp_ajax_tconn_sv_save', 'tconn_sv_ajax_save' );
+add_action( 'wp_ajax_tconn_sv_delete', 'tconn_sv_ajax_delete' );
+add_action( 'wp_ajax_tconn_sv_sync', 'tconn_sv_ajax_sync' );
+add_action( 'wp_ajax_tconn_sv_reorder', 'tconn_sv_ajax_reorder' );
+add_action( 'wp_ajax_tconn_sv_merge_proposal', 'tconn_sv_ajax_merge_proposal' );
+add_action( 'wp_ajax_tconn_sv_dismiss_merge', 'tconn_sv_ajax_dismiss_merge' );
 add_action( 'wp_ajax_tconn_sv_fetch_remote_taxonomies', 'tconn_sv_ajax_fetch_remote_taxonomies' );
-add_action( 'wp_ajax_tconn_sv_fetch_remote_groups',     'tconn_sv_ajax_fetch_remote_groups' );
-add_action( 'wp_ajax_tconn_sv_search_remote_terms',     'tconn_sv_ajax_search_remote_terms' );
-add_action( 'wp_ajax_tconn_sv_fetch_local_groups',      'tconn_sv_ajax_fetch_local_groups' );
+add_action( 'wp_ajax_tconn_sv_fetch_remote_groups', 'tconn_sv_ajax_fetch_remote_groups' );
+add_action( 'wp_ajax_tconn_sv_search_remote_terms', 'tconn_sv_ajax_search_remote_terms' );
+add_action( 'wp_ajax_tconn_sv_fetch_local_groups', 'tconn_sv_ajax_fetch_local_groups' );
 
 /**
  * Save (create or update) a vocabulary source.
@@ -33,35 +33,35 @@ function tconn_sv_ajax_save(): void {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
-    $id                  = sanitize_key( wp_unslash( $_POST['id'] ?? '' ) );
-    $sv_name             = sanitize_text_field( wp_unslash( $_POST['sv_name'] ?? '' ) );
-    $sv_description      = sanitize_textarea_field( wp_unslash( $_POST['sv_description'] ?? '' ) );
-    $peer_site_slug             = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
-    $taxonomy            = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
-    $scope_raw           = sanitize_key( wp_unslash( $_POST['scope'] ?? '' ) );
-    $scope               = in_array( $scope_raw, array( 'full', 'remote_group', 'roots', 'terms', 'local_group' ), true ) ? $scope_raw : 'full';
-    $remote_group_slug   = sanitize_title( wp_unslash( $_POST['remote_group_slug'] ?? '' ) );
-    $remote_group_id     = absint( $_POST['remote_group_id'] ?? 0 );
-    $remote_group_name   = sanitize_text_field( wp_unslash( $_POST['remote_group_name'] ?? '' ) );
-    $misplacement_raw    = sanitize_key( wp_unslash( $_POST['misplacement'] ?? '' ) );
-    $misplacement        = in_array( $misplacement_raw, array( 'flag', 'link-only', 're-parent' ), true ) ? $misplacement_raw : 'flag';
-    $orphan_action_raw   = sanitize_key( wp_unslash( $_POST['orphan_action'] ?? '' ) );
-    $orphan_action       = in_array( $orphan_action_raw, array( 'flag', 'delete_clean', 'delete' ), true ) ? $orphan_action_raw : 'flag';
-    $sync_interval_raw   = sanitize_key( wp_unslash( $_POST['sync_interval'] ?? '' ) );
-    $sync_interval       = in_array( $sync_interval_raw, array( 'twicedaily', 'daily', 'weekly' ), true ) ? $sync_interval_raw : 'daily';
-    $conflict_confirmed  = ! empty( $_POST['conflict_confirmed'] );
-    $group_id            = absint( $_POST['group_id'] ?? 0 );
-    $group_name          = sanitize_text_field( wp_unslash( $_POST['group_name'] ?? '' ) );
+    $id                           = sanitize_key( wp_unslash( $_POST['id'] ?? '' ) );
+    $sv_name                      = sanitize_text_field( wp_unslash( $_POST['sv_name'] ?? '' ) );
+    $sv_description               = sanitize_textarea_field( wp_unslash( $_POST['sv_description'] ?? '' ) );
+    $peer_site_slug               = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
+    $taxonomy                     = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
+    $scope_raw                    = sanitize_key( wp_unslash( $_POST['scope'] ?? '' ) );
+    $scope                        = in_array( $scope_raw, array( 'full', 'remote_group', 'roots', 'terms', 'local_group' ), true ) ? $scope_raw : 'full';
+    $remote_group_slug            = sanitize_title( wp_unslash( $_POST['remote_group_slug'] ?? '' ) );
+    $remote_group_id              = absint( $_POST['remote_group_id'] ?? 0 );
+    $remote_group_name            = sanitize_text_field( wp_unslash( $_POST['remote_group_name'] ?? '' ) );
+    $misplacement_raw             = sanitize_key( wp_unslash( $_POST['misplacement'] ?? '' ) );
+    $misplacement                 = in_array( $misplacement_raw, array( 'flag', 'link-only', 're-parent' ), true ) ? $misplacement_raw : 'flag';
+    $orphan_action_raw            = sanitize_key( wp_unslash( $_POST['orphan_action'] ?? '' ) );
+    $orphan_action                = in_array( $orphan_action_raw, array( 'flag', 'delete_clean', 'delete' ), true ) ? $orphan_action_raw : 'flag';
+    $sync_interval_raw            = sanitize_key( wp_unslash( $_POST['sync_interval'] ?? '' ) );
+    $sync_interval                = in_array( $sync_interval_raw, array( 'twicedaily', 'daily', 'weekly' ), true ) ? $sync_interval_raw : 'daily';
+    $conflict_confirmed           = ! empty( $_POST['conflict_confirmed'] );
+    $group_id                     = absint( $_POST['group_id'] ?? 0 );
+    $group_name                   = sanitize_text_field( wp_unslash( $_POST['group_name'] ?? '' ) );
     $sync_descendants             = ! empty( $_POST['sync_descendants'] );
     $sync_name                    = ! isset( $_POST['sync_name'] ) || ! empty( $_POST['sync_name'] );
     $sync_description             = ! isset( $_POST['sync_description'] ) || ! empty( $_POST['sync_description'] );
     $relationship_delegation      = ! empty( $_POST['relationship_delegation'] );
     $cross_taxonomy_relationships = ! empty( $_POST['cross_taxonomy_relationships'] );
-    $roots_raw           = tconn_decode_json_request( wp_unslash( $_POST['roots'] ?? '[]' ) );
+    $roots_raw                    = tconn_decode_json_request( wp_unslash( $_POST['roots'] ?? '[]' ) );
     if ( ! is_array( $roots_raw ) ) {
         wp_send_json_error( array( 'message' => __( 'Invalid data.', 'termconnect' ) ) );
     }
-    $roots               = array();
+    $roots = array();
 
     if ( ! $peer_site_slug ) {
         wp_send_json_error( array( 'message' => __( 'Peer site is required.', 'termconnect' ) ) );
@@ -125,7 +125,9 @@ function tconn_sv_ajax_save(): void {
     if ( ! $is_new && ! $conflict_confirmed ) {
         $sources_existing = get_option( 'tconn_shared_vocabularies', array() );
         foreach ( $sources_existing as $ex ) {
-            if ( ( $ex['id'] ?? '' ) !== $id ) { continue; }
+            if ( ( $ex['id'] ?? '' ) !== $id ) {
+                continue;
+            }
             $old_scope = $ex['scope'] ?? 'full';
             $warning   = '';
             if ( 'full' !== $old_scope && 'full' === $scope ) {
@@ -166,7 +168,7 @@ function tconn_sv_ajax_save(): void {
             if ( $existing['peer_site_slug'] !== $peer_site_slug ) {
                 continue;
             }
-            $ex_scope = $existing['scope'] ?? '';
+            $ex_scope     = $existing['scope'] ?? '';
             $is_duplicate = false;
             if ( 'local_group' === $scope ) {
                 $is_duplicate = 'local_group' === $ex_scope && (int) ( $existing['group_id'] ?? 0 ) === $check_group_id;
@@ -188,11 +190,11 @@ function tconn_sv_ajax_save(): void {
             $old_sync_desc = true;
             foreach ( $sources as &$s ) {
                 if ( $s['id'] === $id ) {
-                    $old_sync_name       = ! isset( $s['sync_name'] ) || ! empty( $s['sync_name'] );
-                    $old_sync_desc       = ! isset( $s['sync_description'] ) || ! empty( $s['sync_description'] );
+                    $old_sync_name              = ! isset( $s['sync_name'] ) || ! empty( $s['sync_name'] );
+                    $old_sync_desc              = ! isset( $s['sync_description'] ) || ! empty( $s['sync_description'] );
                     $source['last_sync']        = $s['last_sync'] ?? 0;
                     $source['last_sync_result'] = $s['last_sync_result'] ?? '';
-                    $s = $source;
+                    $s                          = $source;
                     break;
                 }
             }
@@ -240,9 +242,9 @@ function tconn_sv_ajax_delete(): void {
         return;
     }
     try {
-        $sources = tconn_get_option_fresh( 'tconn_shared_vocabularies', array() );
+        $sources        = tconn_get_option_fresh( 'tconn_shared_vocabularies', array() );
         $deleted_source = tconn_sv_get_source( $id, $sources );
-        $sources = array_values( array_filter( $sources, static fn( $s ) => $s['id'] !== $id ) );
+        $sources        = array_values( array_filter( $sources, static fn( $s ) => $s['id'] !== $id ) );
         update_option( 'tconn_shared_vocabularies', $sources );
     } finally {
         tconn_release_mysql_lock( 'tconn_sv_write_lock' );
@@ -306,7 +308,7 @@ function tconn_sv_ajax_sync(): void {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
-    $id      = sanitize_key( wp_unslash( $_POST['id'] ?? '' ) );
+    $id     = sanitize_key( wp_unslash( $_POST['id'] ?? '' ) );
     $source = tconn_sv_get_source( $id );
 
     if ( ! $source ) {
@@ -332,7 +334,7 @@ function tconn_sv_ajax_reorder(): void {
     $scope = in_array( wp_unslash( $_POST['scope'] ?? '' ), array( 'full', 'remote_group', 'local_group', 'roots', 'terms' ), true )
         ? sanitize_key( wp_unslash( $_POST['scope'] ) )
         : '';
-    $ids = isset( $_POST['ids'] ) && is_array( $_POST['ids'] )
+    $ids   = isset( $_POST['ids'] ) && is_array( $_POST['ids'] )
         ? array_map( 'sanitize_key', wp_unslash( $_POST['ids'] ) )
         : array();
 
@@ -350,7 +352,7 @@ function tconn_sv_ajax_reorder(): void {
         $other    = array_filter( $sources, static fn( $s ) => ( $s['scope'] ?? '' ) !== $scope );
 
         // Re-order in_scope according to the submitted ID list.
-        $indexed  = array();
+        $indexed = array();
         foreach ( $in_scope as $s ) {
             $indexed[ $s['id'] ] = $s;
         }
@@ -471,8 +473,8 @@ function tconn_sv_ajax_fetch_remote_taxonomies(): void {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
-    $peer_site_slug   = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
-    $origin           = tconn_peer_origin( $peer_site_slug );
+    $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
+    $origin         = tconn_peer_origin( $peer_site_slug );
 
     if ( ! $origin ) {
         wp_send_json_error( array( 'message' => __( 'Invalid peer site.', 'termconnect' ) ) );
@@ -527,7 +529,7 @@ function tconn_sv_ajax_fetch_remote_groups(): void {
     }
 
     $rest_base = tconn_external_get_taxonomy_rest_base( 'group' );
-    $url = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
+    $url       = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
         'per_page' => 100,
         '_fields'  => 'id,slug,name,parent',
     ) );
@@ -564,9 +566,9 @@ function tconn_sv_ajax_search_remote_terms(): void {
         wp_send_json_error( array( 'message' => __( 'Permission denied.', 'termconnect' ) ), 403 );
     }
 
-    $peer_site_slug  = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
-    $taxonomy = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
-    $q        = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
+    $peer_site_slug = sanitize_key( wp_unslash( $_POST['peer_site_slug'] ?? '' ) );
+    $taxonomy       = sanitize_key( wp_unslash( $_POST['taxonomy'] ?? '' ) );
+    $q              = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
 
     if ( ! $peer_site_slug || ! $taxonomy || strlen( $q ) < 2 ) {
         wp_send_json_success( array() );
@@ -583,7 +585,7 @@ function tconn_sv_ajax_search_remote_terms(): void {
     }
 
     $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
-    $url = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
+    $url       = trailingslashit( $origin ) . 'wp-json/wp/v2/' . $rest_base . '?' . http_build_query( array(
         'search'   => $q,
         'per_page' => 10,
         '_fields'  => 'id,slug,name',

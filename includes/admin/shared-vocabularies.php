@@ -32,7 +32,13 @@ function tconn_sv_render_page(): void {
         static fn( $peer_site ) => 'wordpress' === ( $peer_site['platform'] ?? '' )
     );
 
-    $by_scope = array( 'full' => array(), 'remote_group' => array(), 'local_group' => array(), 'roots' => array(), 'terms' => array() );
+    $by_scope = array(
+        'full' => array(),
+        'remote_group' => array(),
+        'local_group' => array(),
+        'roots' => array(),
+        'terms' => array(),
+    );
     foreach ( $sources as $src ) {
         $scope = $src['scope'] ?? 'full';
         if ( isset( $by_scope[ $scope ] ) ) {
@@ -92,11 +98,15 @@ function tconn_sv_render_page(): void {
 
         <?php if ( empty( $peer_sites ) ) : ?>
         <div class="notice notice-warning inline">
-            <p><?php printf(
+            <p>
+            <?php
+            printf(
                 /* translators: %s: Peer Sites admin URL */
                 wp_kses( __( 'No WordPress peer sites configured. Add a WordPress peer in <a href="%s">Peer Sites</a> first.', 'termconnect' ), array( 'a' => array( 'href' => array() ) ) ),
                 esc_url( admin_url( 'admin.php?page=tconn-peer-sites' ) )
-            ); ?></p>
+               );
+            ?>
+            </p>
         </div>
         <?php endif; ?>
 
@@ -275,11 +285,14 @@ function tconn_sv_render_page(): void {
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ( $merge_proposals as $proposal_id => $proposal ) :
+                <?php
+                foreach ( $merge_proposals as $proposal_id => $proposal ) :
                     $orphan    = get_term( (int) $proposal['orphan_term_id'] );
                     $candidate = get_term( (int) $proposal['candidate_term_id'] );
-                    if ( ! $orphan || is_wp_error( $orphan ) || ! $candidate || is_wp_error( $candidate ) ) { continue; }
-                ?>
+                    if ( ! $orphan || is_wp_error( $orphan ) || ! $candidate || is_wp_error( $candidate ) ) {
+                        continue;
+                    }
+                    ?>
                     <tr data-proposal-id="<?php echo esc_attr( $proposal_id ); ?>">
                         <td><strong><?php echo esc_html( $proposal['orphan_name'] ); ?></strong><br><code><?php echo esc_html( $proposal['orphan_slug'] ); ?></code></td>
                         <td><strong><?php echo esc_html( $proposal['candidate_name'] ); ?></strong><br><code><?php echo esc_html( $proposal['candidate_slug'] ); ?></code></td>
@@ -341,7 +354,7 @@ function tconn_sv_render_page(): void {
             $first_tab = true;
             foreach ( $tab_scopes as $scope_key ) :
                 $count = count( $by_scope[ $scope_key ] );
-            ?>
+                ?>
             <a href="#" class="nav-tab<?php echo $first_tab ? ' nav-tab-active' : ''; ?>"
                data-scope="<?php echo esc_attr( $scope_key ); ?>">
                 <?php echo esc_html( $scope_meta[ $scope_key ]['label'] ); ?>
@@ -349,7 +362,10 @@ function tconn_sv_render_page(): void {
                 <span style="margin-left:4px;background:#72aee6;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px"><?php echo esc_html( (string) $count ); ?></span>
                 <?php endif; ?>
             </a>
-            <?php $first_tab = false; endforeach; ?>
+                <?php
+                $first_tab = false;
+endforeach;
+            ?>
         </nav>
 
         <!-- Scope panels -->
@@ -357,7 +373,7 @@ function tconn_sv_render_page(): void {
         $first_panel = true;
         foreach ( $tab_scopes as $scope_key ) :
             $panel_sources = $by_scope[ $scope_key ];
-        ?>
+            ?>
         <div id="tconn-sv-panel-<?php echo esc_attr( $scope_key ); ?>"
              class="tconn-sv-panel"
              style="background:transparent;border:1px solid #c3c4c7;border-top:none;border-radius:0 0 4px 4px;padding:16px;<?php echo $first_panel ? '' : 'display:none'; ?>">
@@ -379,10 +395,11 @@ function tconn_sv_render_page(): void {
                     </tr>
                 </thead>
                 <tbody id="tconn-sv-tbody-<?php echo esc_attr( $scope_key ); ?>">
-                <?php foreach ( $panel_sources as $src ) :
+                <?php
+                foreach ( $panel_sources as $src ) :
                     $peer_site       = tconn_get_link_type( $src['peer_site_slug'] );
                     $peer_site_label = $peer_site ? $peer_site['label'] : $src['peer_site_slug'];
-                    $last_sync = $src['last_sync']
+                    $last_sync       = $src['last_sync']
                         ? human_time_diff( (int) $src['last_sync'] ) . ' ' . __( 'ago', 'termconnect' )
                         : __( 'Never', 'termconnect' );
 
@@ -400,7 +417,7 @@ function tconn_sv_render_page(): void {
                             . esc_html( sprintf( _n( '%d term', '%d terms', $term_count, 'termconnect' ), $term_count ) )
                             . ')</span>';
                     }
-                ?>
+                    ?>
                 <tr data-id="<?php echo esc_attr( $src['id'] ); ?>">
                     <td><span class="tconn-sv-drag-handle" title="<?php esc_attr_e( 'Drag to reorder', 'termconnect' ); ?>">&#8942;</span></td>
                     <td>
@@ -435,7 +452,10 @@ function tconn_sv_render_page(): void {
             <p class="description"><?php esc_html_e( 'No sources configured for this scope yet.', 'termconnect' ); ?></p>
             <?php endif; ?>
         </div>
-        <?php $first_panel = false; endforeach; ?>
+            <?php
+            $first_panel = false;
+endforeach;
+        ?>
     </div>
 
     <?php ob_start(); ?>
@@ -446,13 +466,17 @@ function tconn_sv_render_page(): void {
         var tconnSvI18n           = {
             coverageWarning:          <?php /* translators: Keep %scope% and %peer% as they are: they are replaced with the source type and the peer site name */ echo wp_json_encode( __( 'This term is already covered by a broader %scope% source from %peer%, so it will be skipped during sync.', 'termconnect' ) ); ?>,
             coverageWarningSameScope: <?php /* translators: Keep %scope% and %peer% as they are: they are replaced with the source type and the peer site name */ echo wp_json_encode( __( 'This term is already in another %scope% source from %peer%, so it will be skipped during sync.', 'termconnect' ) ); ?>,
-            scopeLabels: <?php echo wp_json_encode( array(
+            scopeLabels: 
+            <?php
+            echo wp_json_encode( array(
                 'full'         => __( 'Taxonomies', 'termconnect' ),
                 'remote_group' => __( 'Remote Groups', 'termconnect' ),
                 'local_group'  => __( 'Local Groups', 'termconnect' ),
                 'roots'        => __( 'Term Hierarchies', 'termconnect' ),
                 'terms'        => __( 'Individual Terms', 'termconnect' ),
-            ) ); ?>,
+            ) );
+            ?>
+            ,
         };
         var tconnSvEditOriginalRoots = null;
         var $form = $('#tconn-sv-form');

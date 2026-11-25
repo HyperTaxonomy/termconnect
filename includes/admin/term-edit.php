@@ -70,7 +70,7 @@ add_action( 'admin_enqueue_scripts', 'tconn_enqueue_term_edit_css' );
 add_action( 'init', static function () {
     foreach ( TConn_Settings::get_enabled_taxonomies() as $taxonomy ) {
         add_action( "{$taxonomy}_edit_form_fields", 'tconn_add_delegated_identity_field', 9 );
-        add_action( "{$taxonomy}_add_form_fields",  'tconn_add_external_links_field', 9 );
+        add_action( "{$taxonomy}_add_form_fields", 'tconn_add_external_links_field', 9 );
         add_action( "{$taxonomy}_edit_form_fields", 'tconn_add_external_links_field', 9 );
     }
 }, 15 );
@@ -228,9 +228,9 @@ function tconn_add_external_links_field( $term ): void {
         }
         // Determine which local links are suppressed: delegated entry on same site but different URL.
         foreach ( $existing_data as $slug => $meta ) {
-            $type       = tconn_get_link_type( $slug );
-            $prefix     = $type ? ( $type['uri_prefix'] ?? '' ) : '';
-            $local_url  = tconn_get_link_uri( $slug, $meta['id'], $taxonomy );
+            $type      = tconn_get_link_type( $slug );
+            $prefix    = $type ? ( $type['uri_prefix'] ?? '' ) : '';
+            $local_url = tconn_get_link_uri( $slug, $meta['id'], $taxonomy );
             if ( null === $local_url || '' === $prefix ) {
                 continue;
             }
@@ -353,15 +353,15 @@ function tconn_add_external_links_field( $term ): void {
                       data-label="<?php echo esc_attr( $type['label'] ); ?>"
                       data-platform="<?php echo esc_attr( $type['platform'] ?? 'other' ); ?>"
                       data-prefix="<?php echo esc_attr( $pill_prefix ); ?>"
-                      <?php echo $has_delegated_match ? 'data-has-delegated="1"' : ''; ?>
-                      <?php echo $is_suppressed ? 'title="' . esc_attr( __( 'Overridden by delegated link', 'termconnect' ) ) . '"' : ''; ?>>
-                    <?php if ( $preview_url ) : ?>
+                        <?php echo $has_delegated_match ? 'data-has-delegated="1"' : ''; ?>
+                        <?php echo $is_suppressed ? 'title="' . esc_attr( __( 'Overridden by delegated link', 'termconnect' ) ) . '"' : ''; ?>>
+                        <?php if ( $preview_url ) : ?>
                     <a href="<?php echo esc_url( $preview_url ); ?>" target="_blank" rel="noopener noreferrer"
                        style="color:inherit;text-decoration:none" title="<?php echo esc_attr( $preview_url ); ?>">
-                        <?php echo esc_html( $type['label'] ); ?>: <?php echo esc_html( $display_id ); ?>&nbsp;&#x2197;
+                            <?php echo esc_html( $type['label'] ); ?>: <?php echo esc_html( $display_id ); ?>&nbsp;&#x2197;
                     </a>
                     <?php else : ?>
-                    <?php echo esc_html( $type['label'] ); ?>: <?php echo esc_html( $display_id ); ?>&nbsp;&#x2197;
+                        <?php echo esc_html( $type['label'] ); ?>: <?php echo esc_html( $display_id ); ?>&nbsp;&#x2197;
                     <?php endif; ?>
                     <button type="button" class="tconn-link-pill-remove"
                             aria-label="<?php /* translators: %s: link type label */ echo esc_attr( sprintf( __( 'Remove %s link', 'termconnect' ), $type['label'] ) ); ?>"
@@ -373,7 +373,8 @@ function tconn_add_external_links_field( $term ): void {
                     <input type="hidden" name="tconn_link_fetched[<?php echo esc_attr( $slug ); ?>]"
                            value="<?php echo esc_attr( (string) $current_fetched ); ?>">
                 </span>
-                    <?php else :
+                        <?php
+                    else :
                         $durl          = $pill_data['durl'];
                         $display_label = $pill_data['display_label'];
                         ?>
@@ -384,8 +385,10 @@ function tconn_add_external_links_field( $term ): void {
                         <?php echo esc_html( $display_label ); ?>&nbsp;&#x2197;
                     </a>
                 </span>
-                    <?php endif;
-                endforeach; ?>
+                        <?php
+                    endif;
+                endforeach;
+                ?>
                 <button type="button"
                         class="tconn-links-add-btn"
                         data-dropdown="<?php echo esc_attr( $tconn_links_dd_id ); ?>"
@@ -395,10 +398,12 @@ function tconn_add_external_links_field( $term ): void {
                     <span class="screen-reader-text"><?php esc_html_e( 'Add external link', 'termconnect' ); ?></span>
                 </button>
                 </div><!-- /.tconn-links-container -->
-                <p class="description" style="margin:4px 0 0;"><?php
+                <p class="description" style="margin:4px 0 0;">
+                <?php
                 $msg = __( 'Link this term to external services (Wikidata, Wikipedia, etc.) and peer WordPress sites. These identifiers power cross-site post discovery, synonym matching, and "See also" links on term archives.', 'termconnect' );
                 echo esc_html( $msg );
-                ?></p>
+                ?>
+                </p>
                 <!-- Single-select dropdown: click a type, then enter its ID -->
                 <div id="<?php echo esc_attr( $tconn_links_dd_id ); ?>" class="tconn-links-dropdown" style="display:none;min-width:280px">
                     <div class="tconn-links-dd-header" style="display:none;padding:3px 6px 3px;border-bottom:1px solid #f0f0f1">
@@ -406,9 +411,10 @@ function tconn_add_external_links_field( $term ): void {
                             &larr; <?php esc_html_e( 'Back', 'termconnect' ); ?>
                         </button>
                     </div>
-                    <?php foreach ( $enabled_types as $slug => $type ) :
-                        $is_set        = isset( $set_types[ $slug ] );
-                        $platform      = $type['platform'] ?? 'other';
+                    <?php
+                    foreach ( $enabled_types as $slug => $type ) :
+                        $is_set         = isset( $set_types[ $slug ] );
+                        $platform       = $type['platform'] ?? 'other';
                         $suggest_action = '';
                         $suggest_free   = false;
                         if ( 'wordpress' === $platform ) {
@@ -428,7 +434,10 @@ function tconn_add_external_links_field( $term ): void {
                          data-label="<?php echo esc_attr( $type['label'] ); ?>"
                          data-platform="<?php echo esc_attr( $platform ); ?>"
                          data-prefix="<?php echo esc_attr( tconn_link_type_display_prefix( $type, $taxonomy ) ); ?>"
-                         <?php if ( 'feed' === $platform ) : ?>data-site-url="<?php echo esc_attr( tconn_external_get_site_origin( $type['uri_prefix'] ?? '' ) ); ?>"<?php endif; ?>
+                         <?php
+                            if ( 'feed' === $platform ) :
+                                ?>
+                                data-site-url="<?php echo esc_attr( tconn_external_get_site_origin( $type['uri_prefix'] ?? '' ) ); ?>"<?php endif; ?>
                          <?php echo $is_set ? 'style="display:none"' : ''; ?>>
                         <div class="tconn-links-dd-typerow-label" style="display:flex;align-items:center;padding:5px 10px;cursor:pointer">
                             <span style="flex:1;white-space:nowrap"><?php echo esc_html( $type['label'] ); ?></span>
@@ -475,7 +484,7 @@ function tconn_add_external_links_field( $term ): void {
                     var ajaxUrl = typeof ajaxurl !== 'undefined' ? ajaxurl : '';
                     // TermConnect-specific nonce for suggest AJAX (always available regardless of HyperTaxonomy).
                     var tconnSuggestNonce = <?php echo wp_json_encode(wp_create_nonce('tconn-link-suggest')); ?>;
-                    <?php $tconn_tax = is_object($term) ? $term->taxonomy : (is_string($term) ? $term : ''); ?>
+                    <?php $tconn_tax = is_object($term) ? $term->taxonomy : ( is_string($term) ? $term : '' ); ?>
                     var tconnTaxonomy = <?php echo wp_json_encode($tconn_tax); ?>;
                     function getSuggestNonce() { return tconnSuggestNonce; }
                     function getLocalTax()     {
@@ -941,11 +950,12 @@ function tconn_render_suggested_links_panel( WP_Term $term ): void {
                     ?>
                 </summary>
                 <ul style="margin:.5em 0 0;padding:0;list-style:none">
-                    <?php foreach ( $suggestions as $sug ) :
-                        $url   = $sug->comment_author_url;
-                        $match = function_exists( 'tconn_suggested_link_match_url' ) ? tconn_suggested_link_match_url( $url ) : null;
+                    <?php
+                    foreach ( $suggestions as $sug ) :
+                        $url         = $sug->comment_author_url;
+                        $match       = function_exists( 'tconn_suggested_link_match_url' ) ? tconn_suggested_link_match_url( $url ) : null;
                         $link_exists = $match && function_exists( 'tconn_suggested_link_exists' ) && tconn_suggested_link_exists( $term->term_id, $match['peer_site_slug'], $match['value'] );
-                    ?>
+                        ?>
                     <li style="margin:.4em 0;padding:.4em 0;border-bottom:1px solid #f0f0f1">
                         <a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $url ); ?></a>
                         <?php if ( $match ) : ?>
@@ -955,9 +965,15 @@ function tconn_render_suggested_links_panel( WP_Term $term ): void {
                             <span style="color:#555;margin-left:6px;font-style:italic"><?php echo esc_html( $sug->comment_content ); ?></span>
                         <?php endif; ?>
                         &nbsp;
-                        <?php if ( ! $link_exists && $match ) :
-                            $accept_url = add_query_arg( array( 'taxonomy' => $term->taxonomy, 'tag_ID' => $term->term_id, 'tconn_lt' => $match['peer_site_slug'], 'tconn_value' => $match['value'] ), admin_url( 'term.php' ) );
-                        ?>
+                        <?php
+                        if ( ! $link_exists && $match ) :
+                            $accept_url = add_query_arg( array(
+                                'taxonomy' => $term->taxonomy,
+                                'tag_ID' => $term->term_id,
+                                'tconn_lt' => $match['peer_site_slug'],
+                                'tconn_value' => $match['value'],
+                            ), admin_url( 'term.php' ) );
+                            ?>
                         <a href="<?php echo esc_url( $accept_url ); ?>" class="button button-small"><?php esc_html_e( 'Accept', 'termconnect' ); ?></a>
                         <?php endif; ?>
                         <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'comment.php?action=trash&c=' . $sug->comment_ID ), "trash-comment_$sug->comment_ID" ) ); ?>"

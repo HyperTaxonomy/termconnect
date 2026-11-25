@@ -72,9 +72,9 @@ class TConn_Shortcode_PeerBrowse {
      */
     public function __construct() {
         add_shortcode( 'tconn_peer_browse', array( $this, 'shortcode_handler' ) );
-        add_action( 'wp_ajax_tconn_peer_browse',              array( $this, 'ajax_browse' ) );
-        add_action( 'wp_ajax_nopriv_tconn_peer_browse',       array( $this, 'ajax_browse' ) );
-        add_action( 'wp_ajax_tconn_peer_browse_terms',        array( $this, 'ajax_term_suggest' ) );
+        add_action( 'wp_ajax_tconn_peer_browse', array( $this, 'ajax_browse' ) );
+        add_action( 'wp_ajax_nopriv_tconn_peer_browse', array( $this, 'ajax_browse' ) );
+        add_action( 'wp_ajax_tconn_peer_browse_terms', array( $this, 'ajax_term_suggest' ) );
         add_action( 'wp_ajax_nopriv_tconn_peer_browse_terms', array( $this, 'ajax_term_suggest' ) );
     }
 
@@ -182,7 +182,7 @@ class TConn_Shortcode_PeerBrowse {
             $wrapper_class .= ' ' . sanitize_html_class( $atts['class'] );
         }
 
-        $html  = '<div class="' . esc_attr( $wrapper_class ) . '"'
+        $html = '<div class="' . esc_attr( $wrapper_class ) . '"'
                . ' data-nonce="' . esc_attr( wp_create_nonce( 'tconn_peer_browse' ) ) . '"'
                . ' data-taxonomy="' . esc_attr( $taxonomy ) . '"'
                . ' data-match="' . esc_attr( $match ) . '"'
@@ -205,7 +205,7 @@ class TConn_Shortcode_PeerBrowse {
                 'orderby'     => $orderby,
                 'offset'      => 0,
             ) + $config );
-            $html .= $this->wrap_results( $result, tconn_post_list_items_style( (int) $config['columns'], $config['image_size'] ) );
+            $html  .= $this->wrap_results( $result, tconn_post_list_items_style( (int) $config['columns'], $config['image_size'] ) );
         } else {
             $html .= '<p class="tconn-pb-empty">' . esc_html__( 'Choose one or more topics to see related posts.', 'termconnect' ) . '</p>';
         }
@@ -228,7 +228,7 @@ class TConn_Shortcode_PeerBrowse {
      * @return string
      */
     private function render_controls( string $uid, string $taxonomy, string $match, string $scope, string $orderby, array $seed_terms, array $atts ): string {
-        $html  = '<form class="tconn-pb-controls" onsubmit="return false">';
+        $html = '<form class="tconn-pb-controls" onsubmit="return false">';
 
         // Topic pills
         $html .= '<div class="tconn-pb-field tconn-pb-pills-field">';
@@ -335,7 +335,13 @@ class TConn_Shortcode_PeerBrowse {
 
         $args = $this->parse_request();
         if ( empty( $args['term_ids'] ) ) {
-            wp_send_json_success( array( 'html' => '', 'has_more' => false, 'next_offset' => 0, 'total' => 0, 'no_terms' => true ) );
+            wp_send_json_success( array(
+                'html' => '',
+                'has_more' => false,
+                'next_offset' => 0,
+                'total' => 0,
+                'no_terms' => true,
+            ) );
             return;
         }
 
@@ -468,7 +474,7 @@ class TConn_Shortcode_PeerBrowse {
             ? '<p class="tconn-pb-no-results">' . esc_html( $args['no_results_message'] ) . '</p>'
             : '';
 
-        $all = $this->get_combined_records( $args );
+        $all   = $this->get_combined_records( $args );
         $total = count( $all );
 
         if ( 0 === $total ) {
@@ -486,7 +492,7 @@ class TConn_Shortcode_PeerBrowse {
         $page     = array_slice( $all, $offset, $per_page );
         $has_more = $total > ( $offset + $per_page );
 
-        $peer = TConn_Shortcode_PeerPosts::instance();
+        $peer       = TConn_Shortcode_PeerPosts::instance();
         $items_html = $peer->render_items(
             $page,
             'true' === $args['show_thumbnail'],

@@ -33,10 +33,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array[] Sorted copy.
  */
 function tconn_sv_sort_sources( array $sources ): array {
-    $rank    = array( 'full' => 0, 'remote_group' => 1, 'local_group' => 2, 'roots' => 3, 'terms' => 4 );
-    $buckets = array( 0 => array(), 1 => array(), 2 => array(), 3 => array(), 4 => array() );
+    $rank    = array(
+        'full' => 0,
+        'remote_group' => 1,
+        'local_group' => 2,
+        'roots' => 3,
+        'terms' => 4,
+    );
+    $buckets = array(
+        0 => array(),
+        1 => array(),
+        2 => array(),
+        3 => array(),
+        4 => array(),
+    );
     foreach ( $sources as $src ) {
-        $r = $rank[ $src['scope'] ?? 'full' ] ?? 4;
+        $r               = $rank[ $src['scope'] ?? 'full' ] ?? 4;
         $buckets[ $r ][] = $src;
     }
     return array_merge( $buckets[0], $buckets[1], $buckets[2], $buckets[3], $buckets[4] );
@@ -99,11 +111,11 @@ function tconn_sv_sync_source( array $source ): array {
         'errors'           => array(),
     );
 
-    $peer_site_slug   = $source['peer_site_slug'] ?? '';
-    $taxonomy  = $source['taxonomy'] ?? '';
-    $scope     = $source['scope'] ?? 'full';
-    $roots     = $source['roots'] ?? array();
-    $misplace  = $source['misplacement'] ?? 'flag';
+    $peer_site_slug = $source['peer_site_slug'] ?? '';
+    $taxonomy       = $source['taxonomy'] ?? '';
+    $scope          = $source['scope'] ?? 'full';
+    $roots          = $source['roots'] ?? array();
+    $misplace       = $source['misplacement'] ?? 'flag';
 
     if ( ! $peer_site_slug ) {
         $result['errors'][] = __( 'Missing peer_site_slug.', 'termconnect' );
@@ -144,16 +156,17 @@ function tconn_sv_sync_source( array $source ): array {
 
     // Relationship delegation requires HT on the remote peer.
     if ( $rel_delegation && ! tconn_external_is_ht_enabled( $origin ) ) {
-        $rel_delegation = false;
+        $rel_delegation     = false;
         $result['errors'][] = __( 'Relationship delegation skipped — peer site does not have HyperTaxonomy active.', 'termconnect' );
     }
 
     // 1. Sync relationship type definitions before fetching terms, so types are
-    //    registered locally before any relationship rows reference them.
+    // registered locally before any relationship rows reference them.
     if ( $rel_delegation ) {
         $type_result = tconn_sv_sync_relationship_types( $origin );
         if ( ! empty( $type_result['errors'] ) ) {
-            foreach ( $type_result['errors'] as $e ) { $result['errors'][] = $e; }
+            foreach ( $type_result['errors'] as $e ) {
+                $result['errors'][] = $e; }
         }
     }
 
@@ -169,8 +182,8 @@ function tconn_sv_sync_source( array $source ): array {
     $remote_by_id   = array(); // remote_term_id => remote_term_data
     $remote_by_slug = array(); // slug => remote_term_data
     foreach ( $remote_terms as $rt ) {
-        $remote_by_id[ (int) $rt['id'] ]   = $rt;
-        $remote_by_slug[ $rt['slug'] ]      = $rt;
+        $remote_by_id[ (int) $rt['id'] ] = $rt;
+        $remote_by_slug[ $rt['slug'] ]   = $rt;
     }
 
     // 4. Build existing-delegations map: remote_term_id => local_term_id (for this peer_site_slug).
@@ -191,10 +204,12 @@ function tconn_sv_sync_source( array $source ): array {
     $source_sync_flags = tconn_sv_get_sync_flags( $source );
     foreach ( $scope_ids as $remote_id ) {
         $rt = $remote_by_id[ $remote_id ] ?? null;
-        if ( ! $rt ) { continue; }
+        if ( ! $rt ) {
+            continue;
+        }
 
-        $sync_desc = ( 'terms' !== $scope );
-        $r = tconn_sv_process_term( $rt, $peer_site_slug, $taxonomy, $origin, $delegations, $remote_by_id, $misplace, $sync_desc, $source['id'] ?? '', $source_sync_flags['name'], $source_sync_flags['description'] );
+        $sync_desc            = ( 'terms' !== $scope );
+        $r                    = tconn_sv_process_term( $rt, $peer_site_slug, $taxonomy, $origin, $delegations, $remote_by_id, $misplace, $sync_desc, $source['id'] ?? '', $source_sync_flags['name'], $source_sync_flags['description'] );
         $result['synced']    += $r['synced'];
         $result['created']   += $r['created'];
         $result['renamed']   += $r['renamed'];
@@ -206,8 +221,8 @@ function tconn_sv_sync_source( array $source ): array {
     }
 
     // 7. Scope-exit detection (roots and terms scopes only): delegated terms owned by
-    //    this source that still exist on remote but have moved outside the configured
-    //    scope. The remote term is fine — we simply stop mirroring it. Clear identity.
+    // this source that still exist on remote but have moved outside the configured
+    // scope. The remote term is fine — we simply stop mirroring it. Clear identity.
     if ( 'full' !== $scope ) {
         $scope_ids_index = array_flip( $scope_ids );
         $sv_source_id    = $source['id'] ?? '';
@@ -223,24 +238,24 @@ function tconn_sv_sync_source( array $source ): array {
                 continue; // Not owned by this source.
             }
             tconn_remove_identity_source( $local_term_id );
-            $result['scope_exit']++;
+            ++$result['scope_exit'];
         }
     }
 
     // 8. Detect orphans: delegated terms (for this peer_site_slug) whose remote_term_id
-    //    is no longer present in the fetched taxonomy.
-    //    Before marking as orphaned, attempt an individual slug fetch — the term
-    //    may have been missed due to a race during pagination or moved to another
-    //    taxonomy. Only apply the configured orphan action when confirmed gone.
-    //    Bails out after TCONN_CRON_TIME_BUDGET wall-clock seconds rather than probing
-    //    every orphan candidate in one run: each probe is a synchronous HTTP request,
-    //    and a source with many stale delegations could otherwise hit
-    //    max_execution_time mid-run. Delegations not reached this run are simply
-    //    re-evaluated on the next sync — nothing here is a queue that loses entries
-    //    by being skipped.
-    $orphaned_ids  = array();
-    $orphan_action = $source['orphan_action'] ?? 'flag';
-    $sv_source_id  = $source['id'] ?? '';
+    // is no longer present in the fetched taxonomy.
+    // Before marking as orphaned, attempt an individual slug fetch — the term
+    // may have been missed due to a race during pagination or moved to another
+    // taxonomy. Only apply the configured orphan action when confirmed gone.
+    // Bails out after TCONN_CRON_TIME_BUDGET wall-clock seconds rather than probing
+    // every orphan candidate in one run: each probe is a synchronous HTTP request,
+    // and a source with many stale delegations could otherwise hit
+    // max_execution_time mid-run. Delegations not reached this run are simply
+    // re-evaluated on the next sync — nothing here is a queue that loses entries
+    // by being skipped.
+    $orphaned_ids          = array();
+    $orphan_action         = $source['orphan_action'] ?? 'flag';
+    $sv_source_id          = $source['id'] ?? '';
     $orphan_probe_deadline = time() + TCONN_CRON_TIME_BUDGET;
     foreach ( $delegations as $remote_id => $local_term_id ) {
         if ( time() >= $orphan_probe_deadline ) {
@@ -273,7 +288,7 @@ function tconn_sv_sync_source( array $source ): array {
                 // Still on remote — individual fetch recovered it; re-sync and move on.
                 $term_sync_flags = tconn_sv_get_sync_flags( $src );
                 tconn_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, $refreshed, (bool) ( $src['sync_descendants'] ?? false ), $src['sv_source_id'] ?? '', $term_sync_flags['name'], $term_sync_flags['description'] );
-                $result['synced']++;
+                ++$result['synced'];
                 continue;
             }
         }
@@ -282,7 +297,7 @@ function tconn_sv_sync_source( array $source ): array {
             $src['status'] = 'not_found';
             update_term_meta( $local_term_id, TCONN_META_IDENTITY_SOURCE, $src );
         }
-        $result['orphaned']++;
+        ++$result['orphaned'];
         $local_term = get_term( $local_term_id );
         if ( $local_term && ! is_wp_error( $local_term ) ) {
             $deleted = tconn_sv_apply_orphan_action( $local_term_id, $local_term->taxonomy, $orphan_action );
@@ -293,16 +308,16 @@ function tconn_sv_sync_source( array $source ): array {
     }
 
     // 9. Detect merge proposals: orphaned terms that share a KB identifier
-    //    with an active delegation from the same peer.
+    // with an active delegation from the same peer.
     if ( ! empty( $orphaned_ids ) ) {
         $proposals = tconn_sv_detect_merge_proposals( $orphaned_ids, $delegations, $remote_by_id, $peer_site_slug );
         if ( ! empty( $proposals ) ) {
-            $tconn_settings        = get_option( 'tconn_settings', array() );
+            $tconn_settings = get_option( 'tconn_settings', array() );
             // Auto-accept only applies to manual syncs (AJAX). A scheduled cron sync must
             // always queue the proposal for manual review — see docs/user-guide/shared-vocabularies.md
             // ("Merge proposals"): "a merge triggered during a manual sync (not cron) ... runs
             // automatically without review."
-            $auto_merge         = ! empty( $tconn_settings['auto_accept_redirects'] ) && wp_doing_ajax();
+            $auto_merge = ! empty( $tconn_settings['auto_accept_redirects'] ) && wp_doing_ajax();
 
             $queued = array();
             foreach ( $proposals as $proposal_id => $proposal ) {
@@ -335,7 +350,7 @@ function tconn_sv_sync_source( array $source ): array {
 
     // 10. Sync relationship rows (only for full-taxonomy scope with delegation enabled).
     if ( $rel_delegation ) {
-        $row_result = tconn_sv_sync_relationship_rows( $remote_terms, $delegations, $taxonomy, $cross_taxonomy, $peer_site_slug );
+        $row_result          = tconn_sv_sync_relationship_rows( $remote_terms, $delegations, $taxonomy, $cross_taxonomy, $peer_site_slug );
         $result['rel_rows'] += $row_result['rows_written'];
         foreach ( $row_result['errors'] as $e ) {
             $result['errors'][] = $e;
@@ -343,7 +358,7 @@ function tconn_sv_sync_source( array $source ): array {
     }
 
     // 11. Flag stale relationship rows: custom-type rows that exist locally but were
-    //     not present in the remote htax_relationships data for this sync.
+    // not present in the remote htax_relationships data for this sync.
     if ( $rel_delegation ) {
         $result['stale_rel_terms'] += tconn_sv_flag_stale_relationship_rows( $remote_terms, $delegations, $peer_site_slug, $origin, $taxonomy );
     }
@@ -390,7 +405,14 @@ function tconn_sv_get_sync_flags( array $config ): array {
  * @return array { synced, created, renamed, misplaced, error }
  */
 function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxonomy, string $origin, array &$delegations, array $remote_by_id, string $misplace, bool $sync_desc = true, string $sv_source_id = '', bool $sync_name = true, bool $sync_description = true ): array {
-    $r = array( 'synced' => 0, 'created' => 0, 'renamed' => 0, 'misplaced' => 0, 'skipped' => 0, 'error' => '' );
+    $r = array(
+        'synced' => 0,
+        'created' => 0,
+        'renamed' => 0,
+        'misplaced' => 0,
+        'skipped' => 0,
+        'error' => '',
+    );
 
     $remote_id   = (int) $rt['id'];
     $remote_slug = $rt['slug'];
@@ -405,7 +427,7 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
             $parent_rt   = $remote_by_id[ $remote_parent ] ?? null;
             $parent_slug = $parent_rt['slug'] ?? '';
             if ( $parent_slug ) {
-                $local_parent = get_term_by( 'slug', $parent_slug, $taxonomy );
+                $local_parent    = get_term_by( 'slug', $parent_slug, $taxonomy );
                 $local_parent_id = $local_parent ? (int) $local_parent->term_id : 0;
             }
         }
@@ -427,7 +449,7 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
             // — skip entirely rather than have two sources fight over it.
             $existing_src = tconn_get_identity_source( $local_term_id );
             if ( $existing_src && ! empty( $existing_src['sv_source_id'] ) && $existing_src['sv_source_id'] !== $sv_source_id ) {
-                $r['skipped']++;
+                ++$r['skipped'];
                 return $r;
             }
 
@@ -442,7 +464,7 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
             if ( $local_term->slug !== $remote_slug ) {
                 $rename_result = wp_update_term( $local_term_id, $taxonomy, array( 'slug' => $remote_slug ) );
                 if ( ! is_wp_error( $rename_result ) ) {
-                    $r['renamed']++;
+                    ++$r['renamed'];
                 } else {
                     error_log( 'TermConnect: sv rename failed for term ' . $local_term_id . ': ' . $rename_result->get_error_message() );
                 }
@@ -457,7 +479,7 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
                     }
                 } elseif ( 'flag' === $misplace ) {
                     tconn_sv_flag_misplaced( $local_term_id );
-                    $r['misplaced']++;
+                    ++$r['misplaced'];
                 }
                 // 'link-only': leave parent unchanged.
             }
@@ -468,7 +490,7 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
                 $r['error'] = $set_result->get_error_message();
                 return $r;
             }
-            $r['synced']++;
+            ++$r['synced'];
             return $r;
         }
     }
@@ -485,7 +507,7 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
         // Blog"), and the earlier-checked one must still win.
         $existing_src = tconn_get_identity_source( $local_term_id );
         if ( $existing_src && ! empty( $existing_src['sv_source_id'] ) && $existing_src['sv_source_id'] !== $sv_source_id ) {
-            $r['skipped']++;
+            ++$r['skipped'];
             return $r;
         }
 
@@ -498,7 +520,7 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
                 }
             } elseif ( 'flag' === $misplace ) {
                 tconn_sv_flag_misplaced( $local_term_id );
-                $r['misplaced']++;
+                ++$r['misplaced'];
             }
         }
 
@@ -514,14 +536,14 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
             return $r;
         }
         $delegations[ $remote_id ] = $local_term_id;
-        $r['synced']++;
+        ++$r['synced'];
         return $r;
     }
 
     // --- Create new local term ---
     // Decode HTML entities from the remote name (REST API may return encoded strings).
     $insert_name = html_entity_decode( $rt['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-    $inserted = wp_insert_term( $insert_name, $taxonomy, array(
+    $inserted    = wp_insert_term( $insert_name, $taxonomy, array(
         'slug'   => $remote_slug,
         'parent' => $local_parent_id,
     ) );
@@ -533,13 +555,13 @@ function tconn_sv_process_term( array $rt, string $peer_site_slug, string $taxon
     }
 
     $local_term_id = (int) $inserted['term_id'];
-    $set_result = tconn_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tconn_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id, $sync_name, $sync_description );
+    $set_result    = tconn_set_identity_source( $local_term_id, $peer_site_slug, $remote_slug, tconn_sv_build_remote_payload( $rt, $origin ), $sync_desc, $sv_source_id, $sync_name, $sync_description );
     if ( is_wp_error( $set_result ) ) {
         $r['error'] = $set_result->get_error_message();
         return $r;
     }
     $delegations[ $remote_id ] = $local_term_id;
-    $r['created']++;
+    ++$r['created'];
     return $r;
 }
 
@@ -568,7 +590,7 @@ function tconn_sv_sync_remote_group_source( array $source, array $result ): arra
     $orphan_action     = $source['orphan_action'] ?? 'flag';
     $sync_desc         = (bool) ( $source['sync_descendants'] ?? false );
 
-    $origin    = tconn_peer_origin( (string) $peer_site_slug );
+    $origin = tconn_peer_origin( (string) $peer_site_slug );
 
     if ( ! $origin || ! $remote_group_slug ) {
         $result['errors'][] = __( 'Missing peer site or remote group slug.', 'termconnect' );
@@ -608,7 +630,9 @@ function tconn_sv_sync_remote_group_source( array $source, array $result ): arra
     foreach ( (array) $body['members'] as $member ) {
         $taxonomy  = sanitize_key( $member['taxonomy'] ?? '' );
         $remote_id = absint( $member['id'] ?? 0 );
-        if ( ! $taxonomy || ! $remote_id ) { continue; }
+        if ( ! $taxonomy || ! $remote_id ) {
+            continue;
+        }
 
         $rt = array(
             'id'          => $remote_id,
@@ -641,7 +665,7 @@ function tconn_sv_sync_remote_group_source( array $source, array $result ): arra
     }
 
     // 4. Build delegation map (snapshot before processing for scope-exit detection).
-    $delegations      = tconn_sv_build_delegation_map( $peer_site_slug );
+    $delegations       = tconn_sv_build_delegation_map( $peer_site_slug );
     $prior_delegations = $delegations;
 
     // 5. Process each remote member term.
@@ -650,7 +674,7 @@ function tconn_sv_sync_remote_group_source( array $source, array $result ): arra
 
     foreach ( $to_process as $taxonomy => $members ) {
         foreach ( $members as $remote_id => $rt ) {
-            $r = tconn_sv_process_term(
+            $r                  = tconn_sv_process_term(
                 $rt,
                 $peer_site_slug,
                 $taxonomy,
@@ -687,9 +711,13 @@ function tconn_sv_sync_remote_group_source( array $source, array $result ): arra
 
     // 6. Scope-exit: terms previously owned by this source no longer in the remote group.
     foreach ( $prior_delegations as $remote_id => $local_term_id ) {
-        if ( in_array( $local_term_id, $processed_local_ids, true ) ) { continue; }
+        if ( in_array( $local_term_id, $processed_local_ids, true ) ) {
+            continue;
+        }
         $src = tconn_get_identity_source( $local_term_id );
-        if ( ! $src || ( $src['sv_source_id'] ?? '' ) !== $source_id ) { continue; }
+        if ( ! $src || ( $src['sv_source_id'] ?? '' ) !== $source_id ) {
+            continue;
+        }
 
         if ( $local_group_id ) {
             $local_term = get_term( $local_term_id );
@@ -725,8 +753,12 @@ function tconn_sv_sync_remote_group_source( array $source, array $result ): arra
  * @param string $sv_source_id   SV source ID whose owned terms should be removed.
  */
 function tconn_sv_remove_remote_group_memberships( int $local_group_id, string $sv_source_id ): void {
-    if ( ! $local_group_id || ! $sv_source_id ) { return; }
-    if ( ! function_exists( 'htax_get_term_group_ids' ) || ! function_exists( 'htax_set_term_groups' ) ) { return; }
+    if ( ! $local_group_id || ! $sv_source_id ) {
+        return;
+    }
+    if ( ! function_exists( 'htax_get_term_group_ids' ) || ! function_exists( 'htax_set_term_groups' ) ) {
+        return;
+    }
 
     global $wpdb;
     $rows = $wpdb->get_results( $wpdb->prepare(
@@ -735,10 +767,14 @@ function tconn_sv_remove_remote_group_memberships( int $local_group_id, string $
     ) );
     foreach ( $rows as $row ) {
         $src = maybe_unserialize( $row->meta_value );
-        if ( ! is_array( $src ) || ( $src['sv_source_id'] ?? '' ) !== $sv_source_id ) { continue; }
+        if ( ! is_array( $src ) || ( $src['sv_source_id'] ?? '' ) !== $sv_source_id ) {
+            continue;
+        }
         $term_id = (int) $row->term_id;
         $term    = get_term( $term_id );
-        if ( ! $term instanceof WP_Term ) { continue; }
+        if ( ! $term instanceof WP_Term ) {
+            continue;
+        }
         $current = htax_get_term_group_ids( $term_id );
         $updated = array_values( array_filter( $current, fn( $id ) => $id !== $local_group_id ) );
         if ( count( $updated ) !== count( $current ) ) {
@@ -765,10 +801,10 @@ function tconn_sv_sync_local_group_source( array $source, array $result ): array
         return $result;
     }
 
-    $peer_site_slug      = $source['peer_site_slug'];
-    $group_id     = (int) ( $source['group_id'] ?? 0 );
-    $sync_desc    = (bool) ( $source['sync_descendants'] ?? false );
-    $enabled_taxa = TConn_Settings::get_enabled_taxonomies();
+    $peer_site_slug = $source['peer_site_slug'];
+    $group_id       = (int) ( $source['group_id'] ?? 0 );
+    $sync_desc      = (bool) ( $source['sync_descendants'] ?? false );
+    $enabled_taxa   = TConn_Settings::get_enabled_taxonomies();
 
     if ( ! $group_id ) {
         $result['errors'][] = __( 'Group scope: no group_id configured.', 'termconnect' );
@@ -787,7 +823,9 @@ function tconn_sv_sync_local_group_source( array $source, array $result ): array
 
     foreach ( $enabled_taxa as $taxonomy ) {
         $members = htax_get_terms_in_groups( array( $group_id ), $taxonomy );
-        if ( empty( $members ) ) { continue; }
+        if ( empty( $members ) ) {
+            continue;
+        }
         $member_roots = array();
 
         foreach ( $members as $local_term ) {
@@ -806,11 +844,11 @@ function tconn_sv_sync_local_group_source( array $source, array $result ): array
                     // Mark as visited before refresh so scope-exit block ignores this term
                     // regardless of whether the refresh succeeds or fails.
                     $processed_local_ids[] = $local_term_id;
-                    $refresh = tconn_refresh_identity_cache( $local_term_id );
+                    $refresh               = tconn_refresh_identity_cache( $local_term_id );
                     if ( is_wp_error( $refresh ) ) {
                         if ( 'tconn_not_found' === $refresh->get_error_code() ) {
                             // Remote term gone while local term is still a group member.
-                            $result['orphaned']++;
+                            ++$result['orphaned'];
                             tconn_sv_apply_orphan_action( $local_term_id, $taxonomy, $orphan_action );
                         } else {
                             // Any other error is transient: leave status, don't count as synced.
@@ -820,7 +858,7 @@ function tconn_sv_sync_local_group_source( array $source, array $result ): array
                         }
                         continue;
                     }
-                    $result['synced']++;
+                    ++$result['synced'];
                     $member_roots[] = array( 'remote_term_id' => (int) ( $existing_src['remote_term_id'] ?? 0 ) );
                 } else {
                     $result['skipped'] = ( $result['skipped'] ?? 0 ) + 1;
@@ -840,7 +878,7 @@ function tconn_sv_sync_local_group_source( array $source, array $result ): array
             }
 
             tconn_set_identity_source( $local_term_id, $peer_site_slug, $local_term->slug, $remote, $sync_desc, $source_id, $source_sync_flags['name'], $source_sync_flags['description'] );
-            $result['synced']++;
+            ++$result['synced'];
             $processed_local_ids[] = $local_term_id;
             $member_roots[]        = array( 'remote_term_id' => (int) ( $remote['term_id'] ?? 0 ) );
         }
@@ -854,7 +892,7 @@ function tconn_sv_sync_local_group_source( array $source, array $result ): array
                 // from terms that left scope, so leave its delegations in place until the
                 // next sync.
                 $failed_taxonomies[ $taxonomy ] = true;
-                $result['errors'][] = $remote_terms->get_error_message();
+                $result['errors'][]             = $remote_terms->get_error_message();
                 continue;
             }
 
@@ -867,7 +905,7 @@ function tconn_sv_sync_local_group_source( array $source, array $result ): array
                 if ( in_array( $remote_id, $root_ids, true ) || ! isset( $remote_by_id[ $remote_id ] ) ) {
                     continue;
                 }
-                $r = tconn_sv_process_term( $remote_by_id[ $remote_id ], $peer_site_slug, $taxonomy, $origin, $delegations, $remote_by_id, $source['misplacement'] ?? 'flag', true, $source_id, $source_sync_flags['name'], $source_sync_flags['description'] );
+                $r                    = tconn_sv_process_term( $remote_by_id[ $remote_id ], $peer_site_slug, $taxonomy, $origin, $delegations, $remote_by_id, $source['misplacement'] ?? 'flag', true, $source_id, $source_sync_flags['name'], $source_sync_flags['description'] );
                 $result['synced']    += $r['synced'];
                 $result['created']   += $r['created'];
                 $result['renamed']   += $r['renamed'];
@@ -1055,9 +1093,9 @@ function tconn_sv_fetch_group_members( string $origin, string $group_slug ) {
  * @return array[]|WP_Error
  */
 function tconn_sv_fetch_taxonomy( string $origin, string $taxonomy, array $extra_fields = array() ) {
-    $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
-    $terms     = array();
-    $page      = 1;
+    $rest_base   = tconn_external_get_taxonomy_rest_base( $taxonomy );
+    $terms       = array();
+    $page        = 1;
     $base_fields = array( 'id', 'slug', 'name', 'parent', 'description', 'link', 'tconn_links', 'htax_redirect' );
     $fields      = implode( ',', array_unique( array_merge( $base_fields, $extra_fields ) ) );
 
@@ -1082,13 +1120,16 @@ function tconn_sv_fetch_taxonomy( string $origin, string $taxonomy, array $extra
 
         $code = (int) wp_remote_retrieve_response_code( $response );
         if ( 200 !== $code ) {
-            if ( 400 === $code || 404 === $code ) { break; } // no more pages
+            if ( 400 === $code || 404 === $code ) {
+                break; } // no more pages
             /* translators: %d: HTTP status code */
             return new WP_Error( 'tconn_remote_error', sprintf( __( 'Remote site returned HTTP %d.', 'termconnect' ), $code ) );
         }
 
         $body = tconn_external_json_decode( wp_remote_retrieve_body( $response ) );
-        if ( ! is_array( $body ) || empty( $body ) ) { break; }
+        if ( ! is_array( $body ) || empty( $body ) ) {
+            break;
+        }
 
         foreach ( $body as $term ) {
             if ( ! empty( $term['id'] ) ) {
@@ -1097,7 +1138,7 @@ function tconn_sv_fetch_taxonomy( string $origin, string $taxonomy, array $extra
         }
 
         $total_pages = (int) wp_remote_retrieve_header( $response, 'x-wp-totalpages' );
-        $page++;
+        ++$page;
     } while ( $page <= $total_pages && $page <= $max_pages );
 
     return $terms;
@@ -1135,14 +1176,16 @@ function tconn_sv_subtree_ids( array $roots, array $remote_by_id ): array {
     // Build parent → children index.
     $children_of = array();
     foreach ( $remote_by_id as $id => $rt ) {
-        $parent = (int) ( $rt['parent'] ?? 0 );
+        $parent                   = (int) ( $rt['parent'] ?? 0 );
         $children_of[ $parent ][] = $id;
     }
 
     $ids = array();
     foreach ( $roots as $root ) {
         $root_id = (int) ( $root['remote_term_id'] ?? 0 );
-        if ( ! $root_id || ! isset( $remote_by_id[ $root_id ] ) ) { continue; }
+        if ( ! $root_id || ! isset( $remote_by_id[ $root_id ] ) ) {
+            continue;
+        }
         tconn_sv_walk_subtree( $root_id, $children_of, $ids );
     }
     return array_unique( $ids );
@@ -1154,7 +1197,7 @@ function tconn_sv_walk_subtree( int $id, array &$children_of, array &$ids, array
         return;
     }
     $visited[ $id ] = true;
-    $ids[] = $id;
+    $ids[]          = $id;
     foreach ( ( $children_of[ $id ] ?? array() ) as $child_id ) {
         tconn_sv_walk_subtree( $child_id, $children_of, $ids, $visited );
     }
@@ -1164,7 +1207,7 @@ function tconn_sv_walk_subtree( int $id, array &$children_of, array &$ids, array
  * Build the $remote payload array expected by tconn_set_identity_source from a raw REST term.
  */
 function tconn_sv_build_remote_payload( array $rt, string $origin ): array {
-    $tconn_links       = $rt['tconn_links'] ?? array();
+    $tconn_links     = $rt['tconn_links'] ?? array();
     $delegated_links = array();
     if ( is_array( $tconn_links ) ) {
         foreach ( $tconn_links as $entry ) {
@@ -1363,7 +1406,10 @@ function tconn_sv_flag_misplaced( int $local_term_id ): void {
         if ( isset( $queue[ $key ] ) ) {
             return null;
         }
-        $queue[ $key ] = array( 'term_id' => $local_term_id, 'detected_at' => time() );
+        $queue[ $key ] = array(
+            'term_id' => $local_term_id,
+            'detected_at' => time(),
+        );
         return $queue;
     }, array(), false );
 }
@@ -1375,22 +1421,29 @@ function tconn_sv_flag_misplaced( int $local_term_id ): void {
  * @return array[] [ ['local_term_id' => int, 'slug' => string, 'name' => string], ... ]
  */
 function tconn_sv_conflict_check( array $source ): array {
-    $peer_site_slug  = $source['peer_site_slug'] ?? '';
-    $taxonomy = $source['taxonomy'] ?? '';
-    $scope    = $source['scope'] ?? 'full';
-    $roots    = $source['roots'] ?? array();
+    $peer_site_slug = $source['peer_site_slug'] ?? '';
+    $taxonomy       = $source['taxonomy'] ?? '';
+    $scope          = $source['scope'] ?? 'full';
+    $roots          = $source['roots'] ?? array();
 
     $link_type = tconn_get_link_type( $peer_site_slug );
-    if ( ! $link_type ) { return array(); }
+    if ( ! $link_type ) {
+        return array();
+    }
 
     $origin = tconn_external_get_site_origin( $link_type['uri_prefix'] ?? '' );
-    if ( ! $origin ) { return array(); }
+    if ( ! $origin ) {
+        return array();
+    }
 
     $remote_terms = tconn_sv_fetch_taxonomy( $origin, $taxonomy );
-    if ( is_wp_error( $remote_terms ) ) { return array(); }
+    if ( is_wp_error( $remote_terms ) ) {
+        return array();
+    }
 
     $remote_by_id = array();
-    foreach ( $remote_terms as $rt ) { $remote_by_id[ (int) $rt['id'] ] = $rt; }
+    foreach ( $remote_terms as $rt ) {
+        $remote_by_id[ (int) $rt['id'] ] = $rt; }
 
     if ( 'full' === $scope ) {
         $scope_terms = $remote_terms;
@@ -1406,7 +1459,8 @@ function tconn_sv_conflict_check( array $source ): array {
 
     foreach ( $scope_terms as $rt ) {
         $remote_id = (int) $rt['id'];
-        if ( isset( $delegations[ $remote_id ] ) ) { continue; } // Already linked.
+        if ( isset( $delegations[ $remote_id ] ) ) {
+            continue; } // Already linked.
 
         $local = get_term_by( 'slug', $rt['slug'], $taxonomy );
         if ( $local && ! is_wp_error( $local ) ) {
@@ -1441,7 +1495,11 @@ function tconn_sv_conflict_check( array $source ): array {
  * @return array { synced: int, created: int, errors: string[] }
  */
 function tconn_sv_sync_relationship_types( string $origin ): array {
-    $result = array( 'synced' => 0, 'created' => 0, 'errors' => array() );
+    $result = array(
+        'synced' => 0,
+        'created' => 0,
+        'errors' => array(),
+    );
 
     if ( ! function_exists( 'htax_set_custom_relationship_type' )
          || ! function_exists( 'htax_get_relationship_type' ) ) {
@@ -1449,7 +1507,7 @@ function tconn_sv_sync_relationship_types( string $origin ): array {
         return $result;
     }
 
-    $url = trailingslashit( $origin ) . 'wp-json/htax/v1/relationship-types';
+    $url      = trailingslashit( $origin ) . 'wp-json/htax/v1/relationship-types';
     $response = wp_remote_get( $url, tconn_external_request_args( 15, tconn_external_peer_headers() ) );
 
     if ( is_wp_error( $response ) ) {
@@ -1506,9 +1564,9 @@ function tconn_sv_sync_relationship_types( string $origin ): array {
         if ( is_wp_error( $r ) && 'slug_exists' !== $r->get_error_code() ) {
             $result['errors'][] = $slug . ': ' . $r->get_error_message();
         } elseif ( $is_new ) {
-            $result['created']++;
+            ++$result['created'];
         } else {
-            $result['synced']++;
+            ++$result['synced'];
         }
     }
 
@@ -1533,7 +1591,10 @@ function tconn_sv_sync_relationship_types( string $origin ): array {
  * @return array { rows_written: int, errors: string[] }
  */
 function tconn_sv_sync_relationship_rows( array $remote_terms, array $delegations, string $taxonomy, bool $cross_taxonomy, string $peer_site_slug ): array {
-    $result = array( 'rows_written' => 0, 'errors' => array() );
+    $result = array(
+        'rows_written' => 0,
+        'errors' => array(),
+    );
 
     if ( ! function_exists( 'htax_add_term_relationship' )
          || ! function_exists( 'htax_get_relationship_type' ) ) {
@@ -1560,7 +1621,7 @@ function tconn_sv_sync_relationship_rows( array $remote_terms, array $delegation
             }
             $r = htax_add_term_relationship( $local_id, $target->term_id, 'includes' );
             if ( ! is_wp_error( $r ) ) {
-                $result['rows_written']++;
+                ++$result['rows_written'];
             }
         }
 
@@ -1598,7 +1659,7 @@ function tconn_sv_sync_relationship_rows( array $remote_terms, array $delegation
 
             $r = htax_add_term_relationship( $local_id, $target->term_id, $type_slug );
             if ( ! is_wp_error( $r ) ) {
-                $result['rows_written']++;
+                ++$result['rows_written'];
             }
         }
     }
@@ -1685,7 +1746,10 @@ function tconn_sv_flag_stale_relationship_rows( array $remote_terms, array $dele
         $type = $row->relationship_type;
         $tid  = (int) $row->target_term_id;
         if ( ! isset( $expected[ $lid ][ $type ][ $tid ] ) ) {
-            $stale_by_term[ $lid ][] = array( 'type' => $type, 'target' => $tid );
+            $stale_by_term[ $lid ][] = array(
+                'type' => $type,
+                'target' => $tid,
+            );
         }
     }
 
@@ -1704,7 +1768,7 @@ function tconn_sv_flag_stale_relationship_rows( array $remote_terms, array $dele
     }
 
     // Determine which terms need updating: those with new stale rows or prior peer_site_slug entries.
-    $peer_prefix               = $peer_site_slug . ':';
+    $peer_prefix             = $peer_site_slug . ':';
     $terms_with_prior_issues = array();
     foreach ( $existing_by_term as $lid => $issues ) {
         foreach ( array_keys( $issues ) as $k ) {
@@ -1720,7 +1784,7 @@ function tconn_sv_flag_stale_relationship_rows( array $remote_terms, array $dele
     ) );
 
     // 6. Write updated meta for each affected term.
-    $now           = time();
+    $now            = time();
     $affected_count = 0;
 
     foreach ( $terms_to_update as $lid ) {
@@ -1735,7 +1799,7 @@ function tconn_sv_flag_stale_relationship_rows( array $remote_terms, array $dele
         }
 
         foreach ( $stale_by_term[ $lid ] ?? array() as $stale ) {
-            $key            = $peer_site_slug . ':' . $stale['type'] . ':' . $stale['target'];
+            $key                = $peer_site_slug . ':' . $stale['type'] . ':' . $stale['target'];
             $new_issues[ $key ] = array(
                 'peer_site_slug'           => $peer_site_slug,
                 'relationship_type' => $stale['type'],
@@ -1749,10 +1813,9 @@ function tconn_sv_flag_stale_relationship_rows( array $remote_terms, array $dele
             delete_term_meta( $lid, TCONN_META_REL_SYNC_ISSUES );
         } else {
             update_term_meta( $lid, TCONN_META_REL_SYNC_ISSUES, $new_issues );
-            $affected_count++;
+            ++$affected_count;
         }
     }
-
 
     return $affected_count;
 }
@@ -1776,20 +1839,28 @@ add_action( 'tconn_sync_shared_vocabularies', 'tconn_cron_sync_shared_vocabulari
  */
 function tconn_cron_sync_shared_vocabularies(): void {
     $sources = tconn_sv_sort_sources( get_option( 'tconn_shared_vocabularies', array() ) );
-    if ( empty( $sources ) ) { return; }
+    if ( empty( $sources ) ) {
+        return;
+    }
 
     $deadline = time() + TCONN_CRON_TIME_BUDGET;
 
     foreach ( $sources as $source ) {
-        if ( time() >= $deadline ) { break; }
+        if ( time() >= $deadline ) {
+            break;
+        }
 
-        if ( ( $source['status'] ?? 'active' ) !== 'active' ) { continue; }
+        if ( ( $source['status'] ?? 'active' ) !== 'active' ) {
+            continue;
+        }
 
-        $interval    = $source['sync_interval'] ?? 'daily';
-        $last_sync   = (int) ( $source['last_sync'] ?? 0 );
+        $interval     = $source['sync_interval'] ?? 'daily';
+        $last_sync    = (int) ( $source['last_sync'] ?? 0 );
         $interval_sec = 'twicedaily' === $interval ? 43200 : ( 'weekly' === $interval ? 604800 : 86400 );
 
-        if ( time() - $last_sync < $interval_sec ) { continue; }
+        if ( time() - $last_sync < $interval_sec ) {
+            continue;
+        }
 
         tconn_sv_sync_source( $source );
     }

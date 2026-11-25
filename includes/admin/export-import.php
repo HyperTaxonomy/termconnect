@@ -189,7 +189,7 @@ function tconn_handle_import_links(): void {
         exit;
     }
 
-    $raw  = file_get_contents( $_FILES['tconn_import_file']['tmp_name'] );
+    $raw = file_get_contents( $_FILES['tconn_import_file']['tmp_name'] );
     if ( false === $raw ) {
         wp_safe_redirect( add_query_arg( 'tconn-import', 'invalid', admin_url( 'options-general.php?page=termconnect-settings' ) ) );
         exit;
@@ -233,11 +233,11 @@ function tconn_handle_import_links(): void {
     // Restore per-term link values.
     if ( ! empty( $data['term_links'] ) && is_array( $data['term_links'] ) ) {
         foreach ( $data['term_links'] as $entry ) {
-            $taxonomy   = sanitize_key( $entry['taxonomy']   ?? '' );
-            $term_slug  = sanitize_text_field( $entry['term_slug']  ?? '' );
-            $link_slug  = sanitize_key( $entry['link_slug']  ?? '' );
+            $taxonomy   = sanitize_key( $entry['taxonomy'] ?? '' );
+            $term_slug  = sanitize_text_field( $entry['term_slug'] ?? '' );
+            $link_slug  = sanitize_key( $entry['link_slug'] ?? '' );
             $identifier = sanitize_text_field( $entry['identifier'] ?? '' );
-            $label      = sanitize_text_field( $entry['label']      ?? '' );
+            $label      = sanitize_text_field( $entry['label'] ?? '' );
             $fetched_at = (int) ( $entry['fetched_at'] ?? 0 );
 
             if ( '' === $taxonomy || '' === $term_slug || '' === $link_slug || '' === $identifier ) {
@@ -250,14 +250,14 @@ function tconn_handle_import_links(): void {
             }
 
             tconn_set_term_link( $term->term_id, $link_slug, $identifier, $label, $fetched_at );
-            $terms_updated++;
+            ++$terms_updated;
         }
     }
 
     // Restore delegated identity sources.
     if ( ! empty( $data['delegations'] ) && is_array( $data['delegations'] ) ) {
         foreach ( $data['delegations'] as $entry ) {
-            $taxonomy  = sanitize_key( $entry['taxonomy']  ?? '' );
+            $taxonomy  = sanitize_key( $entry['taxonomy'] ?? '' );
             $term_slug = sanitize_text_field( $entry['term_slug'] ?? '' );
             $source    = $entry['source'] ?? array();
 
@@ -297,7 +297,7 @@ function tconn_handle_import_links(): void {
                 update_term_meta( $term->term_id, TCONN_META_ORIGINAL_DESCRIPTION, wp_kses_post( $entry['original_description'] ) );
             }
 
-            $terms_updated++;
+            ++$terms_updated;
         }
     }
 
@@ -305,10 +305,14 @@ function tconn_handle_import_links(): void {
     if ( ! empty( $data['shared_vocabularies'] ) && is_array( $data['shared_vocabularies'] ) ) {
         $clean_sources = array();
         foreach ( $data['shared_vocabularies'] as $src ) {
-            if ( empty( $src['peer_site_slug'] ) ) { continue; }
-            $scope = in_array( $src['scope'] ?? '', array( 'full', 'remote_group', 'roots', 'terms', 'local_group' ), true ) ? $src['scope'] : 'full';
+            if ( empty( $src['peer_site_slug'] ) ) {
+                continue;
+            }
+            $scope             = in_array( $src['scope'] ?? '', array( 'full', 'remote_group', 'roots', 'terms', 'local_group' ), true ) ? $src['scope'] : 'full';
             $taxonomy_optional = in_array( $scope, array( 'local_group', 'remote_group' ), true );
-            if ( ! $taxonomy_optional && empty( $src['taxonomy'] ) ) { continue; }
+            if ( ! $taxonomy_optional && empty( $src['taxonomy'] ) ) {
+                continue;
+            }
             $roots = array();
             if ( in_array( $scope, array( 'roots', 'terms' ), true ) && ! empty( $src['roots'] ) ) {
                 foreach ( (array) $src['roots'] as $r ) {
@@ -380,9 +384,11 @@ function tconn_handle_import_links(): void {
         }
     }
 
-
     wp_safe_redirect( add_query_arg(
-        array( 'tconn-import' => $vocabularies_skipped ? 'no-vocabularies' : 'ok', 'tconn-import-count' => $terms_updated ),
+        array(
+            'tconn-import' => $vocabularies_skipped ? 'no-vocabularies' : 'ok',
+            'tconn-import-count' => $terms_updated,
+        ),
         admin_url( 'options-general.php?page=termconnect-settings' )
     ) );
     exit;

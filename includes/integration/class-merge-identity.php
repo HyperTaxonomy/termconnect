@@ -136,7 +136,7 @@ class TConn_Merge_Identity extends TConn_Operation_Identity {
         } else {
             $ending = self::ending_description( $info, $claim );
         }
-        $ending .= self::reclaim_note( $claim );
+        $ending         .= self::reclaim_note( $claim );
         $choices['drop'] = array(
             'label'       => __( 'Let it end', 'termconnect' ),
             'description' => $ending,
@@ -146,7 +146,11 @@ class TConn_Merge_Identity extends TConn_Operation_Identity {
         $default_no_stub = isset( $choices['target'] ) && 'gone' !== $info['state'] && ! $taken_over ? 'target' : 'drop';
         $default         = isset( $choices['stub'] ) && ! ( 'gone' === $info['state'] && null === $claim ) ? 'stub' : $default_no_stub;
 
-        return array( 'choices' => $choices, 'default' => $default, 'default_no_stub' => $default_no_stub );
+        return array(
+            'choices' => $choices,
+            'default' => $default,
+            'default_no_stub' => $default_no_stub,
+        );
     }
 
     // --------------------------------------------------------------------------
@@ -199,7 +203,7 @@ class TConn_Merge_Identity extends TConn_Operation_Identity {
             if ( null === $identity ) {
                 continue;
             }
-            $info = self::describe( $term, self::check_remote( $identity, $term->taxonomy ) );
+            $info   = self::describe( $term, self::check_remote( $identity, $term->taxonomy ) );
             $notice = self::unreachable_peer_notice( $info );
             if ( $notice ) {
                 $notices[] = $notice;
@@ -350,7 +354,7 @@ class TConn_Merge_Identity extends TConn_Operation_Identity {
                     $info['remote']
                 );
             } elseif ( 'target' === $choice ) {
-                $error = self::move_to_target( (int) $target_id, (string) $taxonomy, $plan );
+                $error            = self::move_to_target( (int) $target_id, (string) $taxonomy, $plan );
                 self::$messages[] = '' === $error
                     /* translators: 1: source term name, 2: remote term slug */
                     ? sprintf( __( '%1$s: the target is now delegated to %2$s.', 'termconnect' ), $plan['name'], $info['remote'] )

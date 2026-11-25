@@ -17,7 +17,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 
 define( 'TCONN_FEED_CATS_KEY', 'tconn_feed_cats_' );
@@ -54,18 +54,18 @@ define( 'TCONN_FEED_CATS_TTL', 90 * DAY_IN_SECONDS );
  * @return bool
  */
 function tconn_validate_uri_prefix( string $uri_prefix ): bool {
-	$parsed = wp_parse_url( $uri_prefix );
-	$scheme = strtolower( $parsed['scheme'] ?? '' );
-	if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
-		return false;
-	}
+    $parsed = wp_parse_url( $uri_prefix );
+    $scheme = strtolower( $parsed['scheme'] ?? '' );
+    if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+        return false;
+    }
 
-	$host = strtolower( $parsed['host'] ?? '' );
-	if ( '' === $host ) {
-		return false;
-	}
+    $host = strtolower( $parsed['host'] ?? '' );
+    if ( '' === $host ) {
+        return false;
+    }
 
-	return false !== wp_http_validate_url( $uri_prefix );
+    return false !== wp_http_validate_url( $uri_prefix );
 }
 
 // =============================================================================
@@ -80,19 +80,19 @@ function tconn_validate_uri_prefix( string $uri_prefix ): bool {
  * @return array { slug: string, label: string }
  */
 function tconn_feed_parse_identifier( string $raw ): array {
-	if ( '' !== $raw && '{' === $raw[0] ) {
-		$decoded = json_decode( $raw, true );
-		if ( is_array( $decoded ) && isset( $decoded['s'] ) ) {
-			return array(
-				'slug'  => (string) $decoded['s'],
-				'label' => (string) ( $decoded['l'] ?? $decoded['s'] ),
-			);
-		}
-	}
-	return array(
-		'slug'  => $raw,
-		'label' => $raw,
-	);
+    if ( '' !== $raw && '{' === $raw[0] ) {
+        $decoded = json_decode( $raw, true );
+        if ( is_array( $decoded ) && isset( $decoded['s'] ) ) {
+            return array(
+                'slug'  => (string) $decoded['s'],
+                'label' => (string) ( $decoded['l'] ?? $decoded['s'] ),
+            );
+        }
+    }
+    return array(
+        'slug'  => $raw,
+        'label' => $raw,
+    );
 }
 
 /**
@@ -103,7 +103,7 @@ function tconn_feed_parse_identifier( string $raw ): array {
  * @return string
  */
 function tconn_feed_display_identifier( string $raw ): string {
-	return tconn_feed_parse_identifier( $raw )['label'];
+    return tconn_feed_parse_identifier( $raw )['label'];
 }
 
 // =============================================================================
@@ -118,39 +118,39 @@ function tconn_feed_display_identifier( string $raw ): string {
  * @return array
  */
 function tconn_feed_normalize_item( $item ): array {
-	$categories = array();
-	$raw_cats   = $item->get_categories();
-	if ( ! is_array( $raw_cats ) ) {
-		$raw_cats = array();
-	}
-	foreach ( $raw_cats as $cat ) {
-		$slug  = (string) $cat->get_term();
-		$label = (string) $cat->get_label();
-		if ( '' === $slug ) {
-			continue;
-		}
-		$categories[] = array(
-			'slug'  => $slug,
-			'label' => '' !== $label ? $label : $slug,
-		);
-	}
+    $categories = array();
+    $raw_cats   = $item->get_categories();
+    if ( ! is_array( $raw_cats ) ) {
+        $raw_cats = array();
+    }
+    foreach ( $raw_cats as $cat ) {
+        $slug  = (string) $cat->get_term();
+        $label = (string) $cat->get_label();
+        if ( '' === $slug ) {
+            continue;
+        }
+        $categories[] = array(
+            'slug'  => $slug,
+            'label' => '' !== $label ? $label : $slug,
+        );
+    }
 
-	$excerpt = (string) $item->get_description();
-	if ( '' === $excerpt ) {
-		$excerpt = (string) $item->get_content();
-	}
-	$excerpt = wp_strip_all_tags( $excerpt );
-	if ( mb_strlen( $excerpt ) > 300 ) {
-		$excerpt = mb_substr( $excerpt, 0, 297 ) . '…';
-	}
+    $excerpt = (string) $item->get_description();
+    if ( '' === $excerpt ) {
+        $excerpt = (string) $item->get_content();
+    }
+    $excerpt = wp_strip_all_tags( $excerpt );
+    if ( mb_strlen( $excerpt ) > 300 ) {
+        $excerpt = mb_substr( $excerpt, 0, 297 ) . '…';
+    }
 
-	return tconn_normalize_post_record( array(
-		'title'      => wp_strip_all_tags( (string) $item->get_title() ),
-		'url'        => (string) $item->get_permalink(),
-		'date_gmt'   => (string) $item->get_gmdate( 'Y-m-d\TH:i:s' ),
-		'excerpt'    => $excerpt,
-		'categories' => $categories, // feed-specific extra; preserved by the normalizer
-	) );
+    return tconn_normalize_post_record( array(
+        'title'      => wp_strip_all_tags( (string) $item->get_title() ),
+        'url'        => (string) $item->get_permalink(),
+        'date_gmt'   => (string) $item->get_gmdate( 'Y-m-d\TH:i:s' ),
+        'excerpt'    => $excerpt,
+        'categories' => $categories, // feed-specific extra; preserved by the normalizer
+    ) );
 }
 
 /**
@@ -166,70 +166,70 @@ function tconn_feed_normalize_item( $item ): array {
  * @param int    $max_posts Maximum number of posts to retain; oldest are pruned.
  */
 function tconn_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_url, int $max_posts = TCONN_FEED_MAX_POSTS_DEFAULT ): void {
-	// Validate the feed URL before fetching to prevent SSRF against internal hosts.
-	if ( ! function_exists( 'tconn_validate_uri_prefix' ) || ! tconn_validate_uri_prefix( $feed_url ) ) {
-		error_log( 'TermConnect: feed URL blocked by SSRF validation: ' . $feed_url );
-		return;
-	}
+    // Validate the feed URL before fetching to prevent SSRF against internal hosts.
+    if ( ! function_exists( 'tconn_validate_uri_prefix' ) || ! tconn_validate_uri_prefix( $feed_url ) ) {
+        error_log( 'TermConnect: feed URL blocked by SSRF validation: ' . $feed_url );
+        return;
+    }
 
-	$feed = fetch_feed( $feed_url );
-	if ( is_wp_error( $feed ) ) {
-		return;
-	}
+    $feed = fetch_feed( $feed_url );
+    if ( is_wp_error( $feed ) ) {
+        return;
+    }
 
-	$items = $feed->get_items();
-	if ( empty( $items ) ) {
-		return;
-	}
+    $items = $feed->get_items();
+    if ( empty( $items ) ) {
+        return;
+    }
 
-	$cats_key  = TCONN_FEED_CATS_KEY . $peer_site_slug;
-	$posts_key = TCONN_FEED_POSTS_KEY . $peer_site_slug;
+    $cats_key  = TCONN_FEED_CATS_KEY . $peer_site_slug;
+    $posts_key = TCONN_FEED_POSTS_KEY . $peer_site_slug;
 
-	$cats = get_transient( $cats_key );
-	$cats = is_array( $cats ) ? $cats : array();
+    $cats = get_transient( $cats_key );
+    $cats = is_array( $cats ) ? $cats : array();
 
-	$posts_map = get_transient( $posts_key );
-	$posts_map = is_array( $posts_map ) ? $posts_map : array();
+    $posts_map = get_transient( $posts_key );
+    $posts_map = is_array( $posts_map ) ? $posts_map : array();
 
-	foreach ( $items as $item ) {
-		$normalized = tconn_feed_normalize_item( $item );
-		$url        = $normalized['url'];
-		if ( '' === $url ) {
-			continue;
-		}
+    foreach ( $items as $item ) {
+        $normalized = tconn_feed_normalize_item( $item );
+        $url        = $normalized['url'];
+        if ( '' === $url ) {
+            continue;
+        }
 
-		foreach ( $normalized['categories'] as $cat ) {
-			if ( '' !== $cat['slug'] && ! isset( $cats[ $cat['slug'] ] ) ) {
-				$cats[ $cat['slug'] ] = $cat['label'];
-			}
-		}
+        foreach ( $normalized['categories'] as $cat ) {
+            if ( '' !== $cat['slug'] && ! isset( $cats[ $cat['slug'] ] ) ) {
+                $cats[ $cat['slug'] ] = $cat['label'];
+            }
+        }
 
-		$posts_map[ $url ] = $normalized;
-	}
+        $posts_map[ $url ] = $normalized;
+    }
 
-	// Trim to max_posts, keeping the most recent by date.
-	if ( count( $posts_map ) > $max_posts ) {
-		uasort(
-			$posts_map,
-			static function ( array $a, array $b ): int {
-				return strcmp( $b['date_gmt'], $a['date_gmt'] );
-			}
-		);
-		$posts_map = array_slice( $posts_map, 0, $max_posts, true );
-	}
+    // Trim to max_posts, keeping the most recent by date.
+    if ( count( $posts_map ) > $max_posts ) {
+        uasort(
+            $posts_map,
+            static function ( array $a, array $b ): int {
+                return strcmp( $b['date_gmt'], $a['date_gmt'] );
+            }
+        );
+        $posts_map = array_slice( $posts_map, 0, $max_posts, true );
+    }
 
-	set_transient( $cats_key, $cats, TCONN_FEED_CATS_TTL );
-	set_transient( $posts_key, $posts_map, TCONN_FEED_POST_TTL );
+    set_transient( $cats_key, $cats, TCONN_FEED_CATS_TTL );
+    set_transient( $posts_key, $posts_map, TCONN_FEED_POST_TTL );
 
-	update_option(
-		'tconn_feed_poll_stat_' . $peer_site_slug,
-		array(
-			'post_count' => count( $posts_map ),
-			'cat_count'  => count( $cats ),
-			'time'       => time(),
-		),
-		false
-	);
+    update_option(
+        'tconn_feed_poll_stat_' . $peer_site_slug,
+        array(
+            'post_count' => count( $posts_map ),
+            'cat_count'  => count( $cats ),
+            'time'       => time(),
+        ),
+        false
+    );
 }
 
 /**
@@ -240,8 +240,8 @@ function tconn_feed_fetch_and_accumulate( string $peer_site_slug, string $feed_u
  * @return array [ slug => label ]
  */
 function tconn_feed_get_categories( string $peer_site_slug ): array {
-	$cached = get_transient( TCONN_FEED_CATS_KEY . $peer_site_slug );
-	return is_array( $cached ) ? $cached : array();
+    $cached = get_transient( TCONN_FEED_CATS_KEY . $peer_site_slug );
+    return is_array( $cached ) ? $cached : array();
 }
 
 /**
@@ -252,8 +252,8 @@ function tconn_feed_get_categories( string $peer_site_slug ): array {
  * @return array
  */
 function tconn_feed_get_cached_posts( string $peer_site_slug ): array {
-	$cached = get_transient( TCONN_FEED_POSTS_KEY . $peer_site_slug );
-	return is_array( $cached ) ? array_values( $cached ) : array();
+    $cached = get_transient( TCONN_FEED_POSTS_KEY . $peer_site_slug );
+    return is_array( $cached ) ? array_values( $cached ) : array();
 }
 
 /**
@@ -263,9 +263,9 @@ function tconn_feed_get_cached_posts( string $peer_site_slug ): array {
  * @param string $peer_site_slug Link type slug.
  */
 function tconn_feed_clear_cache( string $peer_site_slug ): void {
-	delete_transient( TCONN_FEED_CATS_KEY . $peer_site_slug );
-	delete_transient( TCONN_FEED_POSTS_KEY . $peer_site_slug );
-	delete_option( 'tconn_feed_poll_stat_' . $peer_site_slug );
+    delete_transient( TCONN_FEED_CATS_KEY . $peer_site_slug );
+    delete_transient( TCONN_FEED_POSTS_KEY . $peer_site_slug );
+    delete_option( 'tconn_feed_poll_stat_' . $peer_site_slug );
 }
 
 // =============================================================================
@@ -286,37 +286,37 @@ function tconn_feed_clear_cache( string $peer_site_slug ): void {
  * @return array Scored posts (score > 0 only), with tconn_score and origin set.
  */
 function tconn_feed_score_posts( array $posts, array $category_slugs, float $weight_direct, string $origin ): array {
-	if ( empty( $posts ) || empty( $category_slugs ) ) {
-		return array();
-	}
+    if ( empty( $posts ) || empty( $category_slugs ) ) {
+        return array();
+    }
 
-	$max_score   = count( $category_slugs ) * $weight_direct;
-	$lower_slugs = array_map( 'strtolower', $category_slugs );
-	$result      = array();
+    $max_score   = count( $category_slugs ) * $weight_direct;
+    $lower_slugs = array_map( 'strtolower', $category_slugs );
+    $result      = array();
 
-	foreach ( $posts as $post ) {
-		$cats_in_post   = $post['categories'] ?? array();
-		$post_slug_set  = array_map( static fn( $c ) => strtolower( $c['slug'] ), $cats_in_post );
-		$post_label_set = array_map( static fn( $c ) => strtolower( $c['label'] ), $cats_in_post );
+    foreach ( $posts as $post ) {
+        $cats_in_post   = $post['categories'] ?? array();
+        $post_slug_set  = array_map( static fn( $c ) => strtolower( $c['slug'] ), $cats_in_post );
+        $post_label_set = array_map( static fn( $c ) => strtolower( $c['label'] ), $cats_in_post );
 
-		$raw_score = 0.0;
-		foreach ( $lower_slugs as $needle ) {
-			if ( in_array( $needle, $post_slug_set, true ) || in_array( $needle, $post_label_set, true ) ) {
-				$raw_score += $weight_direct;
-			}
-		}
+        $raw_score = 0.0;
+        foreach ( $lower_slugs as $needle ) {
+            if ( in_array( $needle, $post_slug_set, true ) || in_array( $needle, $post_label_set, true ) ) {
+                $raw_score += $weight_direct;
+            }
+        }
 
-		if ( $raw_score <= 0.0 ) {
-			continue;
-		}
+        if ( $raw_score <= 0.0 ) {
+            continue;
+        }
 
-		$post['score'] = $max_score > 0.0 ? min( $raw_score / $max_score, 1.0 ) : 0.0;
-		$post['ht_scored']  = true;
-		$post['origin']     = $origin;
-		$result[]           = $post;
-	}
+        $post['score']     = $max_score > 0.0 ? min( $raw_score / $max_score, 1.0 ) : 0.0;
+        $post['ht_scored'] = true;
+        $post['origin']    = $origin;
+        $result[]          = $post;
+    }
 
-	return $result;
+    return $result;
 }
 
 // =============================================================================
@@ -330,13 +330,13 @@ function tconn_feed_score_posts( array $posts, array $category_slugs, float $wei
  * @param string $peer_site_slug Link type slug.
  */
 function tconn_feed_do_poll( string $peer_site_slug ): void {
-	$type = tconn_get_link_type( $peer_site_slug );
-	if ( null === $type || ( $type['platform'] ?? '' ) !== 'feed' || empty( $type['enabled'] ) ) {
-		return;
-	}
+    $type = tconn_get_link_type( $peer_site_slug );
+    if ( null === $type || ( $type['platform'] ?? '' ) !== 'feed' || empty( $type['enabled'] ) ) {
+        return;
+    }
 
-	$max_posts = (int) ( $type['max_cached_posts'] ?? TCONN_FEED_MAX_POSTS_DEFAULT );
-	tconn_feed_fetch_and_accumulate( $peer_site_slug, $type['uri_prefix'], $max_posts );
+    $max_posts = (int) ( $type['max_cached_posts'] ?? TCONN_FEED_MAX_POSTS_DEFAULT );
+    tconn_feed_fetch_and_accumulate( $peer_site_slug, $type['uri_prefix'], $max_posts );
 }
 add_action( 'tconn_feed_poll', 'tconn_feed_do_poll' );
 
@@ -351,16 +351,16 @@ add_action( 'tconn_feed_poll', 'tconn_feed_do_poll' );
  * @param int    $interval Poll interval in seconds (minimum 300).
  */
 function tconn_feed_schedule( string $peer_site_slug, int $interval ): void {
-	$interval = max( 300, min( 86400, $interval ) );
-	$hook     = 'tconn_feed_poll';
-	$args     = array( $peer_site_slug );
-	$existing = wp_next_scheduled( $hook, $args );
+    $interval = max( 300, min( 86400, $interval ) );
+    $hook     = 'tconn_feed_poll';
+    $args     = array( $peer_site_slug );
+    $existing = wp_next_scheduled( $hook, $args );
 
-	if ( $existing ) {
-		wp_unschedule_event( $existing, $hook, $args );
-	}
+    if ( $existing ) {
+        wp_unschedule_event( $existing, $hook, $args );
+    }
 
-	wp_schedule_event( time(), 'tconn_' . $interval . 's', $hook, $args );
+    wp_schedule_event( time(), 'tconn_' . $interval . 's', $hook, $args );
 }
 
 /**
@@ -369,22 +369,22 @@ function tconn_feed_schedule( string $peer_site_slug, int $interval ): void {
  * @since 1.0.0
  */
 function tconn_feed_reschedule_after_activation(): void {
-	// The flag stays stored, autoloaded, as 0: a missing option would cost a query on every load.
-	$flag = get_option( 'tconn_feed_reschedule', null );
-	if ( null === $flag ) {
-		add_option( 'tconn_feed_reschedule', 0, '', true );
-		return;
-	}
-	if ( ! $flag ) {
-		return;
-	}
-	update_option( 'tconn_feed_reschedule', 0, true );
+    // The flag stays stored, autoloaded, as 0: a missing option would cost a query on every load.
+    $flag = get_option( 'tconn_feed_reschedule', null );
+    if ( null === $flag ) {
+        add_option( 'tconn_feed_reschedule', 0, '', true );
+        return;
+    }
+    if ( ! $flag ) {
+        return;
+    }
+    update_option( 'tconn_feed_reschedule', 0, true );
 
-	foreach ( tconn_get_all_link_types() as $slug => $type ) {
-		if ( 'feed' === ( $type['platform'] ?? '' ) && ! empty( $type['enabled'] ) ) {
-			tconn_feed_schedule( (string) $slug, (int) ( $type['poll_interval'] ?? 3600 ) );
-		}
-	}
+    foreach ( tconn_get_all_link_types() as $slug => $type ) {
+        if ( 'feed' === ( $type['platform'] ?? '' ) && ! empty( $type['enabled'] ) ) {
+            tconn_feed_schedule( (string) $slug, (int) ( $type['poll_interval'] ?? 3600 ) );
+        }
+    }
 }
 add_action( 'init', 'tconn_feed_reschedule_after_activation' );
 
@@ -395,12 +395,12 @@ add_action( 'init', 'tconn_feed_reschedule_after_activation' );
  * @param string $peer_site_slug Link type slug.
  */
 function tconn_feed_unschedule( string $peer_site_slug ): void {
-	$hook      = 'tconn_feed_poll';
-	$args      = array( $peer_site_slug );
-	$timestamp = wp_next_scheduled( $hook, $args );
-	if ( $timestamp ) {
-		wp_unschedule_event( $timestamp, $hook, $args );
-	}
+    $hook      = 'tconn_feed_poll';
+    $args      = array( $peer_site_slug );
+    $timestamp = wp_next_scheduled( $hook, $args );
+    if ( $timestamp ) {
+        wp_unschedule_event( $timestamp, $hook, $args );
+    }
 }
 
 /**
@@ -411,20 +411,20 @@ function tconn_feed_unschedule( string $peer_site_slug ): void {
  * @return array
  */
 function tconn_feed_cron_schedules( array $schedules ): array {
-	foreach ( tconn_get_all_link_types() as $type ) {
-		if ( ( $type['platform'] ?? '' ) !== 'feed' ) {
-			continue;
-		}
-		$interval = max( 300, min( 86400, (int) ( $type['poll_interval'] ?? 3600 ) ) );
-		$key      = 'tconn_' . $interval . 's';
-		if ( ! isset( $schedules[ $key ] ) ) {
-			$schedules[ $key ] = array(
-				'interval' => $interval,
-				/* translators: %d: number of seconds */
-				'display'  => sprintf( __( 'Every %d seconds (TermConnect feed)', 'termconnect' ), $interval ),
-			);
-		}
-	}
-	return $schedules;
+    foreach ( tconn_get_all_link_types() as $type ) {
+        if ( ( $type['platform'] ?? '' ) !== 'feed' ) {
+            continue;
+        }
+        $interval = max( 300, min( 86400, (int) ( $type['poll_interval'] ?? 3600 ) ) );
+        $key      = 'tconn_' . $interval . 's';
+        if ( ! isset( $schedules[ $key ] ) ) {
+            $schedules[ $key ] = array(
+                'interval' => $interval,
+                /* translators: %d: number of seconds */
+                'display'  => sprintf( __( 'Every %d seconds (TermConnect feed)', 'termconnect' ), $interval ),
+            );
+        }
+    }
+    return $schedules;
 }
 add_filter( 'cron_schedules', 'tconn_feed_cron_schedules' );

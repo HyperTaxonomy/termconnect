@@ -45,7 +45,10 @@ class TConn_Vocabulary_Coverage {
         $claimants   = array();
         $unreachable = array();
         if ( '' === $slug ) {
-            return array( 'claimants' => $claimants, 'unreachable' => $unreachable );
+            return array(
+                'claimants' => $claimants,
+                'unreachable' => $unreachable,
+            );
         }
         if ( ! function_exists( 'tconn_sv_sort_sources' ) ) {
             require_once TCONN_PLUGIN_DIR . 'includes/admin/shared-vocabulary-sync.php';
@@ -66,10 +69,16 @@ class TConn_Vocabulary_Coverage {
             if ( null === $covers ) {
                 $unreachable[ $peer ] = $peer;
             } elseif ( $covers ) {
-                $claimants[] = array( 'source' => $source, 'peer' => $peer );
+                $claimants[] = array(
+                    'source' => $source,
+                    'peer' => $peer,
+                );
             }
         }
-        return array( 'claimants' => $claimants, 'unreachable' => array_values( $unreachable ) );
+        return array(
+            'claimants' => $claimants,
+            'unreachable' => array_values( $unreachable ),
+        );
     }
 
     /**

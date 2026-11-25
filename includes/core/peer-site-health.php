@@ -21,13 +21,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Failure count at which backoff begins.
-const TCONN_PEER_DEGRADED_THRESHOLD    = 3;
+const TCONN_PEER_DEGRADED_THRESHOLD = 3;
 // Failure count at which the site is considered unreachable.
 const TCONN_PEER_UNREACHABLE_THRESHOLD = 10;
 // TTL multiplier applied when degraded.
-const TCONN_PEER_DEGRADED_MULTIPLIER   = 4;
+const TCONN_PEER_DEGRADED_MULTIPLIER = 4;
 // Fixed backoff TTL (seconds) when unreachable.
-const TCONN_PEER_UNREACHABLE_TTL       = 86400;
+const TCONN_PEER_UNREACHABLE_TTL = 86400;
 // Minimum seconds between persisted option writes for failures that don't
 // change status (see tconn_peer_site_health_record_failure()).
 const TCONN_PEER_HEALTH_MIN_WRITE_INTERVAL = 60;
@@ -290,7 +290,10 @@ function tconn_peer_site_health_check(): array {
         return array(
             'label'       => __( 'All TermConnect peer sites are reachable', 'termconnect' ),
             'status'      => 'good',
-            'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
+            'badge'       => array(
+                'label' => __( 'TermConnect', 'termconnect' ),
+                'color' => 'blue',
+            ),
             'description' => '',
             'test'        => 'tconn_peer_sites',
         );
@@ -298,7 +301,7 @@ function tconn_peer_site_health_check(): array {
 
     $rows = array();
     foreach ( $unhealthy as $slug => $state ) {
-        $since = $state['last_failure'] ? human_time_diff( $state['last_failure'] ) . ' ago' : 'unknown';
+        $since  = $state['last_failure'] ? human_time_diff( $state['last_failure'] ) . ' ago' : 'unknown';
         $rows[] = sprintf(
             '<li><strong>%s</strong> — %s (%s, last error: %s)</li>',
             esc_html( $state['label'] ),
@@ -320,7 +323,10 @@ function tconn_peer_site_health_check(): array {
             count( $unhealthy )
         ),
         'status'      => 'recommended',
-        'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'orange' ),
+        'badge'       => array(
+            'label' => __( 'TermConnect', 'termconnect' ),
+            'color' => 'orange',
+        ),
         'description' => '<ul>' . implode( '', $rows ) . '</ul>',
         'test'        => 'tconn_peer_sites',
     );

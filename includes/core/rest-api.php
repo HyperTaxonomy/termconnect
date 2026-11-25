@@ -122,7 +122,7 @@ function tconn_rest_get_tc_links_field( array $term_data, string $field_name, WP
 
 add_action( 'rest_api_init', static function () {
     foreach ( TConn_Settings::get_enabled_taxonomies() as $taxonomy ) {
-        add_filter( "rest_{$taxonomy}_query",             'tconn_rest_link_filter_query',            10, 2 );
+        add_filter( "rest_{$taxonomy}_query", 'tconn_rest_link_filter_query', 10, 2 );
         add_filter( "rest_{$taxonomy}_collection_params", 'tconn_rest_link_filter_collection_params' );
     }
 } );

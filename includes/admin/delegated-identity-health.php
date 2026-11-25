@@ -50,7 +50,7 @@ add_action( 'admin_enqueue_scripts', function ( string $hook ): void {
 } );
 
 add_filter( 'site_status_tests', function ( array $tests ): array {
-    $tests['direct']['tconn_delegated_identity'] = array(
+    $tests['direct']['tconn_delegated_identity']  = array(
         'label' => __( 'TermConnect delegated identity', 'termconnect' ),
         'test'  => 'tconn_health_check_delegated_identity',
     );
@@ -79,7 +79,10 @@ function tconn_health_check_delegated_identity(): array {
         return array(
             'label'       => __( 'No delegated identity terms configured', 'termconnect' ),
             'status'      => 'good',
-            'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
+            'badge'       => array(
+                'label' => __( 'TermConnect', 'termconnect' ),
+                'color' => 'blue',
+            ),
             'description' => '',
             'test'        => 'tconn_delegated_identity',
         );
@@ -114,7 +117,10 @@ function tconn_health_check_delegated_identity(): array {
                 );
                 break;
             case 'unreachable':
-                $unreachable[] = array( 'label' => $label, 'target' => $target );
+                $unreachable[] = array(
+                    'label' => $label,
+                    'target' => $target,
+                );
                 break;
             case 'not_found':
                 $not_found[] = array(
@@ -142,7 +148,10 @@ function tconn_health_check_delegated_identity(): array {
                 count( $rows )
             ),
             'status'      => 'good',
-            'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
+            'badge'       => array(
+                'label' => __( 'TermConnect', 'termconnect' ),
+                'color' => 'blue',
+            ),
             'description' => '',
             'test'        => 'tconn_delegated_identity',
         );
@@ -214,7 +223,10 @@ function tconn_health_check_delegated_identity(): array {
             $issues
         ),
         'status'      => 'recommended',
-        'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'orange' ),
+        'badge'       => array(
+            'label' => __( 'TermConnect', 'termconnect' ),
+            'color' => 'orange',
+        ),
         'description' => $description,
         'test'        => 'tconn_delegated_identity',
     );
@@ -243,11 +255,16 @@ function tconn_health_check_shared_vocabularies(): array {
     $orphaned = array();
     foreach ( $rows as $row ) {
         $source = maybe_unserialize( $row->meta_value );
-        if ( ! is_array( $source ) || empty( $source['peer_site_slug'] ) ) { continue; }
+        if ( ! is_array( $source ) || empty( $source['peer_site_slug'] ) ) {
+            continue;
+        }
         if ( ( $source['status'] ?? '' ) === 'not_found' ) {
-            $term  = get_term( (int) $row->term_id );
-            $label = ( $term && ! is_wp_error( $term ) ) ? $term->name : '#' . $row->term_id;
-            $orphaned[] = array( 'label' => $label, 'target' => esc_html( $source['remote_slug'] ?? '' ) );
+            $term       = get_term( (int) $row->term_id );
+            $label      = ( $term && ! is_wp_error( $term ) ) ? $term->name : '#' . $row->term_id;
+            $orphaned[] = array(
+                'label' => $label,
+                'target' => esc_html( $source['remote_slug'] ?? '' ),
+            );
         }
     }
 
@@ -266,8 +283,8 @@ function tconn_health_check_shared_vocabularies(): array {
     }
 
     if ( ! empty( $misplaced ) ) {
-        $issues[] = count( $misplaced );
-        $sv_url   = admin_url( 'admin.php?page=tconn-shared-vocabularies' );
+        $issues[]     = count( $misplaced );
+        $sv_url       = admin_url( 'admin.php?page=tconn-shared-vocabularies' );
         $description .= '<p><strong>' . esc_html__( 'Terms in wrong position', 'termconnect' ) . '</strong> — ';
         $description .= sprintf(
             /* translators: %1$d: number of mirrored terms, %2$s: Shared Vocabularies page URL */
@@ -279,7 +296,7 @@ function tconn_health_check_shared_vocabularies(): array {
     }
 
     if ( ! empty( $orphaned ) ) {
-        $issues[] = count( $orphaned );
+        $issues[]     = count( $orphaned );
         $description .= '<p><strong>' . esc_html__( 'Orphaned mirrored terms', 'termconnect' ) . '</strong> — ';
         $description .= esc_html__( 'These terms were mirrored from a peer but the remote term no longer exists. Review and end delegation or delete the local term if it is no longer needed.', 'termconnect' );
         $description .= '</p><ul>';
@@ -299,7 +316,7 @@ function tconn_health_check_shared_vocabularies(): array {
         }
         $sv_id = $source['sv_source_id'] ?? '';
         if ( $sv_id && ! in_array( $sv_id, $valid_sv_ids, true ) ) {
-            $dangling_count++;
+            ++$dangling_count;
         }
     }
     if ( $dangling_count > 0 ) {
@@ -353,7 +370,10 @@ function tconn_health_check_shared_vocabularies(): array {
                 ? sprintf( _n( '%d shared vocabulary source is healthy', '%d shared vocabulary sources are healthy', $source_count, 'termconnect' ), $source_count )
                 : __( 'No shared vocabulary sources configured', 'termconnect' ),
             'status'      => 'good',
-            'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'blue' ),
+            'badge'       => array(
+                'label' => __( 'TermConnect', 'termconnect' ),
+                'color' => 'blue',
+            ),
             'description' => '',
             'test'        => 'tconn_shared_vocabularies',
         );
@@ -366,7 +386,10 @@ function tconn_health_check_shared_vocabularies(): array {
             $total
         ),
         'status'      => 'recommended',
-        'badge'       => array( 'label' => __( 'TermConnect', 'termconnect' ), 'color' => 'orange' ),
+        'badge'       => array(
+            'label' => __( 'TermConnect', 'termconnect' ),
+            'color' => 'orange',
+        ),
         'description' => $description,
         'actions'     => '<a href="' . esc_url( admin_url( 'admin.php?page=tconn-shared-vocabularies' ) ) . '">'
                          . esc_html__( 'Open Shared Vocabularies', 'termconnect' ) . '</a>',

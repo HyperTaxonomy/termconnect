@@ -31,9 +31,9 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
     // Register the column header on both edit-tags and term screens — Screen Options
     // for a taxonomy is shared between the list and edit pages, so the column must be
     // registered on both to appear in Screen Options on the individual term edit page.
-    add_filter( "manage_edit-{$taxonomy}_columns",          'tconn_add_ext_links_column',           99 );
-    add_filter( "manage_edit-{$taxonomy}_sortable_columns", 'tconn_make_ext_links_column_sortable',  99 );
-    add_filter( "manage_edit-{$taxonomy}_columns",          'tconn_add_di_issues_column',           100 );
+    add_filter( "manage_edit-{$taxonomy}_columns", 'tconn_add_ext_links_column', 99 );
+    add_filter( "manage_edit-{$taxonomy}_sortable_columns", 'tconn_make_ext_links_column_sortable', 99 );
+    add_filter( "manage_edit-{$taxonomy}_columns", 'tconn_add_di_issues_column', 100 );
     add_filter( "manage_edit-{$taxonomy}_sortable_columns", 'tconn_make_di_issues_column_sortable', 100 );
 
     // Hide Links and Sync columns by default.
@@ -49,22 +49,25 @@ add_action( 'current_screen', static function ( WP_Screen $screen ): void {
         return;
     }
 
-    add_filter( "manage_{$taxonomy}_custom_column",         'tconn_render_ext_links_column',        99, 3 );
-    add_filter( "manage_{$taxonomy}_custom_column",         'tconn_render_di_issues_column',       100, 3 );
-    add_filter( 'terms_clauses',                            'tconn_sort_terms_by_ext_links',        10, 3 );
-    add_filter( 'terms_clauses',                            'tconn_sort_terms_by_di_issues',        10, 3 );
-    add_action( 'parse_term_query',                         'tconn_apply_ext_links_filter' );
-    add_action( 'parse_term_query',                         'tconn_apply_di_issues_filter' );
-    add_action( 'admin_footer',                             'tconn_ext_links_filter_sync_script' );
+    add_filter( "manage_{$taxonomy}_custom_column", 'tconn_render_ext_links_column', 99, 3 );
+    add_filter( "manage_{$taxonomy}_custom_column", 'tconn_render_di_issues_column', 100, 3 );
+    add_filter( 'terms_clauses', 'tconn_sort_terms_by_ext_links', 10, 3 );
+    add_filter( 'terms_clauses', 'tconn_sort_terms_by_di_issues', 10, 3 );
+    add_action( 'parse_term_query', 'tconn_apply_ext_links_filter' );
+    add_action( 'parse_term_query', 'tconn_apply_di_issues_filter' );
+    add_action( 'admin_footer', 'tconn_ext_links_filter_sync_script' );
 
     // Build link-type options for the JS-injected filter (WP fires restrict_manage_terms,
     // not restrict_manage_{taxonomy}, so PHP-only output is unreliable).
-    $link_types = function_exists( 'tconn_get_enabled_link_types_for_taxonomy' )
+    $link_types        = function_exists( 'tconn_get_enabled_link_types_for_taxonomy' )
         ? tconn_get_enabled_link_types_for_taxonomy( $taxonomy )
         : array();
     $link_type_options = array();
     foreach ( $link_types as $slug => $type ) {
-        $link_type_options[] = array( 'slug' => $slug, 'label' => $type['label'] );
+        $link_type_options[] = array(
+            'slug' => $slug,
+            'label' => $type['label'],
+        );
     }
 
     $filter_config = array(
@@ -204,7 +207,7 @@ function tconn_render_ext_links_column( string $output, string $column, int $ter
         return $output;
     }
 
-    $count = tconn_count_ext_links_for_term( $term_id );
+    $count    = tconn_count_ext_links_for_term( $term_id );
     $edit_url = get_edit_term_link( $term_id );
 
     if ( $count > 0 ) {
@@ -229,7 +232,7 @@ function tconn_count_ext_links_for_term( int $term_id ): int {
         if ( 0 === strpos( (string) $key, '_tconn_link_' ) ) {
             foreach ( (array) $values as $value ) {
                 if ( '' !== (string) $value ) {
-                    $count++;
+                    ++$count;
                 }
             }
         }
@@ -264,7 +267,7 @@ function tconn_sort_terms_by_ext_links( array $clauses, array $taxonomies, array
           AND tm.meta_key LIKE '\_tconn\_link\_%'
           AND tm.meta_value != ''
     ) {$order}";
-    $clauses['order'] = '';
+    $clauses['order']   = '';
 
     return $clauses;
 }
@@ -294,7 +297,7 @@ function tconn_sort_terms_by_di_issues( array $clauses, array $taxonomies, array
         ) {$order}",
         TCONN_META_REL_SYNC_ISSUES
     );
-    $clauses['order'] = '';
+    $clauses['order']   = '';
 
     return $clauses;
 }
@@ -323,14 +326,14 @@ function tconn_apply_ext_links_filter( WP_Term_Query $query ): void {
     global $wpdb;
 
     if ( 'yes' === $filter ) {
-        $ids = $wpdb->get_col(
+        $ids                          = $wpdb->get_col(
             "SELECT DISTINCT term_id FROM {$wpdb->termmeta}
              WHERE meta_key LIKE '\_tconn\_link\_%' AND meta_value != ''"
         );
         $query->query_vars['include'] = array_map( 'intval', $ids ) ?: array( 0 );
 
     } elseif ( 'no' === $filter ) {
-        $ids = $wpdb->get_col(
+        $ids                          = $wpdb->get_col(
             "SELECT DISTINCT term_id FROM {$wpdb->termmeta}
              WHERE meta_key LIKE '\_tconn\_link\_%' AND meta_value != ''"
         );
@@ -339,7 +342,7 @@ function tconn_apply_ext_links_filter( WP_Term_Query $query ): void {
     } elseif ( 0 === strpos( $filter, 'lt:' ) ) {
         $slug = sanitize_key( substr( $filter, 3 ) );
         if ( '' !== $slug ) {
-            $ids = $wpdb->get_col( $wpdb->prepare(
+            $ids                          = $wpdb->get_col( $wpdb->prepare(
                 "SELECT DISTINCT term_id FROM {$wpdb->termmeta}
                  WHERE meta_key = %s AND meta_value != ''",
                 '_tconn_link_' . $slug
@@ -364,17 +367,17 @@ function tconn_apply_di_issues_filter( WP_Term_Query $query ): void {
     }
 
     if ( 'not_delegated' === $filter ) {
-        $ids = tconn_get_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE );
+        $ids                          = tconn_get_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE );
         $query->query_vars['exclude'] = $ids ?: array( 0 );
 
     } elseif ( 'synced' === $filter ) {
-        $delegated = tconn_get_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE );
-        $stale     = tconn_get_term_ids_with_meta( TCONN_META_REL_SYNC_ISSUES );
-        $synced    = array_values( array_diff( $delegated, $stale ) );
+        $delegated                    = tconn_get_term_ids_with_meta( TCONN_META_IDENTITY_SOURCE );
+        $stale                        = tconn_get_term_ids_with_meta( TCONN_META_REL_SYNC_ISSUES );
+        $synced                       = array_values( array_diff( $delegated, $stale ) );
         $query->query_vars['include'] = $synced ?: array( 0 );
 
     } elseif ( 'stale' === $filter ) {
-        $ids = tconn_get_term_ids_with_meta( TCONN_META_REL_SYNC_ISSUES );
+        $ids                          = tconn_get_term_ids_with_meta( TCONN_META_REL_SYNC_ISSUES );
         $query->query_vars['include'] = $ids ?: array( 0 );
     }
 }

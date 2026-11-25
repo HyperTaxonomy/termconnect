@@ -121,9 +121,9 @@ function tconn_add_delegated_identity_field( $term ): void {
 /**
  * Render the field when NO identity source is set.
  *
- * @param int              $term_id    0 on add form.
- * @param WP_Term|string   $term
- * @param array            $peer_sites Enabled WordPress peer link types, keyed by slug.
+ * @param int            $term_id    0 on add form.
+ * @param WP_Term|string $term
+ * @param array          $peer_sites Enabled WordPress peer link types, keyed by slug.
  */
 function tconn_render_delegated_identity_empty( int $term_id, $term, array $peer_sites ): void {
     $local_slug = is_object( $term ) ? $term->slug : '';
@@ -238,13 +238,13 @@ function tconn_render_delegated_identity_empty( int $term_id, $term, array $peer
  * @param array $source  Identity source meta.
  */
 function tconn_render_delegated_identity_active( int $term_id, array $source ): void {
-    $peer_site_slug      = $source['peer_site_slug'];
-    $remote_slug  = $source['remote_slug'];
-    $remote_link  = $source['remote_link'] ?? '';
-    $site_url     = $source['site_url'];
-    $status       = $source['status'] ?? 'active';
-    $last_fetched = $source['last_fetched'] ?? 0;
-    $nonce        = wp_create_nonce( 'tconn_admin' );
+    $peer_site_slug = $source['peer_site_slug'];
+    $remote_slug    = $source['remote_slug'];
+    $remote_link    = $source['remote_link'] ?? '';
+    $site_url       = $source['site_url'];
+    $status         = $source['status'] ?? 'active';
+    $last_fetched   = $source['last_fetched'] ?? 0;
+    $nonce          = wp_create_nonce( 'tconn_admin' );
 
     $link_type  = tconn_get_link_type( $peer_site_slug );
     $site_label = $link_type ? $link_type['label'] : ( wp_parse_url( $site_url, PHP_URL_HOST ) ?: $site_url );
@@ -276,10 +276,10 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
     // Manual delegations (no sv_source_id) and 'terms' scope are always removable.
     // For 'roots' scope, only the listed root terms are removable; descendants are not.
     // 'full', 'local_group', and 'remote_group' scope terms are managed via the Shared Vocabularies page.
-    $sv_source_id  = $source['sv_source_id'] ?? '';
-    $removable     = true;
-    $sv_scope      = '';
-    $sv_scope_tab  = '';
+    $sv_source_id   = $source['sv_source_id'] ?? '';
+    $removable      = true;
+    $sv_scope       = '';
+    $sv_scope_tab   = '';
     $sv_scope_label = '';
     $sv_scope_type  = '';
     $sv_name        = '';
@@ -288,14 +288,29 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
         $sv_config = tconn_sv_get_source( (string) $sv_source_id );
 
         if ( $sv_config ) {
-            $sv_name  = $sv_config['sv_name'] ?? '';
-            $sv_scope = $sv_config['scope'] ?? '';
-            $scope_tabs = array(
-                'full'         => array( 'tab' => 'full',         'label' => __( 'Taxonomies', 'termconnect' ) ),
-                'remote_group' => array( 'tab' => 'remote_group', 'label' => __( 'Remote Groups', 'termconnect' ) ),
-                'local_group'  => array( 'tab' => 'local_group',  'label' => __( 'Local Groups', 'termconnect' ) ),
-                'roots'        => array( 'tab' => 'roots',        'label' => __( 'Term Hierarchies', 'termconnect' ) ),
-                'terms'        => array( 'tab' => 'terms',        'label' => __( 'Individual Terms', 'termconnect' ) ),
+            $sv_name       = $sv_config['sv_name'] ?? '';
+            $sv_scope      = $sv_config['scope'] ?? '';
+            $scope_tabs    = array(
+                'full'         => array(
+                    'tab' => 'full',
+                    'label' => __( 'Taxonomies', 'termconnect' ),
+                ),
+                'remote_group' => array(
+                    'tab' => 'remote_group',
+                    'label' => __( 'Remote Groups', 'termconnect' ),
+                ),
+                'local_group'  => array(
+                    'tab' => 'local_group',
+                    'label' => __( 'Local Groups', 'termconnect' ),
+                ),
+                'roots'        => array(
+                    'tab' => 'roots',
+                    'label' => __( 'Term Hierarchies', 'termconnect' ),
+                ),
+                'terms'        => array(
+                    'tab' => 'terms',
+                    'label' => __( 'Individual Terms', 'termconnect' ),
+                ),
             );
             $sv_scope_tab  = $scope_tabs[ $sv_scope ]['tab'] ?? 'full';
             $sv_scope_type = array(
@@ -323,7 +338,9 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
                             $ancestor_src = get_term_meta( $ancestor_id, TCONN_META_IDENTITY_SOURCE, true );
                             if ( is_array( $ancestor_src ) ) {
                                 $root_name = $root_slug_names[ $ancestor_src['remote_slug'] ?? '' ] ?? '';
-                                if ( $root_name ) { break; }
+                                if ( $root_name ) {
+                                    break;
+                                }
                             }
                         }
                     }
@@ -367,7 +384,7 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
                     <?php echo esc_html( $site_label ); ?>: <?php echo esc_html( $remote_slug ); ?>&nbsp;&#x2197;
                 </a>
                 <?php else : ?>
-                <?php echo esc_html( $site_label ); ?>: <?php echo esc_html( $remote_slug ); ?>
+                    <?php echo esc_html( $site_label ); ?>: <?php echo esc_html( $remote_slug ); ?>
                 <?php endif; ?>
                 <?php if ( $removable ) : ?>
                 <button type="button" class="tconn-link-pill-remove tconn-di-remove-btn"
@@ -388,13 +405,13 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
             </span>
             <?php if ( $last_fetched ) : ?>
             &mdash;
-            <?php
-            printf(
+                <?php
+                printf(
                 /* translators: %s: relative time string */
                 esc_html__( 'cached %s ago', 'termconnect' ),
                 esc_html( human_time_diff( $last_fetched ) )
-            );
-            ?>
+                );
+                ?>
             <?php endif; ?>
             <?php if ( ! $sv_source_id ) : ?>
             &mdash;
@@ -452,8 +469,8 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
         <?php endif; ?>
 
         <?php
-        $rel_sync_issues = get_term_meta( $term_id, TCONN_META_REL_SYNC_ISSUES, true );
-        $peer_sync_issues       = array();
+        $rel_sync_issues  = get_term_meta( $term_id, TCONN_META_REL_SYNC_ISSUES, true );
+        $peer_sync_issues = array();
         if ( ! empty( $rel_sync_issues ) && is_array( $rel_sync_issues ) ) :
             // Filter to issues for this peer link type.
             $peer_sync_issues = array_filter(
@@ -462,7 +479,7 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
             );
         endif;
         if ( ! empty( $peer_sync_issues ) ) :
-        ?>
+            ?>
         <div style="margin-top:8px;background:#fff8e5;border:1px solid #d6a700;border-radius:3px;padding:8px 12px">
             <strong><?php esc_html_e( 'Stale relationship rows', 'termconnect' ); ?></strong>
             <p style="margin:4px 0">
@@ -480,25 +497,28 @@ function tconn_render_delegated_identity_active( int $term_id, array $source ): 
                 ?>
             </p>
             <ul style="margin:4px 0 0 16px;list-style:disc">
-                <?php foreach ( $peer_sync_issues as $issue ) :
-                    $rel_type      = $issue['relationship_type'] ?? '';
-                    $target_id     = (int) ( $issue['target_term_id'] ?? 0 );
-                    $target_term   = $target_id ? get_term( $target_id ) : null;
-                    $target_label  = ( $target_term && ! is_wp_error( $target_term ) ) ? $target_term->name : '#' . $target_id;
-                    $detected_at   = (int) ( $issue['detected_at'] ?? 0 );
-                ?>
+                <?php
+                foreach ( $peer_sync_issues as $issue ) :
+                    $rel_type     = $issue['relationship_type'] ?? '';
+                    $target_id    = (int) ( $issue['target_term_id'] ?? 0 );
+                    $target_term  = $target_id ? get_term( $target_id ) : null;
+                    $target_label = ( $target_term && ! is_wp_error( $target_term ) ) ? $target_term->name : '#' . $target_id;
+                    $detected_at  = (int) ( $issue['detected_at'] ?? 0 );
+                    ?>
                 <li>
                     <strong><?php echo esc_html( $rel_type ); ?></strong>
                     &rarr; <?php echo esc_html( $target_label ); ?>
                     <?php if ( $detected_at ) : ?>
                     <span class="description" style="font-size:11px">
-                        (<?php
+                        (
+                        <?php
                         printf(
                             /* translators: %s: relative time string */
                             esc_html__( 'first detected %s ago', 'termconnect' ),
                             esc_html( human_time_diff( $detected_at ) )
-                        );
-                        ?>)
+                         );
+                        ?>
+                        )
                     </span>
                     <?php endif; ?>
                 </li>

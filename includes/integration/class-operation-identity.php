@@ -50,8 +50,8 @@ abstract class TConn_Operation_Identity {
         }
 
         $source = tconn_sv_get_source( (string) ( $identity['sv_source_id'] ?? '' ) ) ?? array();
-        $scope = (string) ( $source['scope'] ?? '' );
-        $kind  = '' === $scope ? 'manual' : ( 'local_group' === $scope ? 'local' : 'remote' );
+        $scope  = (string) ( $source['scope'] ?? '' );
+        $kind   = '' === $scope ? 'manual' : ( 'local_group' === $scope ? 'local' : 'remote' );
 
         $is_root = 'roots' === $scope && in_array(
             $identity['remote_slug'],

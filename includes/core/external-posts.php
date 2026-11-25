@@ -66,7 +66,7 @@ function tconn_is_self_origin( string $origin ): bool {
     $normalize = static function ( string $url ): string {
         return rtrim( strtolower( preg_replace( '#^https?://#i', '', $url ) ), '/' );
     };
-    $n = $normalize( $origin );
+    $n         = $normalize( $origin );
     return $n === $normalize( home_url() ) || $n === $normalize( site_url() );
 }
 
@@ -379,7 +379,10 @@ function tconn_external_get_term_data( string $origin, string $taxonomy, int $te
 
     $response = wp_remote_get( $url, tconn_external_request_args( 5, tconn_external_peer_headers() ) );
 
-    $empty = array( 'htax_includes' => array(), 'tconn_links' => array() );
+    $empty = array(
+        'htax_includes' => array(),
+        'tconn_links' => array(),
+    );
 
     if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
         set_transient( $cache_key, $empty, 300 );
@@ -394,7 +397,7 @@ function tconn_external_get_term_data( string $origin, string $taxonomy, int $te
 
     $data = array(
         'htax_includes' => is_array( $body['htax_includes'] ?? null ) ? $body['htax_includes'] : array(),
-        'tconn_links'      => is_array( $body['tconn_links'] ?? null )      ? $body['tconn_links']      : array(),
+        'tconn_links'      => is_array( $body['tconn_links'] ?? null ) ? $body['tconn_links'] : array(),
     );
 
     set_transient( $cache_key, $data, $ttl );
@@ -421,7 +424,10 @@ function tconn_external_get_term_data( string $origin, string $taxonomy, int $te
  *         one entry for every requested ID (empty defaults for any not resolved).
  */
 function tconn_external_get_term_data_batch( string $origin, string $taxonomy, array $term_ids ): array {
-    $empty  = array( 'htax_includes' => array(), 'tconn_links' => array() );
+    $empty  = array(
+        'htax_includes' => array(),
+        'tconn_links' => array(),
+    );
     $result = array();
 
     $missing = array();
@@ -439,8 +445,8 @@ function tconn_external_get_term_data_batch( string $origin, string $taxonomy, a
         return $result;
     }
 
-    $settings = get_option( 'tconn_settings', array() );
-    $ttl      = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
+    $settings  = get_option( 'tconn_settings', array() );
+    $ttl       = (int) ( $settings['ht_status_cache_ttl'] ?? 86400 );
     $rest_base = tconn_external_get_taxonomy_rest_base( $taxonomy );
 
     // REST collections cap per_page at 100 by default; chunk accordingly.
@@ -464,7 +470,7 @@ function tconn_external_get_term_data_batch( string $origin, string $taxonomy, a
                     }
                     $by_id[ (int) $item['id'] ] = array(
                         'htax_includes' => is_array( $item['htax_includes'] ?? null ) ? $item['htax_includes'] : array(),
-                        'tconn_links'      => is_array( $item['tconn_links'] ?? null )      ? $item['tconn_links']      : array(),
+                        'tconn_links'      => is_array( $item['tconn_links'] ?? null ) ? $item['tconn_links'] : array(),
                     );
                 }
             }
@@ -588,7 +594,7 @@ function tconn_normalize_post_record( array $data ): array {
     $rec['cat_ids']            = array_map( 'intval', (array) $rec['cat_ids'] );
     $rec['sticky']             = (bool) $rec['sticky'];
     $rec['thumbnail_url']      = (string) $rec['thumbnail_url'];
-    $rec['thumbnail_width']    = ( null === $rec['thumbnail_width'] )  ? null : (int) $rec['thumbnail_width'];
+    $rec['thumbnail_width']    = ( null === $rec['thumbnail_width'] ) ? null : (int) $rec['thumbnail_width'];
     $rec['thumbnail_height']   = ( null === $rec['thumbnail_height'] ) ? null : (int) $rec['thumbnail_height'];
     $rec['origin']             = (string) $rec['origin'];
     $rec['foaf_depth']         = (int) $rec['foaf_depth'];
@@ -735,8 +741,8 @@ function tconn_local_term_expansions( array $tax_terms ): array {
             }
             // Include redirect sources so a target term also surfaces posts tagged
             // with terms that redirect to it, matching the HyperTaxonomy search index.
-            $expanded            = htax_get_expanded_term_ids( $tid, true );
-            $expansions[ $tid ]  = ! empty( $expanded ) ? array_map( 'intval', $expanded ) : array( $tid );
+            $expanded           = htax_get_expanded_term_ids( $tid, true );
+            $expansions[ $tid ] = ! empty( $expanded ) ? array_map( 'intval', $expanded ) : array( $tid );
         }
     }
 
@@ -799,7 +805,12 @@ function tconn_collect_local_posts( array $tax_terms, string $match, int $limit,
         $tax_query = array( 'relation' => 'AND' );
         foreach ( $clean as $tax => $ids ) {
             foreach ( $ids as $tid ) {
-                $clause = array( 'taxonomy' => $tax, 'field' => 'term_id', 'terms' => $ids_for( $tid ), 'operator' => 'IN' );
+                $clause = array(
+                    'taxonomy' => $tax,
+                    'field' => 'term_id',
+                    'terms' => $ids_for( $tid ),
+                    'operator' => 'IN',
+                );
                 if ( $expanded ) {
                     $clause['include_children'] = false;
                 }
@@ -815,7 +826,12 @@ function tconn_collect_local_posts( array $tax_terms, string $match, int $limit,
             foreach ( $ids as $tid ) {
                 $union = array_merge( $union, $ids_for( $tid ) );
             }
-            $clause = array( 'taxonomy' => $tax, 'field' => 'term_id', 'terms' => array_values( array_unique( $union ) ), 'operator' => 'IN' );
+            $clause = array(
+                'taxonomy' => $tax,
+                'field' => 'term_id',
+                'terms' => array_values( array_unique( $union ) ),
+                'operator' => 'IN',
+            );
             if ( $expanded ) {
                 $clause['include_children'] = false;
             }
@@ -824,7 +840,7 @@ function tconn_collect_local_posts( array $tax_terms, string $match, int $limit,
         $tax_query = ( count( $clauses ) > 1 ) ? array_merge( array( 'relation' => 'OR' ), $clauses ) : $clauses;
     }
 
-    $args = array(
+    $args        = array(
         'post_type'              => 'post',
         'post_status'            => 'publish',
         'posts_per_page'         => max( 1, $limit ),
@@ -839,7 +855,10 @@ function tconn_collect_local_posts( array $tax_terms, string $match, int $limit,
     }
     $date_query = array();
     $window     = tconn_normalize_date_window( $window );
-    foreach ( array( 'modified_after' => array( 'post_modified_gmt', 'after' ), 'modified_before' => array( 'post_modified_gmt', 'before' ) ) as $key => $spec ) {
+    foreach ( array(
+        'modified_after' => array( 'post_modified_gmt', 'after' ),
+        'modified_before' => array( 'post_modified_gmt', 'before' ),
+    ) as $key => $spec ) {
         $ts = '' !== $window[ $key ] ? strtotime( $window[ $key ] ) : false;
         if ( false === $ts ) {
             continue;
@@ -936,11 +955,11 @@ function tconn_external_normalize_post( array $raw, string $origin, bool $show_t
             $medium = $media['media_details']['sizes']['medium'] ?? null;
             if ( is_array( $medium ) && ! empty( $medium['source_url'] ) ) {
                 $thumbnail_url    = $medium['source_url'];
-                $thumbnail_width  = isset( $medium['width'] )  ? (int) $medium['width']  : null;
+                $thumbnail_width  = isset( $medium['width'] ) ? (int) $medium['width'] : null;
                 $thumbnail_height = isset( $medium['height'] ) ? (int) $medium['height'] : null;
             } elseif ( ! empty( $media['source_url'] ) ) {
                 $thumbnail_url    = $media['source_url'];
-                $thumbnail_width  = isset( $media['media_details']['width'] )  ? (int) $media['media_details']['width']  : null;
+                $thumbnail_width  = isset( $media['media_details']['width'] ) ? (int) $media['media_details']['width'] : null;
                 $thumbnail_height = isset( $media['media_details']['height'] ) ? (int) $media['media_details']['height'] : null;
             }
         }
@@ -967,8 +986,8 @@ function tconn_external_normalize_post( array $raw, string $origin, bool $show_t
  * Build the standard _fields string for a post fetch request.
  *
  * @since 1.0.0
- * @param bool   $show_thumbnail Whether to include featured_media.
- * @param bool   $ht_scored      Whether to include htax_* response fields.
+ * @param bool $show_thumbnail Whether to include featured_media.
+ * @param bool $ht_scored      Whether to include htax_* response fields.
  * @return string
  */
 function tconn_external_post_fields( bool $show_thumbnail, bool $ht_scored ): string {
@@ -1214,12 +1233,12 @@ function tconn_external_fetch_posts(
  * Always fetches score-ordered; the caller re-sorts from the cached set.
  *
  * @since 1.0.0
- * @param string  $origin         Peer site origin.
- * @param string  $taxonomy       Taxonomy slug.
- * @param array   $term_id_map    [ primary_remote_id => [include_remote_id, ...], ... ]
- * @param string  $match          'any' or 'all'.
- * @param array   $term_weights   [ remote_term_id => weight ] sent as htax_term_weights.
- * @param bool    $show_thumbnail Whether to request the featured image.
+ * @param string $origin         Peer site origin.
+ * @param string $taxonomy       Taxonomy slug.
+ * @param array  $term_id_map    [ primary_remote_id => [include_remote_id, ...], ... ]
+ * @param string $match          'any' or 'all'.
+ * @param array  $term_weights   [ remote_term_id => weight ] sent as htax_term_weights.
+ * @param bool   $show_thumbnail Whether to request the featured image.
  * @param int    $fetch_size     Number of posts to request.
  * @param int    $ttl            Cache TTL in seconds.
  * @param string $peer_site_slug        Link type slug; used to scope the cache so per-site clearing works.
@@ -1391,7 +1410,10 @@ function tconn_external_cache_term_peers( string $remote_origin, array $raw_post
                 if ( ! is_array( $peer ) || empty( $peer['origin'] ) || empty( $peer['slug'] ) ) {
                     continue;
                 }
-                $entry = array( 'origin' => (string) $peer['origin'], 'slug' => (string) $peer['slug'] );
+                $entry = array(
+                    'origin' => (string) $peer['origin'],
+                    'slug' => (string) $peer['slug'],
+                );
                 if ( ! in_array( $entry, $peer_map[ $term_id ], true ) ) {
                     $peer_map[ $term_id ][] = $entry;
                 }
@@ -1440,7 +1462,7 @@ function tconn_external_get_foaf_candidates(
     // per term — $term_taxonomy_map can hold many terms for a single FOAF
     // discovery call, and the single-term REST endpoint would cost one HTTP
     // round-trip per term.
-    $tconn_enabled = tconn_external_is_tc_enabled( $origin );
+    $tconn_enabled   = tconn_external_is_tc_enabled( $origin );
     $term_data_by_id = array();
     if ( $tconn_enabled ) {
         $ids_by_taxonomy = array();
@@ -1470,8 +1492,8 @@ function tconn_external_get_foaf_candidates(
                 if ( tconn_external_is_blacklisted( $peer['origin'] ) ) {
                     continue;
                 }
-                $candidates[]  = $peer;
-                $seen[ $key ]  = true;
+                $candidates[] = $peer;
+                $seen[ $key ] = true;
             }
         }
 
@@ -1479,7 +1501,10 @@ function tconn_external_get_foaf_candidates(
         if ( ! $tconn_enabled ) {
             continue;
         }
-        $term_data = $term_data_by_id[ $term_id ] ?? array( 'htax_includes' => array(), 'tconn_links' => array() );
+        $term_data = $term_data_by_id[ $term_id ] ?? array(
+            'htax_includes' => array(),
+            'tconn_links' => array(),
+        );
         foreach ( $term_data['tconn_links'] as $link ) {
             if ( ! is_array( $link ) || ( $link['platform'] ?? '' ) !== 'wordpress' ) {
                 continue;
@@ -1497,7 +1522,10 @@ function tconn_external_get_foaf_candidates(
             if ( tconn_external_is_blacklisted( $peer_origin ) ) {
                 continue;
             }
-            $candidates[] = array( 'origin' => $peer_origin, 'slug' => $peer_slug );
+            $candidates[] = array(
+                'origin' => $peer_origin,
+                'slug' => $peer_slug,
+            );
             $seen[ $key ] = true;
         }
     }

@@ -42,6 +42,10 @@
         <!-- Translators comments are good practice but noisy during development. -->
         <exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
         <exclude name="WordPress.WP.I18n.MultipleOrderedPlaceholders"/>
+
+        <!-- The suite uses 'wordpress' as a platform slug (TermConnect link types), so
+             auto-capitalizing it to "WordPress" changes behavior. -->
+        <exclude name="WordPress.WP.CapitalPDangit"/>
     </rule>
 
     <!-- Indent with 4 spaces, never tabs (the WordPress default is tabs). -->

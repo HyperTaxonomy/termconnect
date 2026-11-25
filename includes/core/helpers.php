@@ -336,7 +336,7 @@ function tconn_decode_json_request( $json, ?callable $sanitize_string = null ): 
     $sanitize_string = $sanitize_string ?? static function ( string $value ): string {
         return sanitize_text_field( $value );
     };
-    $walk = static function ( array $data ) use ( &$walk, $sanitize_string ): array {
+    $walk            = static function ( array $data ) use ( &$walk, $sanitize_string ): array {
         $clean = array();
         foreach ( $data as $key => $value ) {
             $key = is_int( $key ) ? $key : sanitize_text_field( (string) $key );

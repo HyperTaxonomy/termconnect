@@ -20,9 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TCONN_PLUGIN_DIR',      plugin_dir_path( __FILE__ ) );
-define( 'TCONN_PLUGIN_URL',      plugin_dir_url( __FILE__ ) );
-define( 'TCONN_VERSION',         '1.0.0' );
+define( 'TCONN_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'TCONN_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'TCONN_VERSION', '1.0.0' );
 define( 'TCONN_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
 register_activation_hook( __FILE__, 'tconn_plugin_activate' );
@@ -86,11 +86,11 @@ function tconn_activation_purge_stale_sv_queues(): void {
     if ( ! empty( $proposals ) ) {
         $filtered = array_filter(
             $proposals,
-            static function( $p ): bool {
-                $orphan_id = (int) ( $p['orphan_term_id']    ?? 0 );
+            static function ( $p ): bool {
+                $orphan_id = (int) ( $p['orphan_term_id'] ?? 0 );
                 $cand_id   = (int) ( $p['candidate_term_id'] ?? 0 );
                 return ( $orphan_id > 0 && get_term( $orphan_id ) instanceof WP_Term )
-                    && ( $cand_id   > 0 && get_term( $cand_id )   instanceof WP_Term );
+                    && ( $cand_id > 0 && get_term( $cand_id ) instanceof WP_Term );
             }
         );
         if ( count( $filtered ) !== count( $proposals ) ) {
@@ -102,7 +102,7 @@ function tconn_activation_purge_stale_sv_queues(): void {
     if ( ! empty( $misplaced ) ) {
         $filtered = array_filter(
             $misplaced,
-            static function( $entry ): bool {
+            static function ( $entry ): bool {
                 $term_id = (int) ( $entry['term_id'] ?? 0 );
                 return $term_id > 0 && get_term( $term_id ) instanceof WP_Term;
             }

@@ -28,7 +28,11 @@ class TConn_Settings_Page {
 
         $tab      = sanitize_key( wp_unslash( $_POST['tconn_current_tab'] ?? 'general' ) );
         $redirect = add_query_arg(
-            array( 'page' => 'termconnect-settings', 'tab' => $tab, 'tconn-settings-saved' => '1' ),
+            array(
+                'page' => 'termconnect-settings',
+                'tab' => $tab,
+                'tconn-settings-saved' => '1',
+            ),
             admin_url( 'options-general.php' )
         );
         wp_safe_redirect( $redirect );
@@ -77,10 +81,10 @@ class TConn_Settings_Page {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
         }
 
-        $valid_tabs  = array( 'general', 'peer-sites', 'shared-vocabularies', 'cache', 'export-import', 'advanced' );
-        $requested   = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) );
-        $active_tab  = in_array( $requested, $valid_tabs, true ) ? $requested : 'general';
-        $base_url    = admin_url( 'options-general.php?page=termconnect-settings' );
+        $valid_tabs = array( 'general', 'peer-sites', 'shared-vocabularies', 'cache', 'export-import', 'advanced' );
+        $requested  = sanitize_key( wp_unslash( $_GET['tab'] ?? '' ) );
+        $active_tab = in_array( $requested, $valid_tabs, true ) ? $requested : 'general';
+        $base_url   = admin_url( 'options-general.php?page=termconnect-settings' );
 
         $tabs = array(
             'general'            => __( 'General', 'termconnect' ),
@@ -146,7 +150,10 @@ class TConn_Settings_Page {
 
     private static function render_general_tab( array $options ): void {
         $enabled  = TConn_Settings::get_enabled_taxonomies();
-        $all_taxa = get_taxonomies( array( 'public' => true, 'show_ui' => true ), 'objects' );
+        $all_taxa = get_taxonomies( array(
+            'public' => true,
+            'show_ui' => true,
+        ), 'objects' );
 
         // Taxonomies forced on by a companion plugin via the tconn_enabled_taxonomies
         // filter (present in the effective list but not the stored option). Their
@@ -155,12 +162,12 @@ class TConn_Settings_Page {
         $stored = (array) get_option( 'tconn_enabled_taxonomies', array() );
         $forced = array_diff( $enabled, $stored );
 
-        $show_see_also              = (bool) ( $options['link_types_show_see_also'] ?? true );
-        $see_also_format            = $options['see_also_format'] ?? 'inline';
-        $see_also_label             = $options['see_also_label'] ?? __( 'See also:', 'termconnect' );
-        $allow_suggestions          = (bool) ( $options['allow_suggested_links'] ?? false );
-        $suggested_link_label           = $options['suggested_link_label'] ?? __( 'Suggest a related concept', 'termconnect' );
-        $suggested_link_notifications   = ! isset( $options['suggested_link_notifications'] ) || ! empty( $options['suggested_link_notifications'] );
+        $show_see_also                = (bool) ( $options['link_types_show_see_also'] ?? true );
+        $see_also_format              = $options['see_also_format'] ?? 'inline';
+        $see_also_label               = $options['see_also_label'] ?? __( 'See also:', 'termconnect' );
+        $allow_suggestions            = (bool) ( $options['allow_suggested_links'] ?? false );
+        $suggested_link_label         = $options['suggested_link_label'] ?? __( 'Suggest a related concept', 'termconnect' );
+        $suggested_link_notifications = ! isset( $options['suggested_link_notifications'] ) || ! empty( $options['suggested_link_notifications'] );
         ?>
         <h2><?php esc_html_e( 'Enabled Taxonomies', 'termconnect' ); ?></h2>
         <table class="form-table" role="presentation">
@@ -172,7 +179,7 @@ class TConn_Settings_Page {
                     </p>
                     <fieldset>
                         <?php foreach ( $all_taxa as $slug => $tax_obj ) : ?>
-                        <?php $is_forced = in_array( $slug, $forced, true ); ?>
+                            <?php $is_forced = in_array( $slug, $forced, true ); ?>
                         <label style="display:block;margin-bottom:4px;">
                             <input type="checkbox" name="tconn_enabled_taxonomies[]"
                                    value="<?php echo esc_attr( $slug ); ?>"
@@ -289,11 +296,13 @@ class TConn_Settings_Page {
         $blacklist = (array) ( $options['external_site_blacklist'] ?? array() );
         ?>
         <p class="description" style="margin-top:16px;">
-            <?php printf(
+            <?php
+            printf(
                 /* translators: %s: link to Peer Sites */
                 esc_html__( 'Configure peer WordPress sites and RSS/Atom feeds in %s.', 'termconnect' ),
                 '<a href="' . esc_url( admin_url( 'admin.php?page=tconn-peer-sites' ) ) . '">' . esc_html__( 'Terms → Peer Sites', 'termconnect' ) . '</a>'
-            ); ?>
+            );
+            ?>
         </p>
         <table class="form-table" role="presentation">
             <tr>
@@ -344,12 +353,13 @@ class TConn_Settings_Page {
                 '%"status";s:9:"not_found"%'
             )
         );
-        $sv_issues = $misplaced_count + $orphaned_count;
+        $sv_issues      = $misplaced_count + $orphaned_count;
         ?>
         <?php if ( $queue_count > 0 ) : ?>
         <div class="notice notice-warning inline" style="margin:16px 0;">
             <p>
-                <?php printf(
+                <?php
+                printf(
                     /* translators: %1$d: number of delegated identity sources */
                     esc_html( _n(
                         '%1$d delegated identity source has a pending redirect that needs review.',
@@ -358,7 +368,8 @@ class TConn_Settings_Page {
                         'termconnect'
                     ) ),
                     (int) $queue_count
-                ); ?>
+                );
+                ?>
                 <a href="<?php echo esc_url( $health_url ); ?>"><?php esc_html_e( 'Review in Site Health →', 'termconnect' ); ?></a>
             </p>
         </div>
@@ -367,7 +378,8 @@ class TConn_Settings_Page {
         <?php if ( $sv_issues > 0 ) : ?>
         <div class="notice notice-warning inline" style="margin:16px 0;">
             <p>
-                <?php printf(
+                <?php
+                printf(
                     wp_kses(
                         /* translators: 1: count, 2: shared vocabularies URL, 3: health check URL */
                         _n(
@@ -381,7 +393,8 @@ class TConn_Settings_Page {
                     (int) $sv_issues,
                     esc_url( $sv_url ),
                     esc_url( $health_url )
-                ); ?>
+                );
+                ?>
             </p>
         </div>
         <?php endif; ?>
@@ -396,25 +409,29 @@ class TConn_Settings_Page {
             ?>
         </p>
         <p class="description">
-            <?php printf(
+            <?php
+            printf(
                 function_exists( 'htax_get_included_terms' )
                     /* translators: %s: link to Shared Vocabularies */
                     ? esc_html__( 'Mirror individual terms, groups, hierarchy branches or full taxonomies from peer sites in %s.', 'termconnect' )
                     /* translators: %s: link to Shared Vocabularies */
                     : esc_html__( 'Mirror individual terms, hierarchy branches or full taxonomies from peer sites in %s.', 'termconnect' ),
                 '<a href="' . esc_url( admin_url( 'admin.php?page=tconn-shared-vocabularies' ) ) . '">' . esc_html__( 'Terms → Shared Vocabularies', 'termconnect' ) . '</a>'
-            ); ?>
+            );
+            ?>
         </p>
         <table class="form-table" role="presentation">
             <tr>
                 <th><?php esc_html_e( 'Redirect review queue', 'termconnect' ); ?></th>
                 <td>
                     <p>
-                        <?php printf(
+                        <?php
+                        printf(
                             /* translators: %s: link to Site Health */
                             esc_html__( 'When a remote identity source becomes a redirect, it is added to a review queue. %s', 'termconnect' ),
                             '<a href="' . esc_url( $health_url ) . '">' . esc_html__( 'Review in Site Health', 'termconnect' ) . '</a>'
-                        ); ?>
+                        );
+                        ?>
                     </p>
                 </td>
             </tr>
@@ -436,7 +453,12 @@ class TConn_Settings_Page {
                 <td>
                     <label>
                         <input type="checkbox" id="tconn_auto_chain_redirects" name="tconn_settings[auto_accept_chain_redirects]"
-                               value="1" <?php checked( $auto_chain_redirect ); disabled( ! $auto_redirects ); ?> />
+                               value="1" 
+                               <?php
+                                checked( $auto_chain_redirect );
+                                disabled( ! $auto_redirects );
+                                ?>
+                                />
                         <?php esc_html_e( 'When your direct identity source has itself been redirected (chain scenario), automatically update your delegation to point to the new ultimate target.', 'termconnect' ); ?>
                     </label>
                     <p class="description">
@@ -658,34 +680,34 @@ class TConn_Settings_Page {
         $input = wp_unslash( $_POST['tconn_settings'] ?? array() );
 
         // General
-        $existing['allow_suggested_links']  = ! empty( $input['allow_suggested_links'] );
-        $existing['suggested_link_label']              = sanitize_text_field( $input['suggested_link_label'] ?? '' );
-        $existing['suggested_link_notifications']      = ! empty( $input['suggested_link_notifications'] );
+        $existing['allow_suggested_links']        = ! empty( $input['allow_suggested_links'] );
+        $existing['suggested_link_label']         = sanitize_text_field( $input['suggested_link_label'] ?? '' );
+        $existing['suggested_link_notifications'] = ! empty( $input['suggested_link_notifications'] );
         $existing['link_types_show_see_also']     = ! empty( $input['link_types_show_see_also'] );
         $existing['see_also_format']              = in_array( $input['see_also_format'] ?? 'inline', array( 'inline', 'list' ), true )
             ? $input['see_also_format'] : 'inline';
         $existing['see_also_label']               = sanitize_text_field( $input['see_also_label'] ?? '' );
 
         // Peer Sites
-        $existing['max_foaf_depth']               = min( 5, max( 0, (int) ( $input['max_foaf_depth'] ?? 1 ) ) );
-        $raw_blacklist = sanitize_textarea_field( $input['external_site_blacklist'] ?? '' );
-        $existing['external_site_blacklist']      = array_filter(
+        $existing['max_foaf_depth']          = min( 5, max( 0, (int) ( $input['max_foaf_depth'] ?? 1 ) ) );
+        $raw_blacklist                       = sanitize_textarea_field( $input['external_site_blacklist'] ?? '' );
+        $existing['external_site_blacklist'] = array_filter(
             array_map( 'trim', explode( "\n", $raw_blacklist ) )
         );
 
         // Shared Vocabularies
-        $existing['auto_accept_redirects']        = ! empty( $input['auto_accept_redirects'] );
-        $existing['auto_accept_chain_redirects']  = $existing['auto_accept_redirects'] && ! empty( $input['auto_accept_chain_redirects'] );
-        $existing['identity_chain_max_depth']     = min( 5, max( 1, (int) ( $input['identity_chain_max_depth'] ?? 3 ) ) );
+        $existing['auto_accept_redirects']       = ! empty( $input['auto_accept_redirects'] );
+        $existing['auto_accept_chain_redirects'] = $existing['auto_accept_redirects'] && ! empty( $input['auto_accept_chain_redirects'] );
+        $existing['identity_chain_max_depth']    = min( 5, max( 1, (int) ( $input['identity_chain_max_depth'] ?? 3 ) ) );
 
         // Cache
-        $existing['identity_cache_ttl']           = max( 60, (int) ( $input['identity_cache_ttl'] ?? TCONN_IDENTITY_CACHE_TTL ) );
-        $existing['external_posts_cache_ttl']     = max( 60, (int) ( $input['external_posts_cache_ttl'] ?? 3600 ) );
-        $existing['ht_status_cache_ttl']          = max( 60, (int) ( $input['ht_status_cache_ttl'] ?? 86400 ) );
+        $existing['identity_cache_ttl']       = max( 60, (int) ( $input['identity_cache_ttl'] ?? TCONN_IDENTITY_CACHE_TTL ) );
+        $existing['external_posts_cache_ttl'] = max( 60, (int) ( $input['external_posts_cache_ttl'] ?? 3600 ) );
+        $existing['ht_status_cache_ttl']      = max( 60, (int) ( $input['ht_status_cache_ttl'] ?? 86400 ) );
 
         // Advanced
-        $existing['expose_links_api']             = ! empty( $input['expose_links_api'] );
-        $existing['delete_on_uninstall']          = ! empty( $input['delete_on_uninstall'] );
+        $existing['expose_links_api']    = ! empty( $input['expose_links_api'] );
+        $existing['delete_on_uninstall'] = ! empty( $input['delete_on_uninstall'] );
 
         update_option( 'tconn_settings', $existing );
     }
