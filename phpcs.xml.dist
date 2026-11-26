@@ -46,6 +46,13 @@
         <!-- The suite uses 'wordpress' as a platform slug (TermConnect link types), so
              auto-capitalizing it to "WordPress" changes behavior. -->
         <exclude name="WordPress.WP.CapitalPDangit"/>
+
+        <!-- ?: is used deliberately as "if empty, use this fallback". ?? is not a
+             substitute (it only catches null), and expanding it repeats the expression. -->
+        <exclude name="Universal.Operators.DisallowShortTernary"/>
+
+        <!-- Suite convention is class-{feature}.php, not class-{prefix}-{class-name}.php. -->
+        <exclude name="WordPress.Files.FileName"/>
     </rule>
 
     <!-- Indent with 4 spaces, never tabs (the WordPress default is tabs). -->
